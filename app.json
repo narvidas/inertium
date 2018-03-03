@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "sdkVersion": "22.0.0",
+    "name": "Inertium Habit Tracker",
+    "slug": "inertium-habit-tracker",
+    "icon": "src/images/app-icon.png",
+    "privacy": "public"
+  }
+}

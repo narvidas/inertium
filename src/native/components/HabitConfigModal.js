@@ -1,0 +1,119 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { H3, Text, Button, Form, Item, Label, Input } from 'native-base';
+import { View, StyleSheet, Modal, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert} from 'react-native';
+
+import Icon from 'react-native-vector-icons/Ionicons';
+
+const confirmRemoval = (onRemove) => {
+  Alert.alert(
+    'Remove habit',
+    'Are you sure? \n\nThis operation cannot be undone.',
+    [
+      {text: 'Cancel', style: 'cancel'},
+      {text: 'Yes', onPress: onRemove},
+    ],
+    { cancelable: false }
+  )
+}
+
+
+const HabitConfigModal = ({visible, defaultValues, type, onSave, onClose, onRemove, handleChange}) => (
+ <Modal
+      visible={visible}
+      animationType={'slide'}
+      onRequestClose={onClose}
+      blurAmount={25}
+  >
+    <KeyboardAvoidingView style={{flex: 1}} behavior="padding">
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.modalContainer}>
+          <View style={{height: 50,}}>
+            <H3>Configure Habit</H3>
+          </View>
+            <View style={{paddingTop: 50, width: 250}}>
+              <Item >
+                <Label>Name:</Label>
+                <Input defaultValue={defaultValues.name} onChangeText={text => handleChange(text,'habitName')} />
+              </Item>
+            </View>
+          <View style={{paddingTop: 50, width: 250}}>
+            <Item >
+              <Label>Weekly goal:</Label>
+              <Input defaultValue={String(defaultValues.goal)} keyboardType='numeric' onChangeText={text => handleChange(Number(text) || 0,'habitGoal')} />
+            </Item>
+          </View>
+          <View style={{paddingTop: 50, flexDirection: 'row', justifyContent: 'space-between'}}>
+            <View style={{marginRight: 5}}>
+              <Button
+                onPress={onSave}
+                title="Close modal"
+              >
+              <Icon name="ios-checkmark" style={styles.buttonIcon} />
+              <Text>Save</Text>
+              </Button>
+            </View>
+            <View style={{marginLeft: 5}}>
+              <Button
+                  onPress={onClose}
+                  title="Close modal"
+              >
+              <Icon name="ios-close" style={styles.buttonIcon} />
+              <Text>Close</Text>
+              </Button>
+            </View>          
+          </View>
+          <View style={{paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Button
+              onPress={() => confirmRemoval(onRemove)}
+              title="Remove habit"
+              danger
+            >
+            <Icon name="md-trash" style={styles.buttonIcon} />
+            <Text>Remove habit</Text>
+            </Button>
+          </View>
+        </View>
+       </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
+  </Modal>
+);
+
+
+HabitConfigModal.propTypes = {
+  visible: PropTypes.bool,
+  type: PropTypes.bool,
+  onSave: PropTypes.func,
+  onClose: PropTypes.func,
+  handleChange: PropTypes.func,
+};
+
+HabitConfigModal.defaultProps = {
+  visible: false,
+};
+
+const styles = StyleSheet.create({
+  button: {
+    borderColor: '#000066',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  innerContainer: {
+    alignItems: 'center',
+  },
+  buttonIcon: {
+    marginLeft: 15,
+    fontSize: 22,
+    height: 22,
+    color: 'white',
+  },
+});
+
+export default HabitConfigModal;
