@@ -2,3 +2,4 @@ node_modules/
 .vscode/
 .expo/
 npm-debug.*
+src/constants/firebase.js

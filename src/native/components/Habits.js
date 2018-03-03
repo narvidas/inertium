@@ -19,7 +19,7 @@ import moment from 'moment';
 import CalendarStrip from 'react-native-calendar-strip';
 
 
-class RecipeListing extends React.Component {
+class HabitListing extends React.Component {
 
   constructor(props) {
     super(props);
@@ -178,7 +178,7 @@ class RecipeListing extends React.Component {
   }
 };
 
-RecipeListing.propTypes = {
+HabitListing.propTypes = {
   error: PropTypes.string,
   loading: PropTypes.bool.isRequired,
   habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
@@ -187,7 +187,7 @@ RecipeListing.propTypes = {
   saveHabitItemNotes: PropTypes.func,
 };
 
-RecipeListing.defaultProps = {
+HabitListing.defaultProps = {
   error: null,
   reFetch: null,
 };
@@ -207,4 +207,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RecipeListing;
+export default HabitListing;

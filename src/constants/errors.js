@@ -15,7 +15,4 @@ export default {
   missingPassword: 'Password is missing',
   passwordsDontMatch: 'Passwords do not match',
 
-  // Recipes
-  recipe404: 'Recipe not found',
-  missingMealId: 'Missing meal definition',
 };

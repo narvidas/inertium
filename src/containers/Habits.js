@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { getHabits, getWeek, setError, removeHabit, createHabit, saveHabit, toggleHabitItemStatus, saveHabitItemNotes, clearHabitItem } from '../actions/habits';
 import moment from 'moment';
 
-class RecipeListing extends Component {
+class HabitListing extends Component {
   static propTypes = {
     Layout: PropTypes.func.isRequired,
     habits: PropTypes.shape({
@@ -80,4 +80,4 @@ const mapDispatchToProps = {
   saveHabit,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(RecipeListing);
+export default connect(mapStateToProps, mapDispatchToProps)(HabitListing);

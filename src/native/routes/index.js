@@ -5,9 +5,9 @@ import { Icon } from 'native-base';
 import DefaultProps from '../constants/navigation';
 import AppConfig from '../../constants/config';
 
-import RecipesContainer from '../../containers/Recipes';
-import RecipesComponent from '../components/Recipes';
-import RecipeViewComponent from '../components/Recipe';
+import HabitsContainer from '../../containers/Habits';
+import HabitsComponent from '../components/Habits';
+import HabitViewComponent from '../components/HabitView';
 
 import SignUpContainer from '../../containers/SignUp';
 import SignUpComponent from '../components/SignUp';
@@ -42,16 +42,16 @@ const Index = (
           icon={() => <Icon name="md-done-all" {...DefaultProps.icons} />}
           {...DefaultProps.navbarProps}
         >
-          <Scene key="home" component={RecipesContainer} Layout={RecipesComponent} />
+          <Scene key="home" component={HabitsContainer} Layout={HabitsComponent} />
         </Stack>
 
         <Stack
-          key="recipes"
+          key="analytics"
           title="ANALYTICS"
           icon={() => <Icon name="book" {...DefaultProps.icons} />}
           {...DefaultProps.navbarProps}
         >
-          <Scene key="recipes" component={AboutComponent} />
+          <Scene key="analytics" component={AboutComponent} />
         </Stack>
 
         <Stack
@@ -101,11 +101,11 @@ const Index = (
     <Scene
       back
       clone
-      key="recipe"
-      title="RECIPE"
+      key="page"
+      title="PAGE"
       {...DefaultProps.navbarProps}
-      component={RecipesContainer}
-      Layout={RecipeViewComponent}
+      component={HabitsContainer}
+      Layout={HabitViewComponent}
     />
   </Stack>
 );
