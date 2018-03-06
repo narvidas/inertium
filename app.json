@@ -4,6 +4,9 @@
     "name": "Inertium Habit Tracker",
     "slug": "inertium-habit-tracker",
     "icon": "src/images/app-icon.png",
-    "privacy": "public"
+    "privacy": "public",
+    "ios": {
+      "bundleIdentifier": "com.narvidas.inertium"
+    },
   }
 }

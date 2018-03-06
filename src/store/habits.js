@@ -9,5 +9,12 @@ export default {
       items: []
     },
   ],
-  habitsraw: [],
+  habitsraw: [
+    {
+      placeholder: true,
+      title: '---- --- -- ------',
+      notes: '---- ------ ',
+      items: {}
+    },
+  ],
 };

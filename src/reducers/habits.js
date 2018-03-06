@@ -19,12 +19,14 @@ export const initialState = Store;
 
 export default function habitReducer(state = initialState, action) {
   switch (action.type) {
+
     case 'HABITS_ERROR': {
       return {
         ...state,
         error: action.data,
       };
     }
+
     case 'GET_WEEK': {
       // Deep-copy habitsraw
       let habits = JSON.parse(JSON.stringify(state.habitsraw));
@@ -53,14 +55,17 @@ export default function habitReducer(state = initialState, action) {
         loading: {$set: false},
         habits: {$set: habits},
       });
-    }
+    }]
+
     case 'HABITS_RAW_REPLACE': {
+      // habitsraw is the raw firebase snapshot (not normalised data)
       return update(state,{
         habitsraw: {$set: action.habitsraw},
       });
     }
+
     case 'HABIT_UPDATE': {
-      // Find which habit by key
+    // Find which habit by key and update in store
       const habitIndex = state.habits.findIndex(habit => habit.key == action.habit.key);
       return update(state, {
         habits: {
@@ -68,18 +73,16 @@ export default function habitReducer(state = initialState, action) {
         }
       });      
     }
+
     case 'HABIT_ADD': {
-      // add new habit
+      // Push new habit to normalised an un-normalised
       return update(state, {
         habitsraw: {$push: [{...action.habit, items: {}}]},
         habits: {$push: [action.habit]}
       });      
     }
-    case 'HABIT_UPDATE_CREATED_KEY': {
-      return update(state, {
-        habitCreatedKey: {$set: action.key}
-      });
-    }
+
+
     case 'UPDATE_HABIT_ITEM': {
       // Find which habit by key
       const habitIndex = state.habits.findIndex(habit => habit.key == action.item.habitKey);
@@ -98,6 +101,7 @@ export default function habitReducer(state = initialState, action) {
         }
       });
     }
+
     case 'NORMALISE_HABITS': {
       // Deep-copy habitsraw
       let normalised = JSON.parse(JSON.stringify(state.habitsraw));
@@ -131,6 +135,7 @@ export default function habitReducer(state = initialState, action) {
         habitsraw: {$set: normalised}
       });
     }    
+
     case 'HABITS_ITEM_CLEAR': {
       // Find which habit by key
       const habitIndex = state.habits.findIndex(habit => habit.key == action.item.habitKey);
@@ -152,23 +157,18 @@ export default function habitReducer(state = initialState, action) {
         }
       })   
     }
+
     case 'HABIT_REMOVE': {
       // Find which habit by key
-      const habitIndex = state.habits.findIndex(habit => habit.key == action.habit.key);  
-      const habitRawIndex = state.habitsraw.findIndex(habit => habit.key == action.habit.key);
+      const habitIndex = state.habits.findIndex(habit => habit.key === action.habit.key);  
+      const habitRawIndex = state.habitsraw.findIndex(habit => habit.key === action.habit.key);
        
       return update(state, {
         habits: {$splice: [[habitIndex, 1]]},
         habitsraw: {$splice: [[habitRawIndex, 1]]}        
       })   
     }
-    case 'HABITS_REUSE': {
-      return {
-        ...state,
-        error: null,
-        loading: false,
-      };
-    }
+    
     default:
       return state;
   }
