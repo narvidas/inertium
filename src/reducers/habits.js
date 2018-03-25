@@ -55,7 +55,7 @@ export default function habitReducer(state = initialState, action) {
         loading: {$set: false},
         habits: {$set: habits},
       });
-    }]
+    }
 
     case 'HABITS_RAW_REPLACE': {
       // habitsraw is the raw firebase snapshot (not normalised data)
@@ -71,7 +71,7 @@ export default function habitReducer(state = initialState, action) {
         habits: {
           [habitIndex]: {$merge: action.habit}
         }
-      });      
+      });
     }
 
     case 'HABIT_ADD': {
@@ -79,7 +79,7 @@ export default function habitReducer(state = initialState, action) {
       return update(state, {
         habitsraw: {$push: [{...action.habit, items: {}}]},
         habits: {$push: [action.habit]}
-      });      
+      });
     }
 
 
@@ -105,11 +105,11 @@ export default function habitReducer(state = initialState, action) {
     case 'NORMALISE_HABITS': {
       // Deep-copy habitsraw
       let normalised = JSON.parse(JSON.stringify(state.habitsraw));
-      
+
       // For every habits (week) parent
       for(let h=0; h<state.habits.length; h++){
         const habit = JSON.parse(JSON.stringify(state.habits[h]));
-        
+
         // Get index of habits (week) parent counter-part in habitsraw (normalised) array
         let habitIndex = normalised.findIndex(h => h.key == habit.key);
 
@@ -119,12 +119,12 @@ export default function habitReducer(state = initialState, action) {
         // For every item child in habits (week) parents
         for (let i=0; i<habit.items.length; i++){
           const item = habit.items[i];
-          // Don't add placeholder items to save backend space (redundant data) 
+          // Don't add placeholder items to save backend space (redundant data)
           // Placeholders are determined by status (initially null until edited)
           if (item.status){
             // Add items property if it doesn't exist completely (happens when no children exist in Firebase)
             !('items' in normalised[habitIndex]) && (normalised[habitIndex].items = {});
-            // Re-assign as object property 
+            // Re-assign as object property
             normalised[habitIndex].items[item.key] = habit.items[i];
             console.log(`Wrote to ${item.key}`)
           }
@@ -134,7 +134,7 @@ export default function habitReducer(state = initialState, action) {
       return update(state, {
         habitsraw: {$set: normalised}
       });
-    }    
+    }
 
     case 'HABITS_ITEM_CLEAR': {
       // Find which habit by key
@@ -143,7 +143,7 @@ export default function habitReducer(state = initialState, action) {
 
       // Find which item by date
       const itemIndex = state.habits[habitIndex].items.findIndex(item => item.key == action.item.key);
-      
+
       return update(state, {
         habits: {
           [habitIndex]: {
@@ -155,20 +155,20 @@ export default function habitReducer(state = initialState, action) {
         habitsraw: {
           [habitRawIndex]: {items: {$unset: [action.item.key]}}
         }
-      })   
+      })
     }
 
     case 'HABIT_REMOVE': {
       // Find which habit by key
-      const habitIndex = state.habits.findIndex(habit => habit.key === action.habit.key);  
+      const habitIndex = state.habits.findIndex(habit => habit.key === action.habit.key);
       const habitRawIndex = state.habitsraw.findIndex(habit => habit.key === action.habit.key);
-       
+
       return update(state, {
         habits: {$splice: [[habitIndex, 1]]},
-        habitsraw: {$splice: [[habitRawIndex, 1]]}        
-      })   
+        habitsraw: {$splice: [[habitRawIndex, 1]]}
+      })
     }
-    
+
     default:
       return state;
   }

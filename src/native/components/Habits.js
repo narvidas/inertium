@@ -8,6 +8,7 @@ import Error from './Error';
 import Header from './Header';
 import Spacer from './Spacer';
 import HabitConfigModal from './HabitConfigModal';
+import HabitCustomisationModal from './HabitCustomisationModal';
 import ItemConfigModal from './ItemConfigModal';
 import RoundButton from './RoundButton';
 import Habit from './Habit';
@@ -17,7 +18,7 @@ import { generatePushID } from '../../lib/helpers';
 
 import moment from 'moment';
 import CalendarStrip from 'react-native-calendar-strip';
-
+import SortableList from 'react-native-sortable-list';
 
 class HabitListing extends React.Component {
 
@@ -25,15 +26,17 @@ class HabitListing extends React.Component {
     super(props);
   }
 
-  state = { 
+  state = {
     itemModalVisible: false,
     activeItem: null,
     itemNotes: '',
     habitModalVisible: false,
-    activeHabit: null,    
+    activeHabit: null,
     habitName: '',
     habitGoal: 0,
     activeRowID: null,
+    habitCustomisationModalVisible: false,
+
     startingDate: moment().startOf("isoweek"),
   };
 
@@ -42,7 +45,7 @@ class HabitListing extends React.Component {
     this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID);
     this.closeItemModal();
   }
-  
+
   clearItem = () => {
     const {activeItem, activeHabit, startingDate, activeRowID} = this.state;
     this.props.clearHabitItem(activeItem, activeHabit, startingDate, activeRowID);
@@ -82,6 +85,13 @@ class HabitListing extends React.Component {
     });
   }
 
+  openHabitCustomisationModal = () => {
+    this.setState({
+      habitModalVisible:false,
+      habitCustomisationModalVisible:true,
+    });
+  }
+
   closeItemModal = () => {
     this.setState({itemModalVisible:false});
   }
@@ -89,6 +99,14 @@ class HabitListing extends React.Component {
   closeHabitModal = () => {
     this.setState({habitModalVisible:false});
   }
+
+  closeHabitCustomisationModal = () => {
+    this.setState({
+      habitModalVisible: true,
+      habitCustomisationModalVisible:false,
+    });
+  }
+
 
   handleChange = (text, target) => {
     this.setState({
@@ -139,10 +157,16 @@ class HabitListing extends React.Component {
                 onClose={this.closeHabitModal}
                 onRemove={this.onRemoveHabit}
                 handleChange={this.handleChange}
+                onCustomise={this.openHabitCustomisationModal}
                 defaultValues={{
                   name: this.state.habitName,
                   goal: this.state.habitGoal
                 }}
+              />
+            <HabitCustomisationModal
+                visible={this.state.habitCustomisationModalVisible}
+                onClose={this.closeHabitCustomisationModal}
+                handleChange={this.handleChange}
               />
             <View>
               <CalendarStrip
@@ -158,18 +182,18 @@ class HabitListing extends React.Component {
             </View>
             {habits.map(habit=>{
               return <Habit
-                key={habit.key} 
-                habitKey={habit.key} 
+                key={habit.key}
+                habitKey={habit.key}
                 title={habit.title}
                 goal={habit.goal}
-                items={habit.items} 
+                items={habit.items}
                 toggleItemStatus={toggleHabitItemStatus}
                 openItemModal={this.openItemModal}
                 openHabitModal={this.openHabitModal}
                 startingDate={this.state.startingDate}
               />
             })}
-            <Spacer size={100} />  
+            <Spacer size={100} />
             <RoundButton onPress={this.onNewHabit} title="New Habit" size={60}/>
           </View>
         </Content>
@@ -183,8 +207,8 @@ HabitListing.propTypes = {
   loading: PropTypes.bool.isRequired,
   habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   reFetch: PropTypes.func,
-  toggleHabitItemStatus: PropTypes.func,
-  saveHabitItemNotes: PropTypes.func,
+  toggleHabitItemStatus: PropTypes.func.isRequired,
+  saveHabitItemNotes: PropTypes.func.isRequired,
 };
 
 HabitListing.defaultProps = {

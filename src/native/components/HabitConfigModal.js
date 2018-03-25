@@ -18,7 +18,7 @@ const confirmRemoval = (onRemove) => {
 }
 
 
-const HabitConfigModal = ({visible, defaultValues, type, onSave, onClose, onRemove, handleChange}) => (
+const HabitConfigModal = ({visible, defaultValues, type, onSave, onClose, onRemove, onCustomise, handleChange}) => (
  <Modal
       visible={visible}
       animationType={'slide'}
@@ -61,16 +61,26 @@ const HabitConfigModal = ({visible, defaultValues, type, onSave, onClose, onRemo
               <Icon name="ios-close" style={styles.buttonIcon} />
               <Text>Close</Text>
               </Button>
-            </View>          
+            </View>
           </View>
           <View style={{paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between'}}>
             <Button
               onPress={() => confirmRemoval(onRemove)}
-              title="Remove habit"
+              title="Remove"
               danger
             >
             <Icon name="md-trash" style={styles.buttonIcon} />
             <Text>Remove habit</Text>
+            </Button>
+          </View>
+          <View style={{paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Button
+              onPress={onCustomise}
+              title="Customise habit"
+              info
+            >
+            <Icon name="ios-color-wand" style={styles.buttonIcon} />
+            <Text>Customise</Text>
             </Button>
           </View>
         </View>
