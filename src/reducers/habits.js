@@ -139,17 +139,23 @@ export default function habitReducer(state = initialState, action) {
       const habitIndex = state.habits.findIndex(habit => habit.key == action.item.habitKey);
       const habitRawIndex = state.habitsraw.findIndex(habit => habit.key == action.item.habitKey);
 
+      console.log("EEEE")
+      console.log(habitIndex);
+
       // Find which item by date
       const itemIndex = state.habits[habitIndex].items.findIndex(item => item.key == action.item.key);
 
       return update(state, {
-        [habitIndex]: {
-          items: {
-            [itemIndex]: {$set: action.item}
+        habits:{
+          [habitIndex]: {
+            items: {
+              [itemIndex]: {$set: action.item}
+            }
           }
         },
         habitsraw: {
-          [habitRawIndex]: {items: {$unset: [action.item.key]}}
+          [habitRawIndex]: {
+            items: {$unset: [action.item.key]}}
       }})
     }
 
