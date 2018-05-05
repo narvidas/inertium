@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { H3, Text, List,  ListItem, Header, Icon } from 'native-base';
 import Spacer from './Spacer';
-import { View, StyleSheet, SectionList, TouchableHighlight } from 'react-native';
+import { View, StyleSheet, SectionList, TouchableHighlight, Button } from 'react-native';
 
 class ItemView extends React.Component {
   setNativeProps = (nativeProps) => {
@@ -33,6 +33,10 @@ class Habit extends React.Component {
     super(props);
   }
 
+  shouldComponentUpdate(nextProps, nextState){
+    return false;
+  }
+
   getBoxStyle(status){
     if(status==="done"){
       return styles.boxDone;
@@ -42,7 +46,7 @@ class Habit extends React.Component {
       return styles.boxGrey;
     }
   }
-  
+
   renderRow = (item, sectionID, rowID) => {
       const {toggleItemStatus, openItemModal, startingDate, habitKey} = this.props;
       return (
@@ -56,18 +60,18 @@ class Habit extends React.Component {
               onLongPress={() => openItemModal(item.key, habitKey, item.notes, startingDate, rowID)}
               >
               <ItemView id={rowID} startingDate={startingDate} status={item.status}/>
-            </TouchableHighlight>  
+            </TouchableHighlight>
           </View>
         </ListItem>
       );
     }
 
   render(){
-    const {title, items, openHabitModal, habitKey, goal, startingDate} = this.props;
+    const {title, items, openHabitModal, habitKey, goal, startingDate, updateTest} = this.props;
     const completedGoalCount = String(items.filter(item=>item.status==='done').length);
     return(
       <View>
-        <View style={{paddingLeft: 25, paddingRight: 25}}>
+        <View style={{paddingLeft: 25, paddingRight: 25, paddingTop: 10}}>
           <View style={{flexDirection: 'row'}}>
             <View style={{ flexDirection: 'row', flex: 1 }}>
               <H3>{title}{' ('}{completedGoalCount}{'/'}{String(goal || 0)}{')'}</H3>
@@ -80,18 +84,19 @@ class Habit extends React.Component {
                 onPress={()=> openHabitModal(habitKey, title, goal)}
                 >
                 <Icon name="ios-settings" style={{fontSize:24, marginLeft:5, marginRight:5,color:'#555'}}/>
-              </TouchableHighlight>                
+              </TouchableHighlight>
             </View>
           </View>
             <List
-              dataArray={items} 
-              horizontal={true} 
-              removeClippedSubviews={false} 
-              style={styles.list} 
+              dataArray={items}
+              horizontal={true}
+              removeClippedSubviews={false}
+              style={styles.list}
               renderRow={this.renderRow}
              />
+            <Button color="red" title="22ww" onPress={()=> updateTest('-L6hMh230dDedfdBt3IU', 'test', 123)}></Button>
         </View>
-        <Spacer size={15} />	
+        <Spacer size={15} />
       </View>
     );
   }

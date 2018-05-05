@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FlatList, TouchableOpacity, RefreshControl, Image } from 'react-native';
-import { Container, Content, Text, Button, List, ListItem, Left, Body } from 'native-base';
+import { Container, Content, Text, Button, List, ListItem, Left, Body} from 'native-base';
+
 import { Actions } from 'react-native-router-flux';
 import Loading from './Loading';
 import Error from './Error';
@@ -13,12 +14,90 @@ import ItemConfigModal from './ItemConfigModal';
 import RoundButton from './RoundButton';
 import Habit from './Habit';
 import { View, StyleSheet } from 'react-native';
-import { Form, Item, Label, Input, Icon } from 'native-base';
+import { Form, Item, Label, Input, Icon, ListView } from 'native-base';
 import { generatePushID } from '../../lib/helpers';
 
 import moment from 'moment';
 import CalendarStrip from 'react-native-calendar-strip';
+
 import SortableList from 'react-native-sortable-list';
+import { Animated, Easing, Dimensions, Platform, ScrollView } from 'react-native';
+
+
+class Row extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this._active = new Animated.Value(0);
+    this._style = {
+      ...Platform.select({
+        ios: {
+          transform: [{
+            scale: this._active.interpolate({
+              inputRange: [0, 1],
+              outputRange: [1, 1.1],
+            }),
+          }],
+          shadowRadius: this._active.interpolate({
+            inputRange: [0, 1],
+            outputRange: [2, 10],
+          }),
+        },
+        android: {
+          transform: [{
+            scale: this._active.interpolate({
+              inputRange: [0, 1],
+              outputRange: [1, 1.07],
+            }),
+          }],
+          elevation: this._active.interpolate({
+            inputRange: [0, 1],
+            outputRange: [2, 6],
+          }),
+        },
+      })
+    };
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return false;
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.active !== nextProps.active) {
+      Animated.timing(this._active, {
+        duration: 300,
+        easing: Easing.bounce,
+        toValue: Number(nextProps.active),
+      }).start();
+    }
+  }
+
+  render() {
+   const {data, active, index, toggleItemStatus, saveHabit, openItemModal, openHabitModal, startingDate} = this.props;
+   const {key, title, goal, items} = data;
+    return (
+      <Animated.View style={[
+        styles.row,
+        this._style,
+      ]}>
+        <Habit
+          key={key}
+          habitKey={key}
+          title={title}
+          goal={goal}
+          items={items}
+          toggleItemStatus={toggleItemStatus}
+          openItemModal={openItemModal}
+          openHabitModal={openHabitModal}
+          startingDate={startingDate}
+          updateTest={saveHabit}
+        />
+      </Animated.View>
+    );
+  }
+}
 
 class HabitListing extends React.Component {
 
@@ -36,7 +115,6 @@ class HabitListing extends React.Component {
     habitGoal: 0,
     activeRowID: null,
     habitCustomisationModalVisible: false,
-
     startingDate: moment().startOf("isoweek"),
   };
 
@@ -107,7 +185,6 @@ class HabitListing extends React.Component {
     });
   }
 
-
   handleChange = (text, target) => {
     this.setState({
       ...this.state,
@@ -130,6 +207,29 @@ class HabitListing extends React.Component {
     .then(()=>this.closeHabitModal());
   }
 
+  renderRow = ({data, active, index}) => {
+    const {habits} = this.props;
+    return(
+      <View>
+        <Row
+          data={data}
+          active={active}
+          index={index}
+          toggleItemStatus={this.props.toggleHabitItemStatus}
+          openItemModal={this.openItemModal}
+          openHabitModal={this.openHabitModal}
+          startingDate={this.state.startingDate}
+          saveHabit={this.props.saveHabit}
+        />
+        {((habits.length) === index+1) ?
+          <RoundButton onPress={this.onNewHabit} title="New Habit" size={60}/>
+          :
+          null
+        }
+      </View>
+    )
+  }
+
   render(){
     const { loading, error, member, habits, reFetch, toggleHabitItemStatus } = this.props;
 
@@ -141,7 +241,7 @@ class HabitListing extends React.Component {
 
     return (
       <Container>
-        <Content padder>
+        <Content padder scrollEnabled={false}>
           <View>
             <ItemConfigModal
                 visible={this.state.itemModalVisible}
@@ -180,27 +280,19 @@ class HabitListing extends React.Component {
               />
               <Spacer size={10} />
             </View>
-            {habits.map(habit=>{
-              return <Habit
-                key={habit.key}
-                habitKey={habit.key}
-                title={habit.title}
-                goal={habit.goal}
-                items={habit.items}
-                toggleItemStatus={toggleHabitItemStatus}
-                openItemModal={this.openItemModal}
-                openHabitModal={this.openHabitModal}
-                startingDate={this.state.startingDate}
-              />
-            })}
-            <Spacer size={100} />
-            <RoundButton onPress={this.onNewHabit} title="New Habit" size={60}/>
+              <SortableList
+                style={styles.list}
+                contentContainerStyle={styles.contentContainer}
+                data={habits}
+                renderRow={this.renderRow}
+                />
           </View>
         </Content>
       </Container>
     );
   }
 };
+
 
 HabitListing.propTypes = {
   error: PropTypes.string,
@@ -228,6 +320,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 10,
+  },
+  contentContainer: {
+    width: window.width,
+  },
+  list: {
+    flex: 1,
+  },
+  row: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    flex: 1,
+    marginTop: 10,
   },
 });
 

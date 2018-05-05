@@ -82,7 +82,6 @@ export default function habitReducer(state = initialState, action) {
       });
     }
 
-
     case 'UPDATE_HABIT_ITEM': {
       // Find which habit by key
       const habitIndex = state.habits.findIndex(habit => habit.key == action.item.habitKey);
@@ -126,7 +125,6 @@ export default function habitReducer(state = initialState, action) {
             !('items' in normalised[habitIndex]) && (normalised[habitIndex].items = {});
             // Re-assign as object property
             normalised[habitIndex].items[item.key] = habit.items[i];
-            console.log(`Wrote to ${item.key}`)
           }
         }
       }
@@ -145,7 +143,7 @@ export default function habitReducer(state = initialState, action) {
       const itemIndex = state.habits[habitIndex].items.findIndex(item => item.key == action.item.key);
 
       return update(state, {
-        habits: {
+
           [habitIndex]: {
             items: {
               [itemIndex]: {$set: action.item}
@@ -154,7 +152,6 @@ export default function habitReducer(state = initialState, action) {
         },
         habitsraw: {
           [habitRawIndex]: {items: {$unset: [action.item.key]}}
-        }
       })
     }
 
