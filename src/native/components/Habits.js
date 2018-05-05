@@ -15,14 +15,13 @@ import RoundButton from './RoundButton';
 import Habit from './Habit';
 import { View, StyleSheet } from 'react-native';
 import { Form, Item, Label, Input, Icon, ListView } from 'native-base';
-import { generatePushID } from '../../lib/helpers';
+import { generatePushID, arrayToSnapshot } from '../../lib/helpers';
 
 import moment from 'moment';
 import CalendarStrip from 'react-native-calendar-strip';
 
-import SortableList from 'react-native-sortable-list';
-import { Animated, Easing, Dimensions, Platform, ScrollView } from 'react-native';
-
+import { Animated, Easing, Dimensions, Platform, ScrollView, TouchableHighlight } from 'react-native';
+import SortableListView from 'react-native-sortable-listview'
 
 class Row extends React.Component {
 
@@ -60,10 +59,6 @@ class Row extends React.Component {
     };
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return false;
-  }
-
   componentWillReceiveProps(nextProps) {
     if (this.props.active !== nextProps.active) {
       Animated.timing(this._active, {
@@ -75,26 +70,22 @@ class Row extends React.Component {
   }
 
   render() {
-   const {data, active, index, toggleItemStatus, saveHabit, openItemModal, openHabitModal, startingDate} = this.props;
+   const {data, toggleItemStatus, saveHabit, openItemModal, openHabitModal, startingDate} = this.props;
    const {key, title, goal, items} = data;
     return (
-      <Animated.View style={[
-        styles.row,
-        this._style,
-      ]}>
-        <Habit
-          key={key}
-          habitKey={key}
-          title={title}
-          goal={goal}
-          items={items}
-          toggleItemStatus={toggleItemStatus}
-          openItemModal={openItemModal}
-          openHabitModal={openHabitModal}
-          startingDate={startingDate}
-          updateTest={saveHabit}
-        />
-      </Animated.View>
+      <Habit
+        key={key}
+        habitKey={key}
+        title={title}
+        goal={goal}
+        items={items}
+        toggleItemStatus={toggleItemStatus}
+        openItemModal={openItemModal}
+        openHabitModal={openHabitModal}
+        startingDate={startingDate}
+        updateTest={saveHabit}
+        {...this.props.sortHandlers}
+      />
     );
   }
 }
@@ -151,6 +142,7 @@ class HabitListing extends React.Component {
       activeHabit: habitKey,
       startingDate: startingDate,
       activeRowID: rowID,
+      scrollHabits: true,
     });
   }
 
@@ -192,12 +184,29 @@ class HabitListing extends React.Component {
     });
   }
 
+  reorderRows = (move) => {
+    this.enableHabitListScroll();
+    const {reorderHabits, habitOrder, habits} = this.props;
+    prevOrder = habits.map((h)=>h.key);
+    reorderHabits(prevOrder, move.from, move.to, move.row.data.key)
+    .then(()=>this.forceUpdate());
+  }
+
+  enableHabitListScroll = () => {
+    this.setState({scrollHabits: true});
+  }
+
+  disableHabitListScroll = () => {
+    this.setState({scrollHabits: false});
+  }
+
   onNewHabit = () => {
     const {createHabit, habits} = this.props;
     const {startingDate} = this.state;
     const habitKey = generatePushID();
     createHabit(startingDate, habitKey)
     .then(()=>this.openHabitModal(habitKey, '', 0))
+    .then(()=>this.forceUpdate())
   }
 
   onRemoveHabit = () => {
@@ -207,31 +216,31 @@ class HabitListing extends React.Component {
     .then(()=>this.closeHabitModal());
   }
 
-  renderRow = ({data, active, index}) => {
+  renderRow = (row) => {
     const {habits} = this.props;
     return(
-      <View>
-        <Row
-          data={data}
-          active={active}
-          index={index}
-          toggleItemStatus={this.props.toggleHabitItemStatus}
-          openItemModal={this.openItemModal}
-          openHabitModal={this.openHabitModal}
-          startingDate={this.state.startingDate}
-          saveHabit={this.props.saveHabit}
-        />
-        {((habits.length) === index+1) ?
-          <RoundButton onPress={this.onNewHabit} title="New Habit" size={60}/>
-          :
-          null
-        }
-      </View>
+      <TouchableHighlight {...this.props.sortHandlers} underlayColor={null}>
+        <View {...this.props.sortHandlers}>
+          <Row
+            data={row}
+            toggleItemStatus={this.props.toggleHabitItemStatus}
+            openItemModal={this.openItemModal}
+            openHabitModal={this.openHabitModal}
+            startingDate={this.state.startingDate}
+            saveHabit={this.props.saveHabit}
+            {...this.props.sortHandlers}
+          />
+        </View>
+      </TouchableHighlight>
     )
   }
 
+  sortHabits = (a, b) => {
+    return this.props.habitOrder.indexOf(a[1]) - this.props.habitOrder.indexOf(b[1]);
+  }
+
   render(){
-    const { loading, error, member, habits, reFetch, toggleHabitItemStatus } = this.props;
+    const { loading, error, member, habits, habitOrder, reFetch, habitOrdertoggleHabitItemStatus } = this.props;
 
     // Loading
     if (loading) return <Loading />;
@@ -241,8 +250,8 @@ class HabitListing extends React.Component {
 
     return (
       <Container>
-        <Content padder scrollEnabled={false}>
-          <View>
+        <Content padder scrollEnabled={this.state.scrollHabits}>
+          <View style={{paddingBottom: 20}}>
             <ItemConfigModal
                 visible={this.state.itemModalVisible}
                 onSave={this.saveItem}
@@ -278,14 +287,20 @@ class HabitListing extends React.Component {
                 styleWeekend={false}
                 onWeekChanged={this.handleNewWeekSelection}
               />
-              <Spacer size={10} />
             </View>
-              <SortableList
-                style={styles.list}
-                contentContainerStyle={styles.contentContainer}
-                data={habits}
-                renderRow={this.renderRow}
-                />
+          </View>
+          {console.log(habitOrder.map(hid =>habits.find(h => h.key===hid)))}
+          <SortableListView
+            style={styles.list}
+            data={(habits[0].placeholder || habitOrder.length<1)?habits:habitOrder.map(hid =>habits.find(h => h.key===hid))}
+            limitScrolling={true}
+            onRowActive={this.disableHabitListScroll}
+            onMoveEnd={this.enableHabitListScroll}
+            onRowMoved={this.reorderRows}
+            renderRow={this.renderRow}
+          />
+          <View>
+            <RoundButton onPress={this.onNewHabit} title="New Habit" size={60}/>
           </View>
         </Content>
       </Container>
@@ -297,11 +312,14 @@ class HabitListing extends React.Component {
 HabitListing.propTypes = {
   error: PropTypes.string,
   loading: PropTypes.bool.isRequired,
+  habitOrder: PropTypes.array,
   habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   reFetch: PropTypes.func,
   toggleHabitItemStatus: PropTypes.func.isRequired,
   saveHabitItemNotes: PropTypes.func.isRequired,
+  reorderHabits: PropTypes.func.isRequired
 };
+
 
 HabitListing.defaultProps = {
   error: null,

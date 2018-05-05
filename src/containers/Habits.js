@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { getHabits, getWeek, setError, removeHabit, createHabit, saveHabit, toggleHabitItemStatus, saveHabitItemNotes, clearHabitItem } from '../actions/habits';
+import { getHabits, getWeek, setError, removeHabit, reorderHabits, createHabit, saveHabit, toggleHabitItemStatus, saveHabitItemNotes, clearHabitItem } from '../actions/habits';
 import moment from 'moment';
 
 class HabitListing extends Component {
@@ -11,6 +11,7 @@ class HabitListing extends Component {
       loading: PropTypes.bool.isRequired,
       error: PropTypes.string,
       habitCreatedKey: PropTypes.string,
+      habitOrder: PropTypes.array,
       habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
     }).isRequired,
     match: PropTypes.shape({
@@ -21,6 +22,7 @@ class HabitListing extends Component {
     toggleHabitItemStatus: PropTypes.func.isRequired,
     saveHabitItemNotes: PropTypes.func.isRequired,
     clearHabitItem: PropTypes.func.isRequired,
+    reorderHabits: PropTypes.func.isRequired,
   }
 
   static defaultProps = {
@@ -45,7 +47,7 @@ class HabitListing extends Component {
   }
 
   render = () => {
-    const { Layout, habits, match, createHabit, removeHabit, saveHabit, clearHabitItem, toggleHabitItemStatus, saveHabitItemNotes, getHabits, getWeek} = this.props;
+    const { Layout, habits, match, createHabit, reorderHabits, removeHabit, saveHabit, clearHabitItem, toggleHabitItemStatus, saveHabitItemNotes, getHabits, getWeek} = this.props;
     return (
       <Layout
         error={habits.error}
@@ -55,9 +57,11 @@ class HabitListing extends Component {
         toggleHabitItemStatus={toggleHabitItemStatus}
         clearHabitItem={clearHabitItem}
         saveHabit={saveHabit}
+        reorderHabits={reorderHabits}
         createHabit={createHabit}
         removeHabit={removeHabit}
         habitCreatedKey={habits.habitCreatedKey}
+        habitOrder={habits.habitOrder}
         getWeek={getWeek}
       />
     );
@@ -71,6 +75,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
   getHabits,
   getWeek,
+  reorderHabits,
   removeHabit,
   setError,
   createHabit,

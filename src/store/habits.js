@@ -1,6 +1,7 @@
 export default {
   loading: true,
   error: null,
+  habitOrder: [],
   habits: [
     {
       placeholder: true,

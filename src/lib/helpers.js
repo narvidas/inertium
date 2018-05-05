@@ -4,7 +4,7 @@
 export const snapshotToArray = snapshot => {
     let array = [];
     snapshot.forEach(childSnapshot => {
-        let item = childSnapshot.val(); 
+        let item = childSnapshot.val();
         item.key = childSnapshot.key;
         array.push(item);
     });
@@ -25,7 +25,7 @@ export const arrayToSnapshot = array => {
 };
 
 /**
-  * Similar to snapshotToArray() function, but instead used in 
+  * Similar to snapshotToArray() function, but instead used in
     a nested (regular JS) object from an already acquired Firebase snapshot
   */
 export const objectToArray = (obj) => {
@@ -37,6 +37,7 @@ export const objectToArray = (obj) => {
   };
   return array;
 }
+
 
 /**
  * Source: https://gist.github.com/mikelehen/3596a30bd69384624c11

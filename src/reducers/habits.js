@@ -143,16 +143,14 @@ export default function habitReducer(state = initialState, action) {
       const itemIndex = state.habits[habitIndex].items.findIndex(item => item.key == action.item.key);
 
       return update(state, {
-
-          [habitIndex]: {
-            items: {
-              [itemIndex]: {$set: action.item}
-            }
+        [habitIndex]: {
+          items: {
+            [itemIndex]: {$set: action.item}
           }
         },
         habitsraw: {
           [habitRawIndex]: {items: {$unset: [action.item.key]}}
-      })
+      }})
     }
 
     case 'HABIT_REMOVE': {
@@ -160,9 +158,21 @@ export default function habitReducer(state = initialState, action) {
       const habitIndex = state.habits.findIndex(habit => habit.key === action.habit.key);
       const habitRawIndex = state.habitsraw.findIndex(habit => habit.key === action.habit.key);
 
+      let newOrder = state.habitOrder.filter(hid=> hid!=action.habit.key);
+
       return update(state, {
         habits: {$splice: [[habitIndex, 1]]},
-        habitsraw: {$splice: [[habitRawIndex, 1]]}
+        habitsraw: {$splice: [[habitRawIndex, 1]]},
+        habitOrder: {$set: newOrder}
+      })
+    }
+
+    case 'REORDER_HABITS': {
+      let orderedHabits = action.newOrder.map(hid =>state.habits.find(h => h.key===hid));
+
+      return update(state, {
+        habitOrder: {$set: action.newOrder},
+        habits: {$set: orderedHabits},
       })
     }
 

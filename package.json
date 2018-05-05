@@ -68,6 +68,7 @@
     "react-native-calendar-strip": "github:narvidas/react-native-calendar-strip",
     "react-native-router-flux": "^4.0.0-beta.28",
     "react-native-sortable-list": "0.0.21",
+    "react-native-sortable-listview": "^0.2.8",
     "react-native-svg": "^6.2.2",
     "react-native-svg-charts": "^3.0.2",
     "react-redux": "^5.0.6",

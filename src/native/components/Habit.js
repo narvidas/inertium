@@ -33,9 +33,6 @@ class Habit extends React.Component {
     super(props);
   }
 
-  shouldComponentUpdate(nextProps, nextState){
-    return false;
-  }
 
   getBoxStyle(status){
     if(status==="done"){
@@ -56,7 +53,7 @@ class Habit extends React.Component {
               activeOpacity={1}
               underlayColor={"rgba(0,0,0,0.25)"}
               style={this.getBoxStyle(item.status)}
-              onPress={()=> toggleItemStatus(item.key, habitKey, item.status, startingDate, rowID)}
+              onPress={()=> toggleItemStatus(item.key, habitKey, item.status, startingDate, rowID) }
               onLongPress={() => openItemModal(item.key, habitKey, item.notes, startingDate, rowID)}
               >
               <ItemView id={rowID} startingDate={startingDate} status={item.status}/>
@@ -94,8 +91,7 @@ class Habit extends React.Component {
               style={styles.list}
               renderRow={this.renderRow}
              />
-            <Button color="red" title="22ww" onPress={()=> updateTest('-L6hMh230dDedfdBt3IU', 'test', 123)}></Button>
-        </View>
+          </View>
         <Spacer size={15} />
       </View>
     );

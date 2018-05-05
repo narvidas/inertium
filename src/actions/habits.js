@@ -300,9 +300,11 @@ const removeHabitRemote = (habit) => {
   const UID = Firebase.auth().currentUser.uid;
 
   const habitRef = FirebaseRef.child('habits/'+UID+'/'+habit.key);
+  const habitOrderRef = FirebaseRef.child('metadata/'+UID+'/habitOrder/'+habit.key);
 
   return new Promise(resolve =>{
       habitRef.remove()
+      .then(()=>habitOrderRef.remove())
       .then(()=>{return resolve()})
       .catch(e => console.log(e))
   })
@@ -353,6 +355,60 @@ const clearHabitItemRemote = (item) => {
 
   return new Promise(resolve =>{
       habitItemRef.remove()
+      .then(()=>{return resolve()})
+      .catch(e => console.log(e))
+  })
+}
+
+/**
+  * Reorder habits
+  */
+export function reorderHabits(prevOrder, fromId, toId, habitId){
+
+  // Decide on new order
+  // Sort HERE
+  let newOrder = prevOrder.slice();
+  newOrder.splice(toId, 0, newOrder.splice(fromId, 1)[0]);
+
+  return dispatch => new Promise(resolve => {
+    updateHabitOrderLocal(dispatch, newOrder)
+    .then(()=>normaliseHabits(dispatch))
+    .then(()=>updateHabitOrderRemote(newOrder))
+    .then(()=>{return resolve()});
+  })
+}
+
+
+/**
+  * Reorder habit items in local Redux store
+  */
+const updateHabitOrderLocal = (dispatch, newOrder) => {
+  return new Promise(resolve =>{
+    return resolve(dispatch({
+        type: 'REORDER_HABITS',
+        newOrder
+      }));
+  });
+}
+
+/**
+  * Reorder habit items on Firebase
+  */
+const updateHabitOrderRemote = (newOrder) => {
+  if (Firebase === null || Firebase.auth().currentUser === null) return () => new Promise(resolve => resolve());
+  const UID = Firebase.auth().currentUser.uid;
+
+  let newOrderObject = {};
+  let i = 0;
+  newOrder.forEach(hid => {
+    Object.assign(newOrderObject, {[hid]: i});
+    i++;
+  })
+
+  const habitOrderItemRef = FirebaseRef.child('metadata/'+UID);
+
+  return new Promise(resolve =>{
+      habitOrderItemRef.set({habitOrder: newOrderObject})
       .then(()=>{return resolve()})
       .catch(e => console.log(e))
   })
