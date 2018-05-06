@@ -68,7 +68,6 @@ export function getHabits(today) {
 export function getWeek(today) {
   const monday = today.clone().startOf('isoWeek');
   const sunday = monday.clone().add(7, 'days');
-  console.log(sunday.format())
   return dispatch => new Promise(resolve => {
       resolve(dispatch({
         type: 'GET_WEEK',

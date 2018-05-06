@@ -115,6 +115,7 @@ class HabitListing extends React.Component {
   saveItem = () => {
     const {activeItem, activeHabit, notes, startingDate, activeRowID} = this.state;
     this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID)
+    this.updateFocusedHabitKey(activeHabit);
     this.closeItemModal();
   }
 
@@ -139,7 +140,8 @@ class HabitListing extends React.Component {
 
   saveHabit = () => {
     const {activeHabit, habitName, habitGoal} = this.state;
-    this.props.saveHabit(activeHabit, habitName, habitGoal)
+    this.props.saveHabit(activeHabit, habitName, habitGoal);
+    this.updateFocusedHabitKey(activeHabit);
     this.closeHabitModal();
   }
 
