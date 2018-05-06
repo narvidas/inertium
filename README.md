@@ -41,16 +41,13 @@ Inertium is written in ES6 and built on-top of [React Native](http://facebook.gi
 ---
 
 ## 📖 Demonstration
-### Create and Remove Habits
+### Create and Reorder Habits
 ![createnewhabit](./markdown/createnewhabit.gif)
-![removehabit](./markdown/removehabit.gif)
+![reorderhabits](./markdown/reorderhabits.gif)
 
 ### Track Items Across Weeks
 ![checkitemsoff](./markdown/checkitemsoff.gif)
 ![browseweeks](./markdown/browseweeks.gif)
-
-### Reorder Habits
-![reorderhabits](./markdown/reorderhabits.gif)
 
 ---
 
