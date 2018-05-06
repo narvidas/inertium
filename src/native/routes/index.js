@@ -24,7 +24,8 @@ import UpdateProfileComponent from '../components/UpdateProfile';
 import AppContainer from '../../containers/App';
 import ProfileComponent from '../components/Profile';
 
-import AboutComponent from '../components/About';
+import AnalyticsContainer from '../../containers/Analytics';
+import AnalyticsComponent from '../components/Analytics';
 
 const Index = (
   <Stack key="root">
@@ -51,7 +52,7 @@ const Index = (
           icon={() => <Icon name="ios-stats" {...DefaultProps.icons} />}
           {...DefaultProps.navbarProps}
         >
-          <Scene key="analytics" component={AboutComponent} />
+          <Scene key="analytics" component={AnalyticsContainer} Layout={AnalyticsComponent}/>
         </Stack>
 
         <Stack
