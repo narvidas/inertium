@@ -33,6 +33,10 @@ class Habit extends React.Component {
     super(props);
   }
 
+  shouldComponentUpdate(nextProps, nextState){
+    const {habitKey, updateKey} = nextProps;
+    return habitKey===updateKey;
+  }
 
   getBoxStyle(status){
     if(status==="done"){
@@ -45,7 +49,7 @@ class Habit extends React.Component {
   }
 
   renderRow = (item, sectionID, rowID) => {
-      const {toggleItemStatus, openItemModal, startingDate, habitKey } = this.props;
+      const {toggleItemStatus, openItemModal, startingDate, habitKey, updateFocusedHabitKey} = this.props;
       return (
         <ListItem style={styles.list}>
           <View>
@@ -55,6 +59,7 @@ class Habit extends React.Component {
               style={this.getBoxStyle(item.status)}
               onPress={()=> {
                 toggleItemStatus(item.key, habitKey, item.status, startingDate, rowID)
+                updateFocusedHabitKey(habitKey);
               }}
               onLongPress={() => openItemModal(item.key, habitKey, item.notes, startingDate, rowID)}
               >
