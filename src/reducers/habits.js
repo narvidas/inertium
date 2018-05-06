@@ -65,8 +65,6 @@ export default function habitReducer(state = initialState, action) {
     }
 
     case 'HABITS_ORDER_REPLACE': {
-      console.log('>>>>>>>>>>>>>>>>>')
-      console.log(action.order)
       // our application uses habitOrder as an array, but on firebase
       // we store this as {'habit key': 'sort id'} representation for easier interfacing to firebase
       // hence below when we get the object we need to rebuild the data back into array
@@ -157,9 +155,6 @@ export default function habitReducer(state = initialState, action) {
       const habitIndex = state.habits.findIndex(habit => habit.key == action.item.habitKey);
       const habitRawIndex = state.habitsraw.findIndex(habit => habit.key == action.item.habitKey);
 
-      console.log("EEEE")
-      console.log(habitIndex);
-
       // Find which item by date
       const itemIndex = state.habits[habitIndex].items.findIndex(item => item.key == action.item.key);
 
@@ -192,6 +187,7 @@ export default function habitReducer(state = initialState, action) {
     }
 
     case 'REORDER_HABITS': {
+      // Order habits by habitOrder
       let orderedHabits = action.newOrder.map(hid =>state.habits.find(h => h.key===hid));
 
       return update(state, {
