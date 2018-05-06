@@ -29,7 +29,7 @@ class HabitListing extends Component {
     match: null,
   }
 
-  componentDidMount = () => this.fetchHabits(true);
+  componentDidMount = () => this.fetchHabits();
 
   /**
     * Fetch Data from API, saving to Redux
@@ -37,11 +37,11 @@ class HabitListing extends Component {
   fetchHabits = (reFetch = false) => {
     if (reFetch || this.props.habits.habits[0].placeholder) {
       return this.props.getWeek(moment())
-      .then(()=> this.props.getHabits())
-      .catch((err) => {
-        console.log(`Error: ${err}`);
-        return this.props.setError(err);
-      });
+        .then(()=> this.props.getHabits())
+        .catch((err) => {
+          console.log(`Error: ${err}`);
+          return this.props.setError(err);
+        });
     }
     return false;
   }
@@ -62,6 +62,7 @@ class HabitListing extends Component {
         removeHabit={removeHabit}
         habitCreatedKey={habits.habitCreatedKey}
         habitOrder={habits.habitOrder}
+        fetchHabits={() => this.fetchHabits(true)}
         getWeek={getWeek}
       />
     );

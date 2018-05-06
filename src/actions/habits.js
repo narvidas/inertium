@@ -133,13 +133,13 @@ const updateHabitItemRemote = (item) => {
 
   const UID = Firebase.auth().currentUser.uid;
   const habitItemRef =
-    FirebaseRef.child('habits/'+UID+'/'+item.habitKey+'/items/'+item.key);
+    FirebaseRef.child('habits/' + UID + '/' + item.habitKey + '/items/' + item.key);
 
-  return new Promise(resolve =>{
-      habitItemRef.update(item)
-      .then(()=>{return resolve()})
-      .catch(e => console.log(e))
-  })
+  return new Promise((resolve) => {
+    habitItemRef.update(item)
+      .then(() => resolve())
+      .catch(e => console.log(e));
+  });
 }
 
 /**
@@ -155,14 +155,14 @@ export function saveHabitItemNotes(itemKey, habitKey, newNotes, startingDate, in
     notes: newNotes,
   }
 
-  return dispatch => new Promise(resolve => {
+  return dispatch => new Promise((resolve) => {
     updateHabitItemLocal(dispatch, newItem)
-    .then(()=>updateHabitItemRemote(newItem))
-    // For now if there's no data connection, pass-through.
-    // Better strategy may be needed in the future, catch and alert perhaps?
-    .then(()=>getHabits(startingDate))
-    .then(()=>{return resolve()});
-  })
+      .then(() => updateHabitItemRemote(newItem))
+      // For now if there's no data connection, pass-through.
+      // Better strategy may be needed in the future, catch and alert perhaps?
+      .then(() => getHabits(startingDate))
+      .then(() => resolve());
+  });
 }
 
 /**
@@ -173,15 +173,16 @@ export function saveHabit(habitKey, newTitle, newGoal) {
   const newHabit = {
     key: habitKey,
     title: newTitle,
-    goal: newGoal
-  }
+    goal: newGoal,
+    
+  };
 
-  return dispatch => new Promise(resolve => {
+  return dispatch => new Promise((resolve) => {
     saveHabitLocal(dispatch, newHabit)
-    .then(()=>normaliseHabits(dispatch))
-    .then(()=>saveHabitRemote(newHabit))
-    .then(()=>{return resolve()});
-  })
+      .then(() => normaliseHabits(dispatch))
+      .then(() => saveHabitRemote(newHabit))
+      .then(() => resolve());
+  });
 }
 
 /**
@@ -214,44 +215,48 @@ const saveHabitRemote = (habit) => {
   * Creates a new habit
   */
 export function createHabit(today, habitKey) {
-
   const monday = today.clone().startOf('isoWeek');
 
-  let firebaseItems = {};
-  for (let i=0; i<7; i++){
-    let itemID = generatePushID();
+  const firebaseItems = {};
+  for (let i = 0; i < 7; i++) {
+    const itemID = generatePushID();
     firebaseItems[itemID] = {
       date: monday.clone().add(i, 'days').format(),
       key: itemID,
-      habitKey: habitKey,
+      habitKey,
     }
   }
 
   const newFirebaseHabit = {
     key: habitKey,
     title: '',
-    items: firebaseItems
+    items: firebaseItems,
   }
 
   const newReduxHabit = {
     key: habitKey,
     title: '',
-    items: objectToArray(firebaseItems)
+    items: objectToArray(firebaseItems),
   }
 
-  return dispatch => new Promise(resolve => {
-    createHabitLocal(dispatch, newReduxHabit)
-    .then(()=>normaliseHabits(dispatch))
-    .then(()=>createHabitRemote(newFirebaseHabit))
-    .then(()=>{return resolve()});
-  })
+  return (dispatch, getState) => {
+    const { habits } = getState();
+    const orderId = habits.habitOrder.length + 1;
+
+    return new Promise((resolve) => {
+      createHabitLocal(dispatch, newReduxHabit)
+        .then(() => normaliseHabits(dispatch))
+        .then(() => createHabitRemote(newFirebaseHabit, orderId))
+        .then(() => resolve());
+    });
+  }
 }
 
 /**
   * Creates a new habit in the local Redux store
   */
 const createHabitLocal = (dispatch, habit) => {
-  return new Promise(resolve =>{
+  return new Promise((resolve) =>{
     return resolve(dispatch({
         type: 'HABIT_ADD',
         habit
@@ -262,15 +267,17 @@ const createHabitLocal = (dispatch, habit) => {
 /**
   * Creates a new habit in the Firebase real-time database
   */
-const createHabitRemote = (habit) => {
+const createHabitRemote = (habit, habitOrderId) => {
   if (Firebase === null || Firebase.auth().currentUser === null) return () => new Promise(resolve => resolve());
   const UID = Firebase.auth().currentUser.uid;
 
-  return new Promise(resolve =>{
+  return new Promise((resolve) => {
     const habitItemsRef = FirebaseRef.child('habits/'+UID+'/'+habit.key);
+    const habitOrderRef = FirebaseRef.child('metadata/'+UID+'/habitOrder/'+habit.key);
     habitItemsRef.set(habit)
-    .then(()=>{return resolve()});
-  })
+      .then(() => habitOrderRef.set(habitOrderId))
+      .then(() => resolve());
+  });
 }
 
 /**

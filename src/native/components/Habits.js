@@ -1,27 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FlatList, TouchableOpacity, RefreshControl, Image } from 'react-native';
-import { Container, Content, Text, Button, List, ListItem, Left, Body} from 'native-base';
-
-import { Actions } from 'react-native-router-flux';
+import { RefreshControl } from 'react-native';
+import { Container } from 'native-base';
 import Loading from './Loading';
 import Error from './Error';
-import Header from './Header';
-import Spacer from './Spacer';
 import HabitConfigModal from './HabitConfigModal';
 import HabitCustomisationModal from './HabitCustomisationModal';
 import ItemConfigModal from './ItemConfigModal';
 import RoundButton from './RoundButton';
 import Habit from './Habit';
 import { View, StyleSheet } from 'react-native';
-import { Form, Item, Label, Input, Icon, ListView } from 'native-base';
-import { generatePushID, arrayToSnapshot } from '../../lib/helpers';
-
+import { generatePushID } from '../../lib/helpers';
 import moment from 'moment';
 import CalendarStrip from 'react-native-calendar-strip';
-
-import { Animated, Easing, Dimensions, Platform, ScrollView, TouchableHighlight } from 'react-native';
+import { Animated, Easing, Platform, TouchableHighlight } from 'react-native';
 import SortableListView from 'react-native-sortable-listview'
+// import { FacebookAds } from 'expo';
+
 
 class Row extends React.Component {
 
@@ -70,8 +65,8 @@ class Row extends React.Component {
   }
 
   render() {
-  const {data, updateKey, toggleItemStatus, updateFocusedHabitKey, saveHabit, openItemModal, openHabitModal, startingDate} = this.props;
-  const {key, title, goal, items} = data;
+    const { data, updateKey, toggleItemStatus, updateFocusedHabitKey, saveHabit, openItemModal, openHabitModal, startingDate } = this.props;
+    const {key, title, goal, items} = data;
     return (
       <Habit
         key={key}
@@ -94,10 +89,6 @@ class Row extends React.Component {
 
 class HabitListing extends React.Component {
 
-  constructor(props) {
-    super(props);
-  }
-
   state = {
     itemModalVisible: false,
     activeItem: null,
@@ -108,16 +99,10 @@ class HabitListing extends React.Component {
     habitGoal: 0,
     activeRowID: null,
     habitCustomisationModalVisible: false,
-    startingDate: moment().startOf("isoweek"),
+    startingDate: moment().startOf('isoweek'),
     updateKey: null,
+    refreshing: false,
   };
-
-  saveItem = () => {
-    const {activeItem, activeHabit, notes, startingDate, activeRowID} = this.state;
-    this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID)
-    this.updateFocusedHabitKey(activeHabit);
-    this.closeItemModal();
-  }
 
   clearItem = () => {
     const {activeItem, activeHabit, startingDate, activeRowID} = this.state;
@@ -154,12 +139,13 @@ class HabitListing extends React.Component {
       startingDate: startingDate,
       activeRowID: rowID,
       scrollHabits: true,
+      adShown: false
     });
   }
 
   openHabitModal = (key, name = '', goal=0) => {
     this.setState({
-      habitModalVisible:true,
+      habitModalVisible: true,
       habitName: name,
       activeHabit: key,
       habitGoal: goal,
@@ -168,23 +154,23 @@ class HabitListing extends React.Component {
 
   openHabitCustomisationModal = () => {
     this.setState({
-      habitModalVisible:false,
-      habitCustomisationModalVisible:true,
+      habitModalVisible: false,
+      habitCustomisationModalVisible: true,
     });
   }
 
   closeItemModal = () => {
-    this.setState({itemModalVisible:false});
+    this.setState({itemModalVisible: false });
   }
 
   closeHabitModal = () => {
-    this.setState({habitModalVisible:false});
+    this.setState({habitModalVisible: false });
   }
 
   closeHabitCustomisationModal = () => {
     this.setState({
       habitModalVisible: true,
-      habitCustomisationModalVisible:false,
+      habitCustomisationModalVisible: false,
     });
   }
 
@@ -197,39 +183,52 @@ class HabitListing extends React.Component {
 
   reorderRows = (move) => {
     this.enableHabitListScroll();
-    const {reorderHabits, habitOrder, habits} = this.props;
-    prevOrder = habits.map((h)=>h.key);
+    const { reorderHabits, habits } = this.props;
+    const prevOrder = habits.map(h => h.key);
     reorderHabits(prevOrder, move.from, move.to, move.row.data.key)
-    .then(()=>this.forceUpdate());
+      .then(() => this.forceUpdate());
   }
 
   enableHabitListScroll = () => {
-    this.setState({scrollHabits: true});
+    this.setState({ scrollHabits: true });
   }
 
   disableHabitListScroll = () => {
-    this.setState({scrollHabits: false});
+    this.setState({ scrollHabits: false });
   }
 
   onNewHabit = () => {
-    const {createHabit, habits} = this.props;
-    const {startingDate} = this.state;
+    const { createHabit, habits } = this.props;
+    const { startingDate } = this.state;
     const habitKey = generatePushID();
     createHabit(startingDate, habitKey)
-    .then(()=>this.openHabitModal(habitKey, '', 0))
-    .then(()=>this.forceUpdate())
+      .then(()=>this.openHabitModal(habitKey, '', 0))
+      .then(()=>this.forceUpdate())
   }
 
   onRemoveHabit = () => {
     const {activeHabit} = this.state;
     const {removeHabit} = this.props;
     removeHabit(activeHabit)
-    .then(()=>this.closeHabitModal());
+      .then(()=>this.closeHabitModal());
+  }
+
+  saveItem = () => {
+    const { activeItem, activeHabit, notes, startingDate, activeRowID } = this.state;
+    this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID)
+    this.updateFocusedHabitKey(activeHabit);
+    this.closeItemModal();
+  }
+
+  onRefresh = () => {
+    this.setState({refreshing: true });
+    this.props.fetchHabits().then(() => {
+      this.setState({refreshing: false });
+    });
   }
 
   renderRow = (row) => {
-    const {habits} = this.props;
-    return(
+    return (
       <TouchableHighlight {...this.props.sortHandlers} underlayColor={null}>
         <View {...this.props.sortHandlers}>
           <Row
@@ -245,11 +244,11 @@ class HabitListing extends React.Component {
           />
         </View>
       </TouchableHighlight>
-    )
+    );
   }
 
-  render(){
-    const { loading, error, member, habits, habitOrder, reFetch, habitOrdertoggleHabitItemStatus } = this.props;
+  render() {
+    const { loading, error, habits, habitOrder } = this.props;
 
     // Loading
     if (loading) return <Loading />;
@@ -257,75 +256,93 @@ class HabitListing extends React.Component {
     // Error
     if (error) return <Error content={error} />;
 
+    //const placementId = "205216370287292_205223896953206";
+    // if (!this.state.adShown){
+    //   this.state.adShown = true
+    //   setTimeout(()=>{
+    //     FacebookAds.InterstitialAdManager.showAd(placementId)
+    //       .then(didClick => {})
+    //       .catch(error => {})
+    //   }, 10000);
+    // }
+
+
     return (
       <Container>
-        <Content padder scrollEnabled={this.state.scrollHabits}>
-          <View style={{paddingBottom: 20}}>
-            <ItemConfigModal
-                visible={this.state.itemModalVisible}
-                onSave={this.saveItem}
-                onClose={this.closeItemModal}
-                onClear={this.clearItem}
-                handleChange={this.handleChange}
-                defaultValues={this.state.itemNotes}
-              />
-            <HabitConfigModal
-                visible={this.state.habitModalVisible}
-                onSave={this.saveHabit}
-                onClose={this.closeHabitModal}
-                onRemove={this.onRemoveHabit}
-                handleChange={this.handleChange}
-                onCustomise={this.openHabitCustomisationModal}
-                defaultValues={{
-                  name: this.state.habitName,
-                  goal: this.state.habitGoal
-                }}
-              />
-            <HabitCustomisationModal
-                visible={this.state.habitCustomisationModalVisible}
-                onClose={this.closeHabitCustomisationModal}
-                handleChange={this.handleChange}
-              />
-            <View>
-              <CalendarStrip
-                updateWeek={false}
-                daySelectionAnimation={{type: 'border', duration: 10, borderWidth: 1, borderHighlightColor: 'rgba(0,0,0,0.8)'}}
-                style={{height: 100, paddingTop: 20, paddingBottom: 20}}
-                calendarHeaderStyle={{paddingBottom: 20}}
-                highlightDateNumberStyle={{textDecorationLine: 'underline'}}
-                styleWeekend={false}
-                onWeekChanged={this.handleNewWeekSelection}
-              />
-            </View>
-          </View>
-          <SortableListView
-            style={styles.list}
-            data={(habits[0].placeholder || habitOrder.length<1)?habits:habitOrder.map(hid =>habits.find(h => h.key===hid))}
-            limitScrolling={true}
-            onRowActive={this.disableHabitListScroll}
-            onMoveEnd={this.enableHabitListScroll}
-            onRowMoved={this.reorderRows}
-            renderRow={this.renderRow}
+        <View style={{ paddingBottom: 20 }}>
+          <ItemConfigModal
+            visible={this.state.itemModalVisible}
+            onSave={this.saveItem}
+            onClose={this.closeItemModal}
+            onClear={this.clearItem}
+            handleChange={this.handleChange}
+            defaultValues={this.state.itemNotes}
+          />
+          <HabitConfigModal
+            visible={this.state.habitModalVisible}
+            onSave={this.saveHabit}
+            onClose={this.closeHabitModal}
+            onRemove={this.onRemoveHabit}
+            handleChange={this.handleChange}
+            onCustomise={this.openHabitCustomisationModal}
+            defaultValues={{
+              name: this.state.habitName,
+              goal: this.state.habitGoal
+            }}
+          />
+          <HabitCustomisationModal
+            visible={this.state.habitCustomisationModalVisible}
+            onClose={this.closeHabitCustomisationModal}
+            handleChange={this.handleChange}
           />
           <View>
-            <RoundButton onPress={this.onNewHabit} title="New Habit" size={60}/>
+            <CalendarStrip
+              updateWeek={false}
+              daySelectionAnimation={{type: 'border', duration: 10, borderWidth: 1, borderHighlightColor: 'rgba(0,0,0,0.8)'}}
+              style={{height: 100, paddingTop: 20, paddingBottom: 20}}
+              calendarHeaderStyle={{paddingBottom: 20}}
+              highlightDateNumberStyle={{textDecorationLine: 'underline'}}
+              styleWeekend={false}
+              onWeekChanged={this.handleNewWeekSelection}
+            />
           </View>
-        </Content>
+        </View>
+        <SortableListView
+          style={styles.list}
+          data={(habits[0].placeholder || habitOrder.length < 1) ?
+            habits :
+            habitOrder
+              .map(hid => habits.find(h => h.key === hid))
+              .filter(h => h !== undefined)
+          }
+          limitScrolling={true}
+          onRowActive={this.disableHabitListScroll}
+          onMoveEnd={this.enableHabitListScroll}
+          onRowMoved={this.reorderRows}
+          renderRow={this.renderRow}
+          renderFooter={() => <RoundButton onPress={this.onNewHabit} title="New Habit" size={60}/>}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this.onRefresh}
+            />
+          }
+        />
       </Container>
     );
   }
-};
+}
 
 
 HabitListing.propTypes = {
   error: PropTypes.string,
   loading: PropTypes.bool.isRequired,
-  habitOrder: PropTypes.array,
+  habitOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
   habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   reFetch: PropTypes.func,
   toggleHabitItemStatus: PropTypes.func.isRequired,
   saveHabitItemNotes: PropTypes.func.isRequired,
-  reorderHabits: PropTypes.func.isRequired
+  reorderHabits: PropTypes.func.isRequired,
 };
 
 

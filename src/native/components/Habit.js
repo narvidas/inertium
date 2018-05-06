@@ -29,19 +29,15 @@ class ItemView extends React.Component {
 
 class Habit extends React.Component {
 
-  constructor(props) {
-    super(props);
+  shouldComponentUpdate(nextProps) {
+    const { habitKey, updateKey } = nextProps;
+    return habitKey === updateKey;
   }
 
-  shouldComponentUpdate(nextProps, nextState){
-    const {habitKey, updateKey} = nextProps;
-    return habitKey===updateKey;
-  }
-
-  getBoxStyle(status){
-    if(status==="done"){
+  getBoxStyle(status) {
+    if(status === "done") {
       return styles.boxDone;
-    } else if (status==="undone"){
+    } else if (status === "undone") {
       return styles.boxUndone;
     } else {
       return styles.boxGrey;
@@ -49,32 +45,32 @@ class Habit extends React.Component {
   }
 
   renderRow = (item, sectionID, rowID) => {
-      const {toggleItemStatus, openItemModal, startingDate, habitKey, updateFocusedHabitKey} = this.props;
-      return (
-        <ListItem style={styles.list}>
-          <View>
-            <TouchableHighlight
-              activeOpacity={1}
-              underlayColor={"rgba(0,0,0,0.25)"}
-              style={this.getBoxStyle(item.status)}
-              onPress={()=> {
-                toggleItemStatus(item.key, habitKey, item.status, startingDate, rowID)
-                updateFocusedHabitKey(habitKey);
-              }}
-              onLongPress={() => openItemModal(item.key, habitKey, item.notes, startingDate, rowID)}
-              >
-              <ItemView id={rowID} startingDate={startingDate} status={item.status}/>
-            </TouchableHighlight>
-          </View>
-        </ListItem>
-      );
-    }
+    const { toggleItemStatus, openItemModal, startingDate, habitKey, updateFocusedHabitKey } = this.props;
+    return (
+      <ListItem style={styles.list}>
+        <View>
+          <TouchableHighlight
+            activeOpacity={1}
+            underlayColor="rgba(0,0,0,0.25)"
+            style={this.getBoxStyle(item.status)}
+            onPress={() => {
+              toggleItemStatus(item.key, habitKey, item.status, startingDate, rowID);
+              updateFocusedHabitKey(habitKey);
+            }}
+            onLongPress={() => openItemModal(item.key, habitKey, item.notes, startingDate, rowID)}
+          >
+            <ItemView id={rowID} startingDate={startingDate} status={item.status} />
+          </TouchableHighlight>
+        </View>
+      </ListItem>
+    );
+  }
 
-  render(){
-    const {title, items, openHabitModal, habitKey, goal, startingDate, updateTest} = this.props;
-    const completedGoalCount = String(items.filter(item=>item.status==='done').length);
+  render() {
+    const { title, items, openHabitModal, habitKey, goal } = this.props;
+    const completedGoalCount = String(items.filter(item => item.status === 'done').length);
 
-    return(
+    return (
       <View>
         <View style={{paddingLeft: 25, paddingRight: 25, paddingTop: 10}}>
           <View style={{flexDirection: 'row'}}>
@@ -84,22 +80,27 @@ class Habit extends React.Component {
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }} >
               <TouchableHighlight
                 activeOpacity={1}
-                style={{borderRadius: 4}}
-                underlayColor={"rgba(0,0,0,0.1)"}
-                onPress={()=> openHabitModal(habitKey, title, goal)}
-                >
-                <Icon name="ios-settings" style={{fontSize:24, marginLeft:5, marginRight:5,color:'#555'}}/>
+                style={{ borderRadius: 4 }}
+                underlayColor="rgba(0,0,0,0.1)"
+                onPress={() => openHabitModal(habitKey, title, goal)}
+              >
+                <Icon
+                  name="ios-settings"
+                  style={{
+                    fontSize: 24, marginLeft: 5, marginRight: 5,color: '#555' 
+                  }}
+                />
               </TouchableHighlight>
             </View>
           </View>
-            <List
-              dataArray={items}
-              horizontal={true}
-              removeClippedSubviews={false}
-              style={styles.list}
-              renderRow={this.renderRow}
-             />
-          </View>
+          <List
+            dataArray={items}
+            horizontal={true}
+            removeClippedSubviews={false}
+            style={styles.list}
+            renderRow={this.renderRow}
+          />
+        </View>
         <Spacer size={15} />
       </View>
     );

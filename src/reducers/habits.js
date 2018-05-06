@@ -92,9 +92,11 @@ export default function habitReducer(state = initialState, action) {
 
     case 'HABIT_ADD': {
       // Push new habit to normalised an un-normalised
+      const habitId = action.habit.key;
       return update(state, {
         habitsraw: {$push: [{...action.habit, items: {}}]},
-        habits: {$push: [action.habit]}
+        habits: {$push: [action.habit]},
+        habitOrder: {$push: [habitId]},
       });
     }
 
