@@ -48,7 +48,7 @@ const Index = (
         <Stack
           key="analytics"
           title="ANALYTICS"
-          icon={() => <Icon name="book" {...DefaultProps.icons} />}
+          icon={() => <Icon name="ios-stats" {...DefaultProps.icons} />}
           {...DefaultProps.navbarProps}
         >
           <Scene key="analytics" component={AboutComponent} />
@@ -57,7 +57,7 @@ const Index = (
         <Stack
           key="profile"
           title="PROFILE"
-          icon={() => <Icon name="contact" {...DefaultProps.icons} />}
+          icon={() => <Icon name="md-person" {...DefaultProps.icons} />}
           {...DefaultProps.navbarProps}
         >
           <Scene key="profileHome" component={AppContainer} Layout={ProfileComponent} />
