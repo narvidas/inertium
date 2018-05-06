@@ -45,7 +45,7 @@ class Habit extends React.Component {
   }
 
   renderRow = (item, sectionID, rowID) => {
-      const {toggleItemStatus, openItemModal, startingDate, habitKey} = this.props;
+      const {toggleItemStatus, openItemModal, startingDate, habitKey } = this.props;
       return (
         <ListItem style={styles.list}>
           <View>
@@ -53,7 +53,9 @@ class Habit extends React.Component {
               activeOpacity={1}
               underlayColor={"rgba(0,0,0,0.25)"}
               style={this.getBoxStyle(item.status)}
-              onPress={()=> toggleItemStatus(item.key, habitKey, item.status, startingDate, rowID) }
+              onPress={()=> {
+                toggleItemStatus(item.key, habitKey, item.status, startingDate, rowID)
+              }}
               onLongPress={() => openItemModal(item.key, habitKey, item.notes, startingDate, rowID)}
               >
               <ItemView id={rowID} startingDate={startingDate} status={item.status}/>
@@ -66,6 +68,7 @@ class Habit extends React.Component {
   render(){
     const {title, items, openHabitModal, habitKey, goal, startingDate, updateTest} = this.props;
     const completedGoalCount = String(items.filter(item=>item.status==='done').length);
+
     return(
       <View>
         <View style={{paddingLeft: 25, paddingRight: 25, paddingTop: 10}}>

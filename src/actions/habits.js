@@ -29,6 +29,7 @@ const normaliseHabits = (dispatch) => {
   */
 export function getHabits(today) {
   if (Firebase === null) return () => new Promise(resolve => resolve());
+
   return dispatch => new Promise(resolve => {
     Firebase.auth().onAuthStateChanged((user) => {
       if (user) {
@@ -38,6 +39,14 @@ export function getHabits(today) {
             type: 'HABITS_RAW_REPLACE',
             habitsraw: habitsraw,
           });
+
+          FirebaseRef.child('metadata/'+user.uid+'/habitOrder').once('value').then((snapshot) => {
+            let order = (snapshot.val()) || {};
+              dispatch({
+                type: 'HABITS_ORDER_REPLACE',
+                order: order,
+              });
+          })
 
           const today = moment();
           const monday = today.clone().startOf('isoWeek');

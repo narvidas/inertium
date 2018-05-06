@@ -70,8 +70,8 @@ class Row extends React.Component {
   }
 
   render() {
-   const {data, toggleItemStatus, saveHabit, openItemModal, openHabitModal, startingDate} = this.props;
-   const {key, title, goal, items} = data;
+  const {data, updateKey, toggleItemStatus, updateFocusedHabitKey, saveHabit, openItemModal, openHabitModal, startingDate} = this.props;
+  const {key, title, goal, items} = data;
     return (
       <Habit
         key={key}
@@ -79,6 +79,8 @@ class Row extends React.Component {
         title={title}
         goal={goal}
         items={items}
+        updateKey={updateKey}
+        updateFocusedHabitKey={updateFocusedHabitKey}
         toggleItemStatus={toggleItemStatus}
         openItemModal={openItemModal}
         openHabitModal={openHabitModal}
@@ -107,11 +109,12 @@ class HabitListing extends React.Component {
     activeRowID: null,
     habitCustomisationModalVisible: false,
     startingDate: moment().startOf("isoweek"),
+    updateKey: null,
   };
 
   saveItem = () => {
     const {activeItem, activeHabit, notes, startingDate, activeRowID} = this.state;
-    this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID);
+    this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID)
     this.closeItemModal();
   }
 
@@ -126,6 +129,12 @@ class HabitListing extends React.Component {
       startingDate: startingDate
     });
     this.props.getWeek(startingDate);
+  }
+
+  updateFocusedHabitKey = (key) => {
+    this.setState({
+      updateKey: key
+    })
   }
 
   saveHabit = () => {
@@ -228,15 +237,13 @@ class HabitListing extends React.Component {
             openHabitModal={this.openHabitModal}
             startingDate={this.state.startingDate}
             saveHabit={this.props.saveHabit}
+            updateFocusedHabitKey={this.updateFocusedHabitKey}
+            updateKey={this.state.updateKey}
             {...this.props.sortHandlers}
           />
         </View>
       </TouchableHighlight>
     )
-  }
-
-  sortHabits = (a, b) => {
-    return this.props.habitOrder.indexOf(a[1]) - this.props.habitOrder.indexOf(b[1]);
   }
 
   render(){
@@ -289,7 +296,6 @@ class HabitListing extends React.Component {
               />
             </View>
           </View>
-          {console.log(habitOrder.map(hid =>habits.find(h => h.key===hid)))}
           <SortableListView
             style={styles.list}
             data={(habits[0].placeholder || habitOrder.length<1)?habits:habitOrder.map(hid =>habits.find(h => h.key===hid))}

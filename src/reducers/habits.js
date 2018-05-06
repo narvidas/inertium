@@ -64,6 +64,24 @@ export default function habitReducer(state = initialState, action) {
       });
     }
 
+    case 'HABITS_ORDER_REPLACE': {
+      console.log('>>>>>>>>>>>>>>>>>')
+      console.log(action.order)
+      // our application uses habitOrder as an array, but on firebase
+      // we store this as {'habit key': 'sort id'} representation for easier interfacing to firebase
+      // hence below when we get the object we need to rebuild the data back into array
+      let habitOrder = new Array(action.order.length);
+      Object.keys(action.order).forEach(function(key) {
+        habitOrder[action.order[key]]=key;
+      });
+      habitOrder = habitOrder.filter((el)=> {return el != undefined });
+
+      // habitsraw is the raw firebase snapshot (not normalised data)
+      return update(state,{
+        habitOrder: {$set: habitOrder},
+      });
+    }
+
     case 'HABIT_UPDATE': {
     // Find which habit by key and update in store
       const habitIndex = state.habits.findIndex(habit => habit.key == action.habit.key);
