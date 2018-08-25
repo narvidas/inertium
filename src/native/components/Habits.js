@@ -1,7 +1,13 @@
+
 import React from 'react';
 import PropTypes from 'prop-types';
-import { RefreshControl } from 'react-native';
 import { Container } from 'native-base';
+import CalendarStrip from 'react-native-calendar-strip';
+import SortableListView from 'react-native-sortable-listview';
+import GestureRecognizer from 'react-native-swipe-gestures';
+import moment from 'moment';
+import { View, StyleSheet, Animated, Easing, Platform, TouchableHighlight, RefreshControl } from 'react-native';
+
 import Loading from './Loading';
 import Error from './Error';
 import HabitConfigModal from './HabitConfigModal';
@@ -9,19 +15,12 @@ import HabitCustomisationModal from './HabitCustomisationModal';
 import ItemConfigModal from './ItemConfigModal';
 import RoundButton from './RoundButton';
 import Habit from './Habit';
-import { View, StyleSheet } from 'react-native';
 import { generatePushID } from '../../lib/helpers';
-import moment from 'moment';
-import CalendarStrip from 'react-native-calendar-strip';
-import { Animated, Easing, Platform, TouchableHighlight } from 'react-native';
-import SortableListView from 'react-native-sortable-listview';
-import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 // import { FacebookAds } from 'expo';
 
 
 class Row extends React.Component {
-
   constructor(props) {
     super(props);
 
@@ -52,7 +51,7 @@ class Row extends React.Component {
             outputRange: [2, 6],
           }),
         },
-      })
+      }),
     };
   }
 
@@ -67,8 +66,13 @@ class Row extends React.Component {
   }
 
   render() {
-    const { data, updateKey, toggleItemStatus, updateFocusedHabitKey, saveHabit, openItemModal, openHabitModal, startingDate } = this.props;
-    const {key, title, goal, items} = data;
+    const {
+      data, updateKey, toggleItemStatus, updateFocusedHabitKey,
+      saveHabit, openItemModal, openHabitModal, startingDate,
+    } = this.props;
+
+    const { key, title, goal, items } = data;
+
     return (
       <Habit
         key={key}
@@ -104,16 +108,34 @@ class HabitListing extends React.Component {
     updateKey: null,
     refreshing: false,
   };
+  
+  onRefresh = () => {
+    const { startingDate } = this.state;
+    this.setState({ refreshing: true });
+    this.props.fetchHabits(true, startingDate).then(() => {
+      this.setState({ refreshing: false });
+    });
+  }
 
-  clearItem = () => {
-    const {activeItem, activeHabit, startingDate, activeRowID} = this.state;
-    this.props.clearHabitItem(activeItem, activeHabit, startingDate, activeRowID);
-    this.closeItemModal();
+  onRemoveHabit = () => {
+    const { activeHabit } = this.state;
+    const { removeHabit } = this.props;
+    removeHabit(activeHabit)
+      .then(() => this.closeHabitModal());
+  }
+
+  onNewHabit = () => {
+    const { createHabit } = this.props;
+    const { startingDate } = this.state;
+    const habitKey = generatePushID();
+    createHabit(startingDate, habitKey)
+      .then(() => this.openHabitModal(habitKey, '', 0))
+      .then(() => this.forceUpdate());
   }
 
   handleNewWeekSelection = (startingDate) => {
     this.setState({
-      startingDate
+      startingDate,
     });
     this.props.getWeek(startingDate)
       .then(() => this.props.fetchHabits(startingDate))
@@ -122,12 +144,12 @@ class HabitListing extends React.Component {
 
   updateFocusedHabitKey = (key) => {
     this.setState({
-      updateKey: key
-    })
+      updateKey: key,
+    });
   }
 
   saveHabit = () => {
-    const {activeHabit, habitName, habitGoal} = this.state;
+    const { activeHabit, habitName, habitGoal } = this.state;
     this.props.saveHabit(activeHabit, habitName, habitGoal);
     this.updateFocusedHabitKey(activeHabit);
     this.closeHabitModal();
@@ -135,18 +157,18 @@ class HabitListing extends React.Component {
 
   openItemModal = (itemKey, habitKey, notes, startingDate, rowID) => {
     this.setState({
-      itemModalVisible:true,
+      itemModalVisible: true,
       itemNotes: notes,
       activeItem: itemKey,
       activeHabit: habitKey,
-      startingDate: startingDate,
+      startingDate,
       activeRowID: rowID,
       scrollHabits: true,
-      adShown: false
+      adShown: false,
     });
   }
 
-  openHabitModal = (key, name = '', goal=0) => {
+  openHabitModal = (key, name = '', goal = 0) => {
     this.setState({
       habitModalVisible: true,
       habitName: name,
@@ -163,11 +185,11 @@ class HabitListing extends React.Component {
   }
 
   closeItemModal = () => {
-    this.setState({itemModalVisible: false });
+    this.setState({ itemModalVisible: false });
   }
 
   closeHabitModal = () => {
-    this.setState({habitModalVisible: false });
+    this.setState({ habitModalVisible: false });
   }
 
   closeHabitCustomisationModal = () => {
@@ -180,7 +202,7 @@ class HabitListing extends React.Component {
   handleChange = (text, target) => {
     this.setState({
       ...this.state,
-      [target]: text
+      [target]: text,
     });
   }
 
@@ -200,36 +222,18 @@ class HabitListing extends React.Component {
     this.setState({ scrollHabits: false });
   }
 
-  onNewHabit = () => {
-    const { createHabit, habits } = this.props;
-    const { startingDate } = this.state;
-    const habitKey = generatePushID();
-    createHabit(startingDate, habitKey)
-      .then(()=>this.openHabitModal(habitKey, '', 0))
-      .then(()=>this.forceUpdate())
-  }
-
-  onRemoveHabit = () => {
-    const {activeHabit} = this.state;
-    const {removeHabit} = this.props;
-    removeHabit(activeHabit)
-      .then(()=>this.closeHabitModal());
-  }
-
   saveItem = () => {
     const { activeItem, activeHabit, notes, startingDate, activeRowID } = this.state;
-    this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID)
+    this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID);
     this.updateFocusedHabitKey(activeHabit);
     this.closeItemModal();
   }
 
-  onRefresh = () => {
-    const { startingDate } = this.state;
-    this.setState({ refreshing: true });
-    this.props.fetchHabits(true, startingDate).then(() => {
-      this.setState({refreshing: false });
-    });
-  }
+  clearItem = () => {
+    const { activeItem, activeHabit, startingDate, activeRowID } = this.state;
+    this.props.clearHabitItem(activeItem, activeHabit, startingDate, activeRowID);
+    this.closeItemModal();
+  };
 
   renderRow = (row) => {
     return (
@@ -260,7 +264,7 @@ class HabitListing extends React.Component {
     // Error
     if (error) return <Error content={error} />;
 
-    //const placementId = "205216370287292_205223896953206";
+    // const placementId = "205216370287292_205223896953206";
     // if (!this.state.adShown){
     //   this.state.adShown = true
     //   setTimeout(()=>{
@@ -269,11 +273,6 @@ class HabitListing extends React.Component {
     //       .catch(error => {})
     //   }, 10000);
     // }
-
-    const config = {
-      velocityThreshold: 0.3,
-      directionalOffsetThreshold: 80
-    };
 
     return (
       <Container>
@@ -295,7 +294,7 @@ class HabitListing extends React.Component {
             onCustomise={this.openHabitCustomisationModal}
             defaultValues={{
               name: this.state.habitName,
-              goal: this.state.habitGoal
+              goal: this.state.habitGoal,
             }}
           />
           <HabitCustomisationModal
@@ -310,11 +309,11 @@ class HabitListing extends React.Component {
             <CalendarStrip
               ref={(calendar) => { this.calendar = calendar; }}
               updateWeek={false}i
-              daySelectionAnimation={{type: 'border', duration: 100, borderWidth: 1, borderHighlightColor: 'rgba(0,0,0,0.8)'}}
-              style={{height: 100, paddingTop: 20, paddingBottom: 15}}
-              calendarHeaderStyle={{paddingBottom: 15}}
-              highlightDateNumberStyle={{textDecorationLine: 'underline'}}
-              iconContainer={{width: 40}}
+              daySelectionAnimation={{ type: 'border', duration: 100, borderWidth: 1, borderHighlightColor: 'rgba(0,0,0,0.8)' }}
+              style={{ height: 100, paddingTop: 20, paddingBottom: 15 }}
+              calendarHeaderStyle={{ paddingBottom: 15 }}
+              highlightDateNumberStyle={{ textDecorationLine: 'underline' }}
+              iconContainer={{ width: 40 }}
               styleWeekend={false}
               onWeekChanged={this.handleNewWeekSelection}
             />
@@ -346,7 +345,6 @@ class HabitListing extends React.Component {
   }
 }
 
-
 HabitListing.propTypes = {
   error: PropTypes.string,
   loading: PropTypes.bool.isRequired,
@@ -356,8 +354,21 @@ HabitListing.propTypes = {
   toggleHabitItemStatus: PropTypes.func.isRequired,
   saveHabitItemNotes: PropTypes.func.isRequired,
   reorderHabits: PropTypes.func.isRequired,
+  fetchHabits: PropTypes.func.isRequired,
+  removeHabit: PropTypes.func.isRequired,
+  createHabit: PropTypes.func.isRequired,
 };
 
+Row.propTypes = {
+  data: PropTypes.object.isRequired,
+  updateKey: PropTypes.string,
+  toggleItemStatus: PropTypes.func.isRequired,
+  updateFocusedHabitKey: PropTypes.func.isRequired,
+  saveHabit: PropTypes.func.isRequired,
+  openItemModal: PropTypes.func.isRequired,
+  openHabitModal: PropTypes.func.isRequired,
+  startingDate: PropTypes.object.isRequired,
+}
 
 HabitListing.defaultProps = {
   error: null,
@@ -376,9 +387,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 10,
-  },
-  contentContainer: {
-    width: window.width,
   },
   list: {
     flex: 1,

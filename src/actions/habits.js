@@ -1,6 +1,5 @@
 import { Firebase, FirebaseRef } from '../lib/firebase';
 import { snapshotToArray, objectToArray, generatePushID } from '../lib/helpers';
-import moment from 'moment';
 
 /**
   * Set an Error Message
@@ -16,31 +15,28 @@ export function setError(message) {
   * Request for store to normalise habits data
   * (converts objects in Firebase snapshot-like representation to arrays)
   */
-const normaliseHabits = (dispatch) => {
-  return new Promise(resolve =>{
-    return resolve(dispatch({
-        type: 'NORMALISE_HABITS'
-      }));
+const normaliseHabits = dispatch =>
+  new Promise((resolve) => {
+    resolve(dispatch({ type: 'NORMALISE_HABITS' }));
   });
-}
 
 /**
   * Fetch habits from Firebase
   */
 export function getHabits(today) {
   return dispatch => new Promise((resolve) => {
-    if (Firebase === null) resolve(); 
+    if (Firebase === null) resolve();
     Firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        FirebaseRef.child('habits/'+user.uid).once('value').then((snapshot) => {
+        FirebaseRef.child(`habits/${user.uid}`).once('value').then((snapshot) => {
           const habitsraw = snapshotToArray(snapshot) || {};
           dispatch({
             type: 'HABITS_RAW_REPLACE',
             habitsraw,
           });
 
-          FirebaseRef.child('metadata/'+user.uid+'/habitOrder').once('value').then((snapshot) => {
-            let order = (snapshot.val()) || {};
+          FirebaseRef.child(`metadata/${user.uid}/habitOrder`).once('value').then((snapshot) => {
+            const order = (snapshot.val()) || {};
             dispatch({
               type: 'HABITS_ORDER_REPLACE',
               order,
@@ -55,10 +51,10 @@ export function getHabits(today) {
               dayFrom: monday,
               dayTo: sunday,
             }));
-          })
-        })
+          });
+        });
       }
-    })
+    });
   }).catch(e => console.log(e));
 }
 
@@ -68,14 +64,39 @@ export function getHabits(today) {
 export function getWeek(today) {
   const monday = today.clone().startOf('isoWeek');
   const sunday = monday.clone().add(7, 'days');
-  return dispatch => new Promise(resolve => {
-      resolve(dispatch({
-        type: 'GET_WEEK',
-        dayFrom: monday,
-        dayTo: sunday,
-      }));
-    }).catch(e => console.log(e));
+  return dispatch => new Promise((resolve) => {
+    resolve(dispatch({
+      type: 'GET_WEEK',
+      dayFrom: monday,
+      dayTo: sunday,
+    }));
+  }).catch(e => console.log(e));
+}
+
+/**
+ * Update any property of a given item on the local Redux store
+ * (determined by which habit it belonds to (habit key) and it's index (item key))
+ */
+const updateHabitItemLocal = (dispatch, item) =>
+  new Promise((resolve) => {
+    resolve(dispatch({ type: 'UPDATE_HABIT_ITEM', item }));
+  });
+
+/**
+ * Update any property of a given item in Firebase real-time database
+ * (determined by which habit it belonds to (habit key) and it's index (item key))
+ */
+const updateHabitItemRemote = (item) => {
+  if (Firebase === null || Firebase.auth().currentUser === null) {
+    return () => new Promise(resolve => resolve());
   }
+
+  const UID = Firebase.auth().currentUser.uid;
+  const habitItemRef =
+    FirebaseRef.child(`habits/${UID}/${item.habitKey}/items/${item.key}`);
+
+  return habitItemRef.update(item);
+};
 
 /**
   * Toggle habit item status (pass/fail/skip)
@@ -84,12 +105,12 @@ export function toggleHabitItemStatus(itemKey, habitKey, currentStatus, starting
   let newStatus = '';
 
   // Decide next status based on current status of the item
-  if(currentStatus === 'done'){
-    newStatus = 'undone'
-  } else if (currentStatus === 'undone'){
-    newStatus = 'none'
+  if (currentStatus === 'done') {
+    newStatus = 'undone';
+  } else if (currentStatus === 'undone') {
+    newStatus = 'none';
   } else {
-    newStatus = 'done'
+    newStatus = 'done';
   }
 
   // When rendering in a list in RN we can get the index which directly maps to day of the week
@@ -100,41 +121,13 @@ export function toggleHabitItemStatus(itemKey, habitKey, currentStatus, starting
     key: itemKey,
     status: newStatus,
     date: newDate,
-  }
+  };
 
   return dispatch => new Promise((resolve) => {
     updateHabitItemLocal(dispatch, newItem)
       .then(() => updateHabitItemRemote(newItem))
       .then(() => resolve());
   });
-}
-
-
-/**
- * Update any property of a given item on the local Redux store
- * (determined by which habit it belonds to (habit key) and it's index (item key))
- */
-const updateHabitItemLocal = (dispatch, item) => {
-  return new Promise(resolve =>{
-    return resolve(dispatch({
-        type: 'UPDATE_HABIT_ITEM',
-        item,
-      }));
-  });
-}
-
-/**
- * Update any property of a given item in Firebase real-time database
- * (determined by which habit it belonds to (habit key) and it's index (item key))
- */
-const updateHabitItemRemote = (item) => {
-  if (Firebase === null || Firebase.auth().currentUser === null) return () => new Promise(resolve => resolve());
-
-  const UID = Firebase.auth().currentUser.uid;
-  const habitItemRef =
-    FirebaseRef.child('habits/' + UID + '/' + item.habitKey + '/items/' + item.key);
-
-  habitItemRef.update(item);
 }
 
 /**
@@ -144,11 +137,11 @@ export function saveHabitItemNotes(itemKey, habitKey, newNotes, startingDate, in
   const newDate = startingDate.clone().add(index, 'days').format();
 
   const newItem = {
-    habitKey: habitKey,
+    habitKey,
     key: itemKey,
     date: newDate,
     notes: newNotes,
-  }
+  };
 
   return dispatch => new Promise((resolve) => {
     updateHabitItemLocal(dispatch, newItem)
@@ -160,15 +153,38 @@ export function saveHabitItemNotes(itemKey, habitKey, newNotes, startingDate, in
 }
 
 /**
+  * Saves information for a given habit in a local Redux store
+  */
+const saveHabitLocal = (dispatch, habit) =>
+  new Promise((resolve) => {
+    resolve(dispatch({ type: 'HABIT_UPDATE', habit }));
+  });
+
+
+/**
+  * Saves information for a given habit in a Firebase real-time database
+  */
+const saveHabitRemote = (habit) => {
+  if (Firebase === null || Firebase.auth().currentUser === null) {
+    return () => new Promise(resolve => resolve());
+  }
+  const UID = Firebase.auth().currentUser.uid;
+
+  return new Promise((resolve) => {
+    const habitItemsRef = FirebaseRef.child(`habits/${UID}/${habit.key}`);
+    habitItemsRef.update(habit)
+      .then(() => resolve());
+  });
+};
+
+/**
   * Saves information for a given habit
   */
 export function saveHabit(habitKey, newTitle, newGoal) {
-
   const newHabit = {
     key: habitKey,
     title: newTitle,
     goal: newGoal,
-    
   };
 
   return dispatch => new Promise((resolve) => {
@@ -180,30 +196,30 @@ export function saveHabit(habitKey, newTitle, newGoal) {
 }
 
 /**
-  * Saves information for a given habit in a local Redux store
+  * Creates a new habit in the local Redux store
   */
-const saveHabitLocal = (dispatch, habit) => {
-  return new Promise(resolve =>{
-    return resolve(dispatch({
-        type: 'HABIT_UPDATE',
-        habit
-      }));
+const createHabitLocal = (dispatch, habit) =>
+  new Promise((resolve) => {
+    resolve(dispatch({ type: 'HABIT_ADD', habit }));
   });
-}
 
 /**
-  * Saves information for a given habit in a Firebase real-time database
-  */
-const saveHabitRemote = (habit) => {
-  if (Firebase === null || Firebase.auth().currentUser === null) return () => new Promise(resolve => resolve());
+ * Creates a new habit in the Firebase real-time database
+ */
+const createHabitRemote = (habit, habitOrderId) => {
+  if (Firebase === null || Firebase.auth().currentUser === null) {
+    return () => new Promise(resolve => resolve());
+  }
   const UID = Firebase.auth().currentUser.uid;
 
-  return new Promise(resolve =>{
-    const habitItemsRef = FirebaseRef.child('habits/'+UID+'/'+habit.key);
-    habitItemsRef.update(habit)
-    .then(()=>{return resolve()});
-  })
-}
+  return new Promise((resolve) => {
+    const habitItemsRef = FirebaseRef.child(`habits/${UID}/${habit.key}`);
+    const habitOrderRef = FirebaseRef.child(`metadata/${UID}/habitOrder/${habit.key}`);
+    habitItemsRef.set(habit)
+      .then(() => habitOrderRef.set(habitOrderId))
+      .then(() => resolve());
+  });
+};
 
 /**
   * Creates a new habit
@@ -212,26 +228,26 @@ export function createHabit(today, habitKey) {
   const monday = today.clone().startOf('isoWeek');
 
   const firebaseItems = {};
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 7; i += 1) {
     const itemID = generatePushID();
     firebaseItems[itemID] = {
       date: monday.clone().add(i, 'days').format(),
       key: itemID,
       habitKey,
-    }
+    };
   }
 
   const newFirebaseHabit = {
     key: habitKey,
     title: '',
     items: firebaseItems,
-  }
+  };
 
   const newReduxHabit = {
     key: habitKey,
     title: '',
     items: objectToArray(firebaseItems),
-  }
+  };
 
   return (dispatch, getState) => {
     const { habits } = getState();
@@ -243,81 +259,76 @@ export function createHabit(today, habitKey) {
         .then(() => createHabitRemote(newFirebaseHabit, orderId))
         .then(() => resolve());
     });
-  }
+  };
 }
 
 /**
-  * Creates a new habit in the local Redux store
+  * Remove habits from the local Redux store
   */
-const createHabitLocal = (dispatch, habit) => {
-  return new Promise((resolve) =>{
-    return resolve(dispatch({
-        type: 'HABIT_ADD',
-        habit
-      }));
+const removeHabitLocal = (dispatch, habit) =>
+  new Promise((resolve) => {
+    resolve(dispatch({ type: 'HABIT_REMOVE', habit }));
   });
-}
 
 /**
-  * Creates a new habit in the Firebase real-time database
+  * Remove habits from the Firebase real-time database
   */
-const createHabitRemote = (habit, habitOrderId) => {
-  if (Firebase === null || Firebase.auth().currentUser === null) return () => new Promise(resolve => resolve());
+const removeHabitRemote = (habit) => {
+  if (Firebase === null || Firebase.auth().currentUser === null) {
+    return () => new Promise(resolve => resolve());
+  }
   const UID = Firebase.auth().currentUser.uid;
 
+  const habitRef = FirebaseRef.child(`habits/${UID}'/'${habit.key}`);
+  const habitOrderRef = FirebaseRef.child(`metadata/${UID}/habitOrder/${habit.key}`);
+
   return new Promise((resolve) => {
-    const habitItemsRef = FirebaseRef.child('habits/'+UID+'/'+habit.key);
-    const habitOrderRef = FirebaseRef.child('metadata/'+UID+'/habitOrder/'+habit.key);
-    habitItemsRef.set(habit)
-      .then(() => habitOrderRef.set(habitOrderId))
-      .then(() => resolve());
+    habitRef.remove()
+      .then(() => habitOrderRef.remove())
+      .then(() => resolve())
+      .catch(e => console.log(e));
   });
-}
+};
 
 /**
   * Remove habit
   */
 export function removeHabit(key) {
   const habitToRemove = {
-    key: key
+    key,
   }
-  return dispatch => new Promise(resolve => {
+  return dispatch => new Promise((resolve) => {
     removeHabitLocal(dispatch, habitToRemove)
-
-    .then(()=>removeHabitRemote(habitToRemove))
-    .then(()=>{return resolve()});
-  })
-}
-
-/**
-  * Remove habits from the local Redux store
-  */
-const removeHabitLocal = (dispatch, habit) => {
-  return new Promise(resolve =>{
-    return resolve(dispatch({
-        type: 'HABIT_REMOVE',
-        habit
-      }));
+      .then(() => removeHabitRemote(habitToRemove))
+      .then(() => resolve());
   });
 }
 
 /**
-  * Remove habits from the Firebase real-time database
+  * Clear habit item. In local Redux store we replace that day's item with a empty one
   */
-const removeHabitRemote = (habit) => {
-  if (Firebase === null || Firebase.auth().currentUser === null) return () => new Promise(resolve => resolve());
+const clearHabitItemLocal = (dispatch, item) =>
+  new Promise((resolve) => {
+    resolve(dispatch({ type: 'HABITS_ITEM_CLEAR', item }));
+  });
+  
+/**
+  * Clear habit item. On Firebase real-time database we go one step further
+  * and remove the record completely
+  */
+const clearHabitItemRemote = (item) => {
+  if (Firebase === null || Firebase.auth().currentUser === null) {
+    return () => new Promise(resolve => resolve());
+  }
   const UID = Firebase.auth().currentUser.uid;
+  const habitItemRef = FirebaseRef.child(`habits/${UID}/${item.habitKey}/items/${item.key}`);
 
-  const habitRef = FirebaseRef.child('habits/'+UID+'/'+habit.key);
-  const habitOrderRef = FirebaseRef.child('metadata/'+UID+'/habitOrder/'+habit.key);
-
-  return new Promise(resolve =>{
-      habitRef.remove()
-      .then(()=>habitOrderRef.remove())
-      .then(()=>{return resolve()})
-      .catch(e => console.log(e))
-  })
-}
+  return new Promise((resolve) => {
+    habitItemRef.remove()
+      .then(() => resolve())
+      .catch(e => console.log(e));
+  });
+};
 
 /**
   * Clear habit item.
@@ -325,99 +336,64 @@ const removeHabitRemote = (habit) => {
   * In local redux store we replace that day's item with a empty one
   * On Firebase real-time database we go one step further and remove the record completely
   */
-export function clearHabitItem(itemKey, habitKey, startingDate, index) {
-
+export function clearHabitItem(itemKey, habitKey) {
   const itemToRemove = {
-    habitKey: habitKey,
+    habitKey,
     key: itemKey,
-  }
+  };
 
-  return dispatch => new Promise(resolve => {
+  return dispatch => new Promise((resolve) => {
     clearHabitItemLocal(dispatch, itemToRemove)
-    .then(()=>clearHabitItemRemote(itemToRemove))
-
-    .then(()=>{return resolve()});
-  })
-}
-
-/**
-  * Clear habit item. In local Redux store we replace that day's item with a empty one
-  */
-const clearHabitItemLocal = (dispatch, item) => {
-  return new Promise(resolve =>{
-    return resolve(dispatch({
-        type: 'HABITS_ITEM_CLEAR',
-        item
-      }));
+      .then(() => clearHabitItemRemote(itemToRemove))
+      .then(() => resolve())
+      .catch(e => console.log(e));
   });
 }
-
-/**
-  * Clear habit item. On Firebase real-time database we go one step further and remove the record completely
-  */
-const clearHabitItemRemote = (item) => {
-  if (Firebase === null || Firebase.auth().currentUser === null) return () => new Promise(resolve => resolve());
-  const UID = Firebase.auth().currentUser.uid;
-
-  const habitItemRef = FirebaseRef.child('habits/'+UID+'/'+item.habitKey+'/items/'+item.key);
-
-  return new Promise(resolve =>{
-      habitItemRef.remove()
-      .then(()=>{return resolve()})
-      .catch(e => console.log(e))
-  })
-}
-
-/**
-  * Reorder habits
-  */
-export function reorderHabits(prevOrder, fromId, toId, habitId){
-
-  // Decide on new order
-  // Sort HERE
-  let newOrder = prevOrder.slice();
-  newOrder.splice(toId, 0, newOrder.splice(fromId, 1)[0]);
-
-  return dispatch => new Promise(resolve => {
-    updateHabitOrderLocal(dispatch, newOrder)
-
-    .then(()=>updateHabitOrderRemote(newOrder))
-    .then(()=>{return resolve()});
-  })
-}
-
 
 /**
   * Reorder habit items in local Redux store
   */
-const updateHabitOrderLocal = (dispatch, newOrder) => {
-  return new Promise(resolve =>{
-    return resolve(dispatch({
-        type: 'REORDER_HABITS',
-        newOrder
-      }));
+const updateHabitOrderLocal = (dispatch, newOrder) =>
+  new Promise((resolve) => {
+    resolve(dispatch({ type: 'REORDER_HABITS', newOrder }));
   });
-}
 
 /**
   * Reorder habit items on Firebase
   */
 const updateHabitOrderRemote = (newOrder) => {
-  if (Firebase === null || Firebase.auth().currentUser === null) return () => new Promise(resolve => resolve());
+  if (Firebase === null || Firebase.auth().currentUser === null) {
+    return () => new Promise(resolve => resolve());
+  }
   const UID = Firebase.auth().currentUser.uid;
-
-  let newOrderObject = {};
+  const newOrderObject = {};
   let i = 0;
-  newOrder.forEach(hid => {
-    Object.assign(newOrderObject, {[hid]: i});
-    i++;
-  })
+  newOrder.forEach((hid) => {
+    Object.assign(newOrderObject, { [hid]: i });
+    i += 1;
+  });
 
-  const habitOrderItemRef = FirebaseRef.child('metadata/'+UID);
+  const habitOrderItemRef = FirebaseRef.child(`metadata/${UID}`);
 
-  return new Promise(resolve =>{
-      habitOrderItemRef.set({habitOrder: newOrderObject})
-      .then(()=>{return resolve()})
-      .catch(e => console.log(e))
-  })
+  return new Promise((resolve) => {
+    habitOrderItemRef.set({ habitOrder: newOrderObject })
+      .then(() => resolve())
+      .catch(e => console.log(e));
+  });
+};
+
+/**
+  * Reorder habits
+  */
+export function reorderHabits(prevOrder, fromId, toId) {
+  // Decide on new order
+  // Sort HERE
+  const newOrder = prevOrder.slice();
+  newOrder.splice(toId, 0, newOrder.splice(fromId, 1)[0]);
+
+  return dispatch => new Promise((resolve) => {
+    updateHabitOrderLocal(dispatch, newOrder)
+      .then(() => updateHabitOrderRemote(newOrder))
+      .then(() => resolve());
+  });
 }
