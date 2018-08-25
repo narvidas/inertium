@@ -28,34 +28,34 @@ const normaliseHabits = (dispatch) => {
   * Fetch habits from Firebase
   */
 export function getHabits(today) {
-  if (Firebase === null) return () => new Promise(resolve => resolve());
-
-  return dispatch => new Promise(resolve => {
+  return dispatch => new Promise((resolve) => {
+    if (Firebase === null) resolve(); 
     Firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         FirebaseRef.child('habits/'+user.uid).once('value').then((snapshot) => {
-          let habitsraw = snapshotToArray(snapshot) || {};
+          const habitsraw = snapshotToArray(snapshot) || {};
           dispatch({
             type: 'HABITS_RAW_REPLACE',
-            habitsraw: habitsraw,
+            habitsraw,
           });
 
           FirebaseRef.child('metadata/'+user.uid+'/habitOrder').once('value').then((snapshot) => {
             let order = (snapshot.val()) || {};
-              dispatch({
-                type: 'HABITS_ORDER_REPLACE',
-                order: order,
-              });
-          })
+            dispatch({
+              type: 'HABITS_ORDER_REPLACE',
+              order,
+            });
 
-          const today = moment();
-          const monday = today.clone().startOf('isoWeek');
-          const sunday = monday.clone().add(7, 'days');
-          resolve(dispatch({
-            type: 'GET_WEEK',
-            dayFrom: monday,
-            dayTo: sunday,
-          }));
+            normaliseHabits(dispatch);
+
+            const monday = today.clone().startOf('isoWeek');
+            const sunday = monday.clone().add(7, 'days');
+            resolve(dispatch({
+              type: 'GET_WEEK',
+              dayFrom: monday,
+              dayTo: sunday,
+            }));
+          })
         })
       }
     })
@@ -96,18 +96,17 @@ export function toggleHabitItemStatus(itemKey, habitKey, currentStatus, starting
   const newDate = startingDate.clone().add(index, 'days').format();
 
   const newItem = {
-    habitKey: habitKey,
+    habitKey,
     key: itemKey,
     status: newStatus,
-    date: newDate
+    date: newDate,
   }
 
-  return dispatch => new Promise(resolve => {
+  return dispatch => new Promise((resolve) => {
     updateHabitItemLocal(dispatch, newItem)
-    .then(()=>normaliseHabits(dispatch))
-    .then(()=>updateHabitItemRemote(newItem))
-    .then(()=>{return resolve()});
-  })
+      .then(() => updateHabitItemRemote(newItem))
+      .then(() => resolve());
+  });
 }
 
 
@@ -135,11 +134,7 @@ const updateHabitItemRemote = (item) => {
   const habitItemRef =
     FirebaseRef.child('habits/' + UID + '/' + item.habitKey + '/items/' + item.key);
 
-  return new Promise((resolve) => {
-    habitItemRef.update(item)
-      .then(() => resolve())
-      .catch(e => console.log(e));
-  });
+  habitItemRef.update(item);
 }
 
 /**
@@ -160,7 +155,6 @@ export function saveHabitItemNotes(itemKey, habitKey, newNotes, startingDate, in
       .then(() => updateHabitItemRemote(newItem))
       // For now if there's no data connection, pass-through.
       // Better strategy may be needed in the future, catch and alert perhaps?
-      .then(() => getHabits(startingDate))
       .then(() => resolve());
   });
 }
@@ -289,7 +283,7 @@ export function removeHabit(key) {
   }
   return dispatch => new Promise(resolve => {
     removeHabitLocal(dispatch, habitToRemove)
-    .then(()=>normaliseHabits(dispatch))
+
     .then(()=>removeHabitRemote(habitToRemove))
     .then(()=>{return resolve()});
   })
@@ -341,8 +335,7 @@ export function clearHabitItem(itemKey, habitKey, startingDate, index) {
   return dispatch => new Promise(resolve => {
     clearHabitItemLocal(dispatch, itemToRemove)
     .then(()=>clearHabitItemRemote(itemToRemove))
-    .then(()=>normaliseHabits(dispatch))
-    .then(()=>getHabits(startingDate))
+
     .then(()=>{return resolve()});
   })
 }
@@ -387,7 +380,7 @@ export function reorderHabits(prevOrder, fromId, toId, habitId){
 
   return dispatch => new Promise(resolve => {
     updateHabitOrderLocal(dispatch, newOrder)
-    .then(()=>normaliseHabits(dispatch))
+
     .then(()=>updateHabitOrderRemote(newOrder))
     .then(()=>{return resolve()});
   })

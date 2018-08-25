@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { getHabits, getWeek, setError, removeHabit, reorderHabits, createHabit, saveHabit, toggleHabitItemStatus, saveHabitItemNotes, clearHabitItem } from '../actions/habits';
 import moment from 'moment';
+import { getHabits, getWeek, setError, removeHabit, reorderHabits, createHabit, saveHabit, toggleHabitItemStatus, saveHabitItemNotes, clearHabitItem } from '../actions/habits';
 
 class HabitListing extends Component {
   static propTypes = {
@@ -34,10 +34,9 @@ class HabitListing extends Component {
   /**
     * Fetch Data from API, saving to Redux
     */
-  fetchHabits = (reFetch = false) => {
+  fetchHabits = (reFetch = false, date = moment()) => {
     if (reFetch || this.props.habits.habits[0].placeholder) {
-      return this.props.getWeek(moment())
-        .then(()=> this.props.getHabits())
+      return this.props.getHabits(date)
         .catch((err) => {
           console.log(`Error: ${err}`);
           return this.props.setError(err);
@@ -62,7 +61,7 @@ class HabitListing extends Component {
         removeHabit={removeHabit}
         habitCreatedKey={habits.habitCreatedKey}
         habitOrder={habits.habitOrder}
-        fetchHabits={() => this.fetchHabits(true)}
+        fetchHabits={this.fetchHabits}
         getWeek={getWeek}
       />
     );

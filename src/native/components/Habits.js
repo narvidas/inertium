@@ -14,7 +14,9 @@ import { generatePushID } from '../../lib/helpers';
 import moment from 'moment';
 import CalendarStrip from 'react-native-calendar-strip';
 import { Animated, Easing, Platform, TouchableHighlight } from 'react-native';
-import SortableListView from 'react-native-sortable-listview'
+import SortableListView from 'react-native-sortable-listview';
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+
 // import { FacebookAds } from 'expo';
 
 
@@ -88,7 +90,6 @@ class Row extends React.Component {
 }
 
 class HabitListing extends React.Component {
-
   state = {
     itemModalVisible: false,
     activeItem: null,
@@ -112,9 +113,11 @@ class HabitListing extends React.Component {
 
   handleNewWeekSelection = (startingDate) => {
     this.setState({
-      startingDate: startingDate
+      startingDate
     });
-    this.props.getWeek(startingDate);
+    this.props.getWeek(startingDate)
+      .then(() => this.props.fetchHabits(startingDate))
+      .then(() => this.props.getWeek(startingDate));
   }
 
   updateFocusedHabitKey = (key) => {
@@ -221,8 +224,9 @@ class HabitListing extends React.Component {
   }
 
   onRefresh = () => {
-    this.setState({refreshing: true });
-    this.props.fetchHabits().then(() => {
+    const { startingDate } = this.state;
+    this.setState({ refreshing: true });
+    this.props.fetchHabits(true, startingDate).then(() => {
       this.setState({refreshing: false });
     });
   }
@@ -266,6 +270,10 @@ class HabitListing extends React.Component {
     //   }, 10000);
     // }
 
+    const config = {
+      velocityThreshold: 0.3,
+      directionalOffsetThreshold: 80
+    };
 
     return (
       <Container>
@@ -295,17 +303,22 @@ class HabitListing extends React.Component {
             onClose={this.closeHabitCustomisationModal}
             handleChange={this.handleChange}
           />
-          <View>
+          <GestureRecognizer
+            onSwipeLeft={() => this.calendar.getNextWeek()}
+            onSwipeRight={() => this.calendar.getPreviousWeek()}
+          >
             <CalendarStrip
-              updateWeek={false}
-              daySelectionAnimation={{type: 'border', duration: 10, borderWidth: 1, borderHighlightColor: 'rgba(0,0,0,0.8)'}}
-              style={{height: 100, paddingTop: 20, paddingBottom: 20}}
-              calendarHeaderStyle={{paddingBottom: 20}}
+              ref={(calendar) => { this.calendar = calendar; }}
+              updateWeek={false}i
+              daySelectionAnimation={{type: 'border', duration: 100, borderWidth: 1, borderHighlightColor: 'rgba(0,0,0,0.8)'}}
+              style={{height: 100, paddingTop: 20, paddingBottom: 15}}
+              calendarHeaderStyle={{paddingBottom: 15}}
               highlightDateNumberStyle={{textDecorationLine: 'underline'}}
+              iconContainer={{width: 40}}
               styleWeekend={false}
               onWeekChanged={this.handleNewWeekSelection}
             />
-          </View>
+          </GestureRecognizer>
         </View>
         <SortableListView
           style={styles.list}

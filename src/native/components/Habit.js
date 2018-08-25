@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { H3, Text, List,  ListItem, Header, Icon } from 'native-base';
+import { H3, Text, List,  ListItem, Icon } from 'native-base';
 import Spacer from './Spacer';
-import { View, StyleSheet, SectionList, TouchableHighlight, Button } from 'react-native';
+import { View, StyleSheet, Dimensions, TouchableHighlight, Button } from 'react-native';
 
 class ItemView extends React.Component {
   setNativeProps = (nativeProps) => {
@@ -29,10 +29,10 @@ class ItemView extends React.Component {
 
 class Habit extends React.Component {
 
-  shouldComponentUpdate(nextProps) {
-    const { habitKey, updateKey } = nextProps;
-    return habitKey === updateKey;
-  }
+  // shouldComponentUpdate(nextProps) {
+  //   const { habitKey, updateKey } = nextProps;
+  //   return habitKey === updateKey;
+  // }
 
   getBoxStyle(status) {
     if(status === "done") {
@@ -69,10 +69,9 @@ class Habit extends React.Component {
   render() {
     const { title, items, openHabitModal, habitKey, goal } = this.props;
     const completedGoalCount = String(items.filter(item => item.status === 'done').length);
-
     return (
       <View>
-        <View style={{paddingLeft: 25, paddingRight: 25, paddingTop: 10}}>
+        <View style={{paddingLeft: boxWH/2, paddingRight: boxWH/2, paddingTop: 10}}>
           <View style={{flexDirection: 'row'}}>
             <View style={{ flexDirection: 'row', flex: 1 }}>
               <H3>{title}{' ('}{completedGoalCount}{'/'}{String(goal || 0)}{')'}</H3>
@@ -116,10 +115,12 @@ Habit.propTypes = {
   startingDate: PropTypes.object.isRequired,
 };
 
+const boxWH = Dimensions.get('window').width/8;
+
 const styles = StyleSheet.create({
   boxUndone: {
-    width: 42,
-    height: 42,
+    width: boxWH,
+    height: boxWH,
     backgroundColor: '#e58570',
     borderRadius: 0,
     borderWidth: 1,
@@ -127,8 +128,8 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   boxDone: {
-    width: 42,
-    height: 42,
+    width: boxWH,
+    height: boxWH,
     backgroundColor: '#5A9C5E',
     borderRadius: 0,
     borderWidth: 1,
@@ -136,8 +137,8 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   boxGrey: {
-    width: 42,
-    height: 42,
+    width: boxWH,
+    height: boxWH,
     backgroundColor: '#ededed',
     borderRadius: 0,
     borderWidth: 1,
@@ -153,29 +154,29 @@ const styles = StyleSheet.create({
   dateContainer: {
     flex: 1,
     alignItems: 'center',
-    marginTop: 4
+    marginTop: boxWH/7
   },
   dateNameUndone: {
     textAlign: "center",
     color: "rgba(0,0,0,0.25)",
-    fontSize: 10
+    fontSize: boxWH/4
   },
   dateNumberUndone: {
     fontWeight: "bold",
     color: "rgba(0,0,0,0.25)",
     textAlign: "center",
-    fontSize: 14
+    fontSize: boxWH/3
   },
   dateNameDone: {
     textAlign: "center",
     color: "#fefefe",
-    fontSize: 10
+    fontSize: boxWH/4
   },
   dateNumberDone: {
     fontWeight: "bold",
     color: "#fefefe",
     textAlign: "center",
-    fontSize: 14
+    fontSize: boxWH/3
   },
 });
 

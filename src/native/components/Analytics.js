@@ -43,7 +43,6 @@ class Analytics extends React.Component {
               onValueChange={this.onValueChange.bind(this)}
             >
               {habits.map((habit=>{
-                console.log(habit.title)
                 return <Picker.Item label={habit.title} value={habit.key} key={habit.key}/>
               }
               ))}
