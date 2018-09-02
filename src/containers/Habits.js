@@ -2,55 +2,51 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment';
-import { getHabits, getWeek, setError, removeHabit, reorderHabits, createHabit, saveHabit, toggleHabitItemStatus, saveHabitItemNotes, clearHabitItem } from '../actions/habits';
+import { getHabits, formatWeek, setError, removeHabit, reorderHabits, createHabit, saveHabit, toggleHabitItemStatus, saveHabitItemNotes, clearHabitItem } from '../actions/habits';
 
 class HabitListing extends Component {
   static propTypes = {
     Layout: PropTypes.func.isRequired,
     habits: PropTypes.shape({
-      loading: PropTypes.bool.isRequired,
-      error: PropTypes.string,
       habitCreatedKey: PropTypes.string,
       habitOrder: PropTypes.array,
       habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
     }).isRequired,
-    match: PropTypes.shape({
-      params: PropTypes.shape({}),
-    }),
     getHabits: PropTypes.func.isRequired,
     setError: PropTypes.func.isRequired,
     toggleHabitItemStatus: PropTypes.func.isRequired,
     saveHabitItemNotes: PropTypes.func.isRequired,
     clearHabitItem: PropTypes.func.isRequired,
     reorderHabits: PropTypes.func.isRequired,
+    auth: PropTypes.bool,
   }
 
   static defaultProps = {
-    match: null,
+    auth: false,
   }
 
-  componentDidMount = () => this.fetchHabits();
+  componentDidMount = () => {
+    if (this.props.auth) this.fetchHabits();
+    else this.props.formatWeek(moment());
+  }
 
   /**
     * Fetch Data from API, saving to Redux
     */
   fetchHabits = (reFetch = false, date = moment()) => {
-    if (reFetch || this.props.habits.habits[0].placeholder) {
-      return this.props.getHabits(date)
-        .catch((err) => {
-          console.log(`Error: ${err}`);
-          return this.props.setError(err);
-        });
-    }
-    return false;
+    return this.props.getHabits(date)
+      .catch((err) => {
+        console.log(`Error: ${err}`);
+        return this.props.setError(err);
+      });
   }
 
   render = () => {
-    const { Layout, habits, match, createHabit, reorderHabits, removeHabit, saveHabit, clearHabitItem, toggleHabitItemStatus, saveHabitItemNotes, getHabits, getWeek} = this.props;
+    const { Layout, habits, createHabit, reorderHabits, removeHabit, saveHabit, clearHabitItem, toggleHabitItemStatus, saveHabitItemNotes, loading, formatWeek} = this.props;
     return (
       <Layout
         error={habits.error}
-        loading={habits.loading}
+        loading={loading}
         habits={habits.habits}
         saveHabitItemNotes={saveHabitItemNotes}
         toggleHabitItemStatus={toggleHabitItemStatus}
@@ -62,19 +58,21 @@ class HabitListing extends Component {
         habitCreatedKey={habits.habitCreatedKey}
         habitOrder={habits.habitOrder}
         fetchHabits={this.fetchHabits}
-        getWeek={getWeek}
+        formatWeek={formatWeek}
       />
     );
   }
 }
 
 const mapStateToProps = state => ({
-  habits: state.habits || {}
+  habits: state.habits || {},
+  auth: state.member.auth,
+  loading: state.status.loading,
 });
 
 const mapDispatchToProps = {
   getHabits,
-  getWeek,
+  formatWeek,
   reorderHabits,
   removeHabit,
   setError,

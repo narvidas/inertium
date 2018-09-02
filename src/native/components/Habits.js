@@ -130,16 +130,13 @@ class HabitListing extends React.Component {
     const habitKey = generatePushID();
     createHabit(startingDate, habitKey)
       .then(() => this.openHabitModal(habitKey, '', 0))
-      .then(() => this.forceUpdate());
   }
 
   handleNewWeekSelection = (startingDate) => {
     this.setState({
       startingDate,
     });
-    this.props.getWeek(startingDate)
-      .then(() => this.props.fetchHabits(startingDate))
-      .then(() => this.props.getWeek(startingDate));
+    this.props.formatWeek(startingDate);
   }
 
   updateFocusedHabitKey = (key) => {
@@ -235,6 +232,12 @@ class HabitListing extends React.Component {
     this.closeItemModal();
   };
 
+  renderNewHabitButton = () => {
+    // Renders button animation downwards if no habits exist, aesthetical fix
+    const direction = (this.props.habitOrder.length < 1) ? 'down' : 'up';
+    return <RoundButton onPress={this.onNewHabit} title="New Habit" size={60} direction={direction}/>
+  }
+
   renderRow = (row) => {
     return (
       <TouchableHighlight {...this.props.sortHandlers} underlayColor={null}>
@@ -321,18 +324,18 @@ class HabitListing extends React.Component {
         </View>
         <SortableListView
           style={styles.list}
-          data={(habits[0].placeholder || habitOrder.length < 1) ?
+          data={(habitOrder.length < 1) ?
             habits :
             habitOrder
               .map(hid => habits.find(h => h.key === hid))
               .filter(h => h !== undefined)
           }
-          limitScrolling={true}
+          limitScrolling
           onRowActive={this.disableHabitListScroll}
           onMoveEnd={this.enableHabitListScroll}
           onRowMoved={this.reorderRows}
           renderRow={this.renderRow}
-          renderFooter={() => <RoundButton onPress={this.onNewHabit} title="New Habit" size={60}/>}
+          renderFooter={this.renderNewHabitButton}
           refreshControl={
             <RefreshControl
               refreshing={this.state.refreshing}

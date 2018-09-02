@@ -11,22 +11,18 @@ const App = ({ Layout, member, memberLogout, habits }) => (
 App.propTypes = {
   Layout: PropTypes.func.isRequired,
   habits: PropTypes.shape({
-      loading: PropTypes.bool.isRequired,
-      error: PropTypes.string,
       habitCreatedKey: PropTypes.string,
       habitOrder: PropTypes.array,
       habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+      // habitsraw: PropTypes.arrayOf(PropTypes.shape()).isRequired,
     }).isRequired,
   memberLogout: PropTypes.func.isRequired,
-  member: PropTypes.shape({
-    loading: PropTypes.bool.isRequired,
-    error: PropTypes.string,
-  }).isRequired,
+  member: PropTypes.shape({}).isRequired,
 };
 
 const mapStateToProps = state => ({
   member: state.member || {},
-  habits: state.habits || {}
+  habits: state.habits || {}, 
 });
 
 const mapDispatchToProps = {

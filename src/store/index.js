@@ -4,6 +4,7 @@ import { persistStore, persistCombineReducers } from 'redux-persist';
 import storage from 'redux-persist/es/storage'; // default: localStorage if web, AsyncStorage if react-native
 import thunk from 'redux-thunk';
 import reducers from '../reducers';
+import { verifyAuth } from '../actions/member';
 
 // Redux Persist config
 const config = {
@@ -29,7 +30,12 @@ const configureStore = () => {
     () => { store.getState(); },
   );
 
+  store.dispatch(verifyAuth());
+
   return { persistor, store };
+
+
 };
+
 
 export default configureStore;

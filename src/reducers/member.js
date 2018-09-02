@@ -23,6 +23,7 @@ export default function userReducer(state = initialState, action) {
           ...state,
           loading: false,
           error: null,
+          auth: true,
           firstName: action.data.firstName,
           lastName: action.data.lastName,
           signedUp: action.data.signedUp,

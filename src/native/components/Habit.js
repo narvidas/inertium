@@ -13,10 +13,10 @@ class ItemView extends React.Component {
     const {id, startingDate, status} = this.props;
     const date = startingDate.clone().add(id, "days");
     return (
-      <View ref={component => this._root = component} {...this.props}>
+      <View ref={ component => this._root = component } {...this.props}>
         <View style={styles.dateContainer}>
           <Text style={status==='done' ? styles.dateNameDone : styles.dateNameUndone}>
-              {date.format("ddd").toUpperCase()}
+              { date.format("ddd").toUpperCase() }
           </Text>
           <Text style={status==='done' ? styles.dateNumberDone : styles.dateNumberUndone}>
               {date.date()}
@@ -95,6 +95,7 @@ class Habit extends React.Component {
           <List
             dataArray={items}
             horizontal={true}
+            scrollEnabled={false}
             removeClippedSubviews={false}
             style={styles.list}
             renderRow={this.renderRow}

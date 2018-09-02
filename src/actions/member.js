@@ -1,6 +1,7 @@
 import ErrorMessages from '../constants/errors';
 import statusMessage from './status';
 import { Firebase, FirebaseRef } from '../lib/firebase';
+import { syncLocalToRemote } from './habits';
 
 /**
   * Sign Up to Firebase
@@ -45,8 +46,13 @@ export function signUp(formData) {
 /**
   * Get this User's Details
   */
-function getUserData(dispatch) {
-  const UID = (
+
+const getUserRef = uid => FirebaseRef.child(`users/${uid}`).once('value').then(snap => snap.val());
+
+const userDetailsUpdate = async (dispatch, data) => dispatch({ type: 'USER_DETAILS_UPDATE', data });
+
+const getUserData = async (dispatch) => {
+  const uid = (
     FirebaseRef
     && Firebase
     && Firebase.auth()
@@ -54,19 +60,12 @@ function getUserData(dispatch) {
     && Firebase.auth().currentUser.uid
   ) ? Firebase.auth().currentUser.uid : null;
 
-  if (!UID) return false;
+  if (!uid) return false;
 
-  const ref = FirebaseRef.child(`users/${UID}`);
+  const user = await getUserRef(uid);
 
-  return ref.on('value', (snapshot) => {
-    const userData = snapshot.val() || [];
-
-    return dispatch({
-      type: 'USER_DETAILS_UPDATE',
-      data: userData,
-    });
-  });
-}
+  userDetailsUpdate(dispatch, user);
+};
 
 /**
   * Login to Firebase with Email/Password
@@ -77,7 +76,7 @@ export function login(formData) {
     password,
   } = formData;
 
-  return dispatch => new Promise(async (resolve, reject) => {
+  return (dispatch, getState) => new Promise(async (resolve, reject) => {
     await statusMessage(dispatch, 'loading', true);
 
     // Validation checks
@@ -106,6 +105,7 @@ export function login(formData) {
 
               // Get User Data
               getUserData(dispatch);
+              await syncLocalToRemote(dispatch, getState);
             }
 
             await statusMessage(dispatch, 'loading', false);
@@ -196,12 +196,26 @@ export function updateProfile(formData) {
 /**
   * Logout
   */
-export function logout() {
-  return dispatch => new Promise((resolve, reject) => {
-    Firebase.auth().signOut()
-      .then(() => {
-        dispatch({ type: 'USER_RESET' });
-        setTimeout(resolve, 1000); // Resolve after 1s so that user sees a message
-      }).catch(reject);
-  }).catch(async (err) => { await statusMessage(dispatch, 'error', err.message); throw err.message; });
+export const logout = () => {
+  return async (dispatch) => {
+    await Firebase.auth().signOut();
+    dispatch({ type: 'USER_RESET' });
+  };
+  //     .then(() => {
+  //       dispatch({ type: 'USER_RESET' });
+  //       setTimeout(resolve, 1000); // Resolve after 1s so that user sees a message
+  //     }).catch(reject);
+  // }).catch(async (err) => { await statusMessage(dispatch, 'error', err.message); throw err.message; });
+};
+
+export const verifyAuth = () => {
+  return (dispatch) => {
+    Firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        getUserData(dispatch);
+       } else {
+        dispatch(logout());
+      }
+    });
+  };
 }
