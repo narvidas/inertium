@@ -234,7 +234,7 @@ class HabitListing extends React.Component {
 
   renderNewHabitButton = () => {
     // Renders button animation downwards if no habits exist, aesthetical fix
-    const direction = (this.props.habitOrder.length < 1) ? 'down' : 'up';
+    const direction = (this.props.habits.length < 1) ? 'down' : 'up';
     return <RoundButton onPress={this.onNewHabit} title="New Habit" size={60} direction={direction}/>
   }
 
@@ -331,6 +331,7 @@ class HabitListing extends React.Component {
               .filter(h => h !== undefined)
           }
           limitScrolling
+          removeClippedSubviews={false}
           onRowActive={this.disableHabitListScroll}
           onMoveEnd={this.enableHabitListScroll}
           onRowMoved={this.reorderRows}

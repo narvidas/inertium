@@ -1,6 +1,8 @@
+import moment from 'moment';
+
 import { Firebase, FirebaseRef } from '../lib/firebase';
-import { snapshotToArray, arrayToSnapshot, objectToArray, generatePushID } from '../lib/helpers';
-import { firebase } from '@firebase/app';
+import { generatePushID } from '../lib/helpers';
+import { loggedIn } from './member';
 
 /**
   * Set an Error Message
@@ -14,15 +16,13 @@ export function setError(message) {
 
 const replaceHabits = (dispatch, habitsraw) => dispatch({ type: 'HABITS_REPLACE', habitsraw });
 const replaceOrder = (dispatch, order) => dispatch({ type: 'HABITS_ORDER_REPLACE', order });
-const getWeek = (dispatch, dayFrom, dayTo) => dispatch({ type: 'GET_WEEK', dayFrom, dayTo });
+const getWeek = (dispatch, today) => dispatch({ type: 'GET_WEEK', today });
 const updateHabitItemLocal = (dispatch, item) => dispatch({ type: 'UPDATE_HABIT_ITEM', item });
 const saveHabitLocal = (dispatch, habit) => dispatch({ type: 'HABIT_UPDATE', habit });
 const createHabitLocal = (dispatch, habit) => dispatch({ type: 'HABIT_ADD', habit });
 const removeHabitLocal = (dispatch, habit) => dispatch({ type: 'HABIT_REMOVE', habit });
 const clearHabitItemLocal = (dispatch, item) => dispatch({ type: 'HABITS_ITEM_CLEAR', item });
 const updateHabitOrderLocal = (dispatch, newOrder) => dispatch({ type: 'REORDER_HABITS', newOrder });
-
-
 
 const readUserHabits = uid => FirebaseRef.child(`habits/${uid}`).once('value').then(snap => snap.val());
 const readUserHabitsOrder = uid => FirebaseRef.child(`metadata/${uid}/habitOrder`).once('value').then(snap => snap.val());
@@ -39,42 +39,53 @@ const removeUserHabitItem = (uid, item) => FirebaseRef.child(`habits/${uid}/${it
  * For a given day finds matching week and formats weekly habiv view
  */
 export const formatWeek = today => async (dispatch) => {
-  const monday = today.clone().startOf('isoWeek');
-  const sunday = monday.clone().add(7, 'days');
-  getWeek(dispatch, monday, sunday);
+  getWeek(dispatch, today);
 };
 
 /*
-  * Fetch habits from Firebase
+  * Fetch habits from remote
   */
-export const getHabits = today => async (dispatch) => {
-  const monday = today.clone().startOf('isoWeek');
-  const sunday = monday.clone().add(7, 'days');
+export const getHabits = () => async (dispatch) => {
   const user = Firebase.auth().currentUser;
 
-  if (Firebase !== null && user !== null) {
+  if (loggedIn()) {
     const habits = await readUserHabits(user.uid);
     replaceHabits(dispatch, habits);
 
     const habitsOrder = await readUserHabitsOrder(user.uid);
     replaceOrder(dispatch, habitsOrder);
   }
-  getWeek(dispatch, monday, sunday);
 };
 
+/*
+  * Push local state to remote
+  */
 export const syncLocalToRemote = async (dispatch, getState) => {
   const state = getState();
   const user = Firebase.auth().currentUser;
-  await setUserHabits(user.uid, state.habits.habitsraw);
+  // if habitsraw is empty object that means that we logged out previously and cleared it
+  // we do not want to update an empty object to remote, only focus on useful data (not empty)
+  // if no data exists we pull from remote
+  const habitsExist = Object.keys(state.habits.habitsraw).length !== 0;
+  if (loggedIn() && habitsExist) {
+    await setUserHabits(user.uid, state.habits.habitsraw);
+  } else {
+    const habits = await readUserHabits(user.uid);
+    replaceHabits(dispatch, habits);
+
+    const habitsOrder = await readUserHabitsOrder(user.uid);
+    replaceOrder(dispatch, habitsOrder);
+
+    getWeek(dispatch, moment());
+  }
 };
 
-/**
- * Update any property of a given item in Firebase real-time database
- * (determined by which habit it belonds to (habit key) and it's index (item key))
+/*
+ * Update any property of a given item in remote
  */
 const updateHabitItemRemote = async (item) => {
   const user = Firebase.auth().currentUser;
-  if (Firebase !== null && user !== null) await updateUserHabitItem(user.uid, item);
+  if (loggedIn()) await updateUserHabitItem(user.uid, item);
 };
 
 /**
@@ -127,9 +138,7 @@ export const saveHabitItemNotes = (itemKey, habitKey, newNotes, startingDate, in
 const saveHabitRemote = async (habit) => {
   const user = Firebase.auth().currentUser;
 
-  if (Firebase !== null && Firebase.auth().currentUser !== null) {
-    await updateUserHabitDetails(user.uid, habit);
-  }
+  if (loggedIn()) await updateUserHabitDetails(user.uid, habit);
 };
 
 /**
@@ -152,7 +161,7 @@ export const saveHabit = (habitKey, newTitle, newGoal) => async (dispatch) => {
 const createHabitRemote = async (habit, order) => {
   const user = Firebase.auth().currentUser;
 
-  if (Firebase !== null && user !== null) {
+  if (loggedIn()) {
     await setUserHabit(user.uid, habit);
     await setUserHabitOrder(user.uid, order);
   }
@@ -200,7 +209,8 @@ export const createHabit = (today, habitKey) => async (dispatch, getState) => {
   */
 const removeHabitRemote = async (habit) => {
   const user = Firebase.auth().currentUser;
-  if (Firebase !== null && user !== null) {
+
+  if (loggedIn()) {
     await removeUserHabit(user.uid, habit);
     await removeUserHabitOrder(user.uid, habit);
   }
@@ -223,7 +233,7 @@ export const removeHabit = key => async (dispatch) => {
 const clearHabitItemRemote = (item) => {
   const user = Firebase.auth().currentUser;
 
-  if (Firebase !== null && user !== null) {
+  if (loggedIn()) {
     removeUserHabitItem(user.uid, item);
   }
 };
@@ -250,13 +260,7 @@ export const clearHabitItem = (itemKey, habitKey) => async (dispatch) => {
 const updateHabitOrderRemote = async (newOrder) => {
   const user = Firebase.auth().currentUser;
 
-  if (Firebase !== null && user !== null) {
-    // const newOrderObject = {};
-    // let i = 0;
-    // newOrder.forEach((hid) => {
-    //   Object.assign(newOrderObject, { [i]: hid });
-    //   i += 1;
-    // });
+  if (loggedIn()) {
     await setUserHabitOrder(user.uid, newOrder);
   }
 };
@@ -273,3 +277,4 @@ export const reorderHabits = (prevOrder, fromId, toId) => async (dispatch) => {
   await updateHabitOrderLocal(dispatch, newOrder);
   await updateHabitOrderRemote(newOrder);
 };
+

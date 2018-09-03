@@ -26,23 +26,22 @@ class HabitListing extends Component {
   }
 
   componentDidMount = () => {
-    if (this.props.auth) this.fetchHabits();
-    else this.props.formatWeek(moment());
+    this.fetchHabits();
   }
 
   /**
-    * Fetch Data from API, saving to Redux
+    * Fetch Data from API if logged in, then format weekly view
     */
-  fetchHabits = (reFetch = false, date = moment()) => {
-    return this.props.getHabits(date)
-      .catch((err) => {
-        console.log(`Error: ${err}`);
-        return this.props.setError(err);
-      });
+  fetchHabits = async (reFetch = false, date = moment()) => {
+    const { auth, getHabits, formatWeek } = this.props;
+
+    if (auth) await getHabits(date);
+    await formatWeek(date);
   }
 
   render = () => {
     const { Layout, habits, createHabit, reorderHabits, removeHabit, saveHabit, clearHabitItem, toggleHabitItemStatus, saveHabitItemNotes, loading, formatWeek} = this.props;
+    
     return (
       <Layout
         error={habits.error}
