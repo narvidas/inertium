@@ -6,7 +6,9 @@ import { syncLocalToRemote, getHabits, formatWeek } from './habits';
 
 const getUserRef = uid => FirebaseRef.child(`users/${uid}`).once('value').then(snap => snap.val());
 const updateUserLastLoggedIn = uid => FirebaseRef.child(`users/${uid}`).update({ lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP });
-const updateUserDetails = (uid, firstName, lastName) => FirebaseRef.child(`users/${uid}`).set({ firstName, lastName, signedUp: Firebase.database.ServerValue.TIMESTAMP, lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP });
+const setUserDetails = (uid, firstName, lastName) => FirebaseRef.child(`users/${uid}`).set({ firstName, lastName, signedUp: Firebase.database.ServerValue.TIMESTAMP, lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP });
+const updateUserFirstLastName = (uid, firstName, lastName) => FirebaseRef.child(`users/${uid}`).update({ firstName, lastName });
+
 
 const userDetailsUpdate = async (dispatch, data) => dispatch({ type: 'USER_DETAILS_UPDATE', data });
 const userLogin = async (dispatch, data) => dispatch({ type: 'USER_LOGIN', data });
@@ -32,7 +34,7 @@ export const signUp = formData => async (dispatch) => {
     const res = await Firebase.auth().createUserWithEmailAndPassword(email, password);
     // Send user details to Firebase database
     if (res && res.uid) {
-      await updateUserDetails(res.uid, firstName, lastName);
+      await setUserDetails(res.uid, firstName, lastName);
     }
 
     await statusMessage(dispatch, 'loading', false);
@@ -100,10 +102,13 @@ export const resetPassword = formData => async (dispatch) => {
     // Validation checks
     if (!email) throw new Error(ErrorMessages.missingEmail);
     await statusMessage(dispatch, 'loading', true);
+
     await Firebase.auth().sendPasswordResetEmail(email);
-    await statusMessage(dispatch, 'loading', false); 
     await userReset(dispatch);
-    Promise.resolve();
+    
+    await statusMessage(dispatch, 'loading', false); 
+
+    return Promise.resolve();
   } catch (error) {
     await statusMessage(dispatch, 'error', error.message);
     return Promise.reject();
@@ -113,56 +118,50 @@ export const resetPassword = formData => async (dispatch) => {
 /**
   * Update Profile
   */
-export function updateProfile(formData) {
-  const {
-    email,
-    password,
-    password2,
-    firstName,
-    lastName,
-    changeEmail,
-    changePassword,
-  } = formData;
+export const updateProfile = formData => async (dispatch) => {
+  try {
+    const {
+      email,
+      password,
+      password2,
+      firstName,
+      lastName,
+      changeEmail,
+      changePassword,
+    } = formData;
 
-  return dispatch => new Promise(async (resolve, reject) => {
     // Are they a user?
-    const UID = Firebase.auth().currentUser.uid;
-    if (!UID) return reject({ message: ErrorMessages.missingFirstName });
+    const user = Firebase.auth().currentUser;
+    if (!user.uid) throw new Error(ErrorMessages.missingFirstName);
 
     // Validation checks
-    if (!firstName) return reject({ message: ErrorMessages.missingFirstName });
-    if (!lastName) return reject({ message: ErrorMessages.missingLastName });
+    if (!firstName) throw new Error(ErrorMessages.missingFirstName);
+    if (!lastName) throw new Error(ErrorMessages.missingLastName);
     if (changeEmail) {
-      if (!email) return reject({ message: ErrorMessages.missingEmail });
+      if (!email) throw new Error(ErrorMessages.missingEmail);
     }
     if (changePassword) {
-      if (!password) return reject({ message: ErrorMessages.missingPassword });
-      if (!password2) return reject({ message: ErrorMessages.missingPassword });
-      if (password !== password2) return reject({ message: ErrorMessages.passwordsDontMatch });
+      if (!password) throw new Error(ErrorMessages.missingPassword);
+      if (!password2) throw new Error(ErrorMessages.missingPassword);
+      if (password !== password2) throw new Error(ErrorMessages.passwordsDontMatch);
     }
 
     await statusMessage(dispatch, 'loading', true);
 
-    // Go to Firebase
-    return FirebaseRef.child(`users/${UID}`).update({ firstName, lastName })
-      .then(async () => {
-        // Update Email address
-        if (changeEmail) {
-          await Firebase.auth().currentUser.updateEmail(email).catch(reject);
-        }
+    await updateUserFirstLastName(user.uid, firstName, lastName);
+    if (changeEmail) await Firebase.auth().currentUser.updateEmail(email);
+    if (changePassword) await Firebase.auth().currentUser.updatePassword(password);
+    await getUserData(dispatch);
 
-        // Change the password
-        if (changePassword) {
-          await Firebase.auth().currentUser.updatePassword(password).catch(reject);
-        }
+    await statusMessage(dispatch, 'success', 'Profile Updated');
 
-        // Update Redux
-        await getUserData(dispatch);
-        await statusMessage(dispatch, 'success', 'Profile Updated');
-        resolve();
-      }).catch(reject);
-  }).catch(async (err) => { await statusMessage(dispatch, 'error', err.message); throw err.message; });
-}
+    return Promise.resolve();
+  } catch (error) {
+    await statusMessage(dispatch, 'error', error.message);
+    return Promise.reject();
+  }
+};
+
 
 /**
   * Logout
