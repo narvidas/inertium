@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { H3, Text, Button, Form, Item, Label, Input } from 'native-base';
-import { View, StyleSheet, Modal, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert} from 'react-native';
+import { H3, Text, Button, Item, Label, Input } from 'native-base';
+import { View, StyleSheet, Modal, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -10,81 +10,85 @@ const confirmRemoval = (onRemove) => {
     'Remove habit',
     'Are you sure? \n\nThis operation cannot be undone.',
     [
-      {text: 'Cancel', style: 'cancel'},
-      {text: 'Yes', onPress: onRemove},
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Yes', onPress: onRemove },
     ],
-    { cancelable: false }
-  )
-}
+    { cancelable: false },
+  );
+};
 
 
-const HabitConfigModal = ({visible, defaultValues, type, onSave, onClose, onRemove, onCustomise, handleChange}) => (
- <Modal
-      visible={visible}
-      animationType={'slide'}
-      onRequestClose={onClose}
-      blurAmount={25}
+const HabitConfigModal = ({ visible, defaultValues, onSave, onClose, onRemove, onCustomise, handleChange }) => (
+  <Modal
+    visible={visible}
+    animationType="slide"
+    onRequestClose={onClose}
+    blurAmount={25}
   >
-    <KeyboardAvoidingView style={{flex: 1}} behavior="padding">
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalContainer}>
-          <View style={{height: 50,}}>
+          <View style={{ height: 50 }}>
             <H3>Configure Habit</H3>
           </View>
-            <View style={{paddingTop: 50, width: 250}}>
-              <Item >
-                <Label>Name:</Label>
-                <Input defaultValue={defaultValues.name} onChangeText={text => handleChange(text,'habitName')} />
-              </Item>
-            </View>
-          <View style={{paddingTop: 50, width: 250}}>
+          <View style={{ paddingTop: 50, width: 250 }}>
             <Item >
-              <Label>Weekly goal:</Label>
-              <Input defaultValue={String(defaultValues.goal)} keyboardType='numeric' onChangeText={text => handleChange(Number(text) || 0,'habitGoal')} />
+              <Label>Name:</Label>
+              <Input defaultValue={defaultValues.name} onChangeText={text => handleChange(text, 'habitName')} />
             </Item>
           </View>
-          <View style={{paddingTop: 50, flexDirection: 'row', justifyContent: 'space-between'}}>
-            <View style={{marginRight: 5}}>
+          <View style={{ paddingTop: 50, width: 250 }}>
+            <Item >
+              <Label>Weekly goal:</Label>
+              <Input
+                defaultValue={String(defaultValues.goal)}
+                keyboardType="numeric"
+                onChangeText={text => handleChange(Number(text) || 0, 'habitGoal')}
+              />
+            </Item>
+          </View>
+          <View style={{ paddingTop: 50, flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ marginRight: 5 }}>
               <Button
                 onPress={onSave}
                 title="Close modal"
               >
-              <Icon name="ios-checkmark" style={styles.buttonIcon} />
-              <Text>Save</Text>
+                <Icon name="ios-checkmark" style={styles.buttonIcon} />
+                <Text>Save</Text>
               </Button>
             </View>
-            <View style={{marginLeft: 5}}>
+            <View style={{ marginLeft: 5 }}>
               <Button
-                  onPress={onClose}
-                  title="Close modal"
+                onPress={onClose}
+                title="Close modal"
               >
-              <Icon name="ios-close" style={styles.buttonIcon} />
-              <Text>Close</Text>
+                <Icon name="ios-close" style={styles.buttonIcon} />
+                <Text>Close</Text>
               </Button>
             </View>
           </View>
-          <View style={{paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{ paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
             <Button
               onPress={() => confirmRemoval(onRemove)}
               title="Remove"
               danger
             >
-            <Icon name="md-trash" style={styles.buttonIcon} />
-            <Text>Remove habit</Text>
+              <Icon name="md-trash" style={styles.buttonIcon} />
+              <Text>Remove habit</Text>
             </Button>
           </View>
-          <View style={{paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{ paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
             <Button
               onPress={onCustomise}
               title="Customise habit"
               info
             >
-            <Icon name="ios-color-wand" style={styles.buttonIcon} />
-            <Text>Customise</Text>
+              <Icon name="ios-color-wand" style={styles.buttonIcon} />
+              <Text>Customise</Text>
             </Button>
           </View>
         </View>
-       </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   </Modal>
 );
@@ -92,14 +96,14 @@ const HabitConfigModal = ({visible, defaultValues, type, onSave, onClose, onRemo
 
 HabitConfigModal.propTypes = {
   visible: PropTypes.bool,
-  type: PropTypes.bool,
-  onSave: PropTypes.func,
-  onClose: PropTypes.func,
+  onSave: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
   handleChange: PropTypes.func,
 };
 
 HabitConfigModal.defaultProps = {
   visible: false,
+  handleChange: null,
 };
 
 const styles = StyleSheet.create({

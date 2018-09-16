@@ -7,7 +7,6 @@ import AppConfig from '../../constants/config';
 
 import HabitsContainer from '../../containers/Habits';
 import HabitsComponent from '../components/Habits';
-import HabitViewComponent from '../components/HabitView';
 
 import SignUpContainer from '../../containers/SignUp';
 import SignUpComponent from '../components/SignUp';
@@ -99,15 +98,6 @@ const Index = (
       </Tabs>
     </Scene>
 
-    <Scene
-      back
-      clone
-      key="page"
-      title="PAGE"
-      {...DefaultProps.navbarProps}
-      component={HabitsContainer}
-      Layout={HabitViewComponent}
-    />
   </Stack>
 );
 

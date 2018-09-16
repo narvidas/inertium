@@ -1,46 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { H3, Text, List,  ListItem, Icon } from 'native-base';
+import { H3, List, ListItem, Icon } from 'native-base';
+import { View, StyleSheet, Dimensions, TouchableHighlight } from 'react-native';
+
+import HabitItem from './HabitItem';
 import Spacer from './Spacer';
-import { View, StyleSheet, Dimensions, TouchableHighlight, Button } from 'react-native';
-
-class ItemView extends React.Component {
-  setNativeProps = (nativeProps) => {
-    this._root.setNativeProps(nativeProps);
-  }
-
-  render() {
-    const {id, startingDate, status} = this.props;
-    const date = startingDate.clone().add(id, "days");
-    return (
-      <View ref={ component => this._root = component } {...this.props}>
-        <View style={styles.dateContainer}>
-          <Text style={status==='done' ? styles.dateNameDone : styles.dateNameUndone}>
-              { date.format("ddd").toUpperCase() }
-          </Text>
-          <Text style={status==='done' ? styles.dateNumberDone : styles.dateNumberUndone}>
-              {date.date()}
-          </Text>
-        </View>
-      </View>
-    )
-  }
-}
 
 class Habit extends React.Component {
-
   // shouldComponentUpdate(nextProps) {
   //   const { habitKey, updateKey } = nextProps;
   //   return habitKey === updateKey;
   // }
 
-  getBoxStyle(status) {
-    if(status === "done") {
-      return styles.boxDone;
-    } else if (status === "undone") {
-      return styles.boxUndone;
-    } else {
-      return styles.boxGrey;
+  getBoxStyle = (status) => {
+    switch (status) {
+      case 'done':
+        return styles.boxDone;
+      case 'undone':
+        return styles.boxUndone;
+      default:
+        return styles.boxGrey;
     }
   }
 
@@ -59,7 +38,7 @@ class Habit extends React.Component {
             }}
             onLongPress={() => openItemModal(item.key, habitKey, item.notes, startingDate, rowID)}
           >
-            <ItemView id={rowID} startingDate={startingDate} status={item.status} />
+            <HabitItem id={rowID} startingDate={startingDate} status={item.status} />
           </TouchableHighlight>
         </View>
       </ListItem>
@@ -71,8 +50,8 @@ class Habit extends React.Component {
     const completedGoalCount = String(items.filter(item => item.status === 'done').length);
     return (
       <View>
-        <View style={{paddingLeft: boxWH/2, paddingRight: boxWH/2, paddingTop: 10}}>
-          <View style={{flexDirection: 'row'}}>
+        <View style={{ paddingLeft: boxWH / 2, paddingRight: boxWH / 2, paddingTop: 10 }}>
+          <View style={{ flexDirection: 'row' }}>
             <View style={{ flexDirection: 'row', flex: 1 }}>
               <H3>{title}{' ('}{completedGoalCount}{'/'}{String(goal || 0)}{')'}</H3>
             </View>
@@ -86,7 +65,7 @@ class Habit extends React.Component {
                 <Icon
                   name="ios-settings"
                   style={{
-                    fontSize: 24, marginLeft: 5, marginRight: 5,color: '#555' 
+                    fontSize: 24, marginLeft: 5, marginRight: 5, color: '#555',
                   }}
                 />
               </TouchableHighlight>
@@ -94,7 +73,7 @@ class Habit extends React.Component {
           </View>
           <List
             dataArray={items}
-            horizontal={true}
+            horizontal
             scrollEnabled={false}
             removeClippedSubviews={false}
             style={styles.list}
@@ -112,12 +91,18 @@ Habit.propTypes = {
   toggleItemStatus: PropTypes.func.isRequired,
   openHabitModal: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
-  items: PropTypes.array.isRequired,
-  startingDate: PropTypes.object.isRequired,
+  items: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  startingDate: PropTypes.shape().isRequired,
+  habitKey: PropTypes.string.isRequired,
+  updateFocusedHabitKey: PropTypes.func.isRequired,
+  goal: PropTypes.number,
 };
 
-const boxWH = Dimensions.get('window').width/8;
+Habit.defaultProps = {
+  goal: 0,
+};
 
+const boxWH = Dimensions.get('window').width / 8;
 const styles = StyleSheet.create({
   boxUndone: {
     width: boxWH,
@@ -149,35 +134,10 @@ const styles = StyleSheet.create({
   list: {
     padding: 0,
     borderBottomWidth: 0,
-    marginLeft: 0, paddingLeft: 0, paddingRight: 0, marginRight: 0
-  },
-  //CALENDAR DAY
-  dateContainer: {
-    flex: 1,
-    alignItems: 'center',
-    marginTop: boxWH/7
-  },
-  dateNameUndone: {
-    textAlign: "center",
-    color: "rgba(0,0,0,0.25)",
-    fontSize: boxWH/4
-  },
-  dateNumberUndone: {
-    fontWeight: "bold",
-    color: "rgba(0,0,0,0.25)",
-    textAlign: "center",
-    fontSize: boxWH/3
-  },
-  dateNameDone: {
-    textAlign: "center",
-    color: "#fefefe",
-    fontSize: boxWH/4
-  },
-  dateNumberDone: {
-    fontWeight: "bold",
-    color: "#fefefe",
-    textAlign: "center",
-    fontSize: boxWH/3
+    marginLeft: 0,
+    paddingLeft: 0,
+    paddingRight: 0,
+    marginRight: 0,
   },
 });
 

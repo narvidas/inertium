@@ -91,46 +91,48 @@ const updateHabitItemRemote = async (item) => {
 /**
   * Toggle habit item status (pass/fail/skip)
   */
-export const toggleHabitItemStatus = (itemKey, habitKey, currentStatus, startingDate, index) => async (dispatch) => {
-  let newStatus = '';
+export const toggleHabitItemStatus = (itemKey, habitKey, currStatus, startDate, index) =>
+  async (dispatch) => {
+    let newStatus = '';
 
-  // Decide next status based on current status of the item
-  if (currentStatus === 'done') {
-    newStatus = 'undone';
-  } else if (currentStatus === 'undone') {
-    newStatus = 'none';
-  } else {
-    newStatus = 'done';
-  }
+    // Decide next status based on current status of the item
+    if (currStatus === 'done') {
+      newStatus = 'undone';
+    } else if (currStatus === 'undone') {
+      newStatus = 'none';
+    } else {
+      newStatus = 'done';
+    }
 
-  // When rendering in a list in RN we can get the index which directly maps to day of the week
-  const newDate = startingDate.clone().add(index, 'days').format();
-  const newItem = {
-    habitKey,
-    key: itemKey,
-    status: newStatus,
-    date: newDate,
+    // When rendering in a list in RN we can get the index which directly maps to day of the week
+    const newDate = startDate.clone().add(index, 'days').format();
+    const newItem = {
+      habitKey,
+      key: itemKey,
+      status: newStatus,
+      date: newDate,
+    };
+
+    await updateHabitItemLocal(dispatch, newItem);
+    await updateHabitItemRemote(newItem);
   };
-
-  await updateHabitItemLocal(dispatch, newItem);
-  await updateHabitItemRemote(newItem);
-};
 
 /**
   * Save any notes added to an item
   */
-export const saveHabitItemNotes = (itemKey, habitKey, newNotes, startingDate, index) => async (dispatch) => {
-  const newDate = startingDate.clone().add(index, 'days').format();
-  const newItem = {
-    habitKey,
-    key: itemKey,
-    date: newDate,
-    notes: newNotes,
-  };
+export const saveHabitItemNotes = (itemKey, habitKey, newNotes, startingDate, index) =>
+  async (dispatch) => {
+    const newDate = startingDate.clone().add(index, 'days').format();
+    const newItem = {
+      habitKey,
+      key: itemKey,
+      date: newDate,
+      notes: newNotes,
+    };
 
-  await updateHabitItemLocal(dispatch, newItem);
-  await updateHabitItemRemote(newItem);
-};
+    await updateHabitItemLocal(dispatch, newItem);
+    await updateHabitItemRemote(newItem);
+  };
 
 /**
   * Saves information for a given habit in a Firebase real-time database
@@ -188,15 +190,14 @@ export const createHabit = (today, habitKey) => async (dispatch, getState) => {
     title: '',
     items: firebaseItems,
   };
-  
+
   // insert new habit into start
   const { habits } = getState();
-  let order = habits.habitOrder;
-  order.splice(0, 0, habitKey);
+  const newOrder = habits.habitOrder.splice(0, 0, habitKey);
 
   await createHabitLocal(dispatch, newHabit);
-  await updateHabitOrderLocal(dispatch, order);
-  await createHabitRemote(newHabit, order);
+  await updateHabitOrderLocal(dispatch, newOrder);
+  await createHabitRemote(newHabit, newOrder);
 };
 
 /**
@@ -269,8 +270,6 @@ const updateHabitOrderRemote = async (newOrder) => {
   * Reorder habits
   */
 export const reorderHabits = (prevOrder, fromId, toId) => async (dispatch) => {
-  // Decide on new order
-  // Sort HERE
   const newOrder = prevOrder.slice();
   newOrder.splice(toId, 0, newOrder.splice(fromId, 1)[0]);
 

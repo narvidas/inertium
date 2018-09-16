@@ -1,4 +1,3 @@
-
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Container } from 'native-base';
@@ -6,7 +5,7 @@ import CalendarStrip from 'react-native-calendar-strip';
 import SortableListView from 'react-native-sortable-listview';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import moment from 'moment';
-import { View, StyleSheet, Animated, Easing, Platform, TouchableHighlight, RefreshControl } from 'react-native';
+import { View, StyleSheet, TouchableHighlight, RefreshControl } from 'react-native';
 
 import Loading from './Loading';
 import Error from './Error';
@@ -14,84 +13,10 @@ import HabitConfigModal from './HabitConfigModal';
 import HabitCustomisationModal from './HabitCustomisationModal';
 import ItemConfigModal from './ItemConfigModal';
 import RoundButton from './RoundButton';
-import Habit from './Habit';
 import { generatePushID } from '../../lib/helpers';
+import Row from './Row';
 
 // import { FacebookAds } from 'expo';
-
-
-class Row extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this._active = new Animated.Value(0);
-    this._style = {
-      ...Platform.select({
-        ios: {
-          transform: [{
-            scale: this._active.interpolate({
-              inputRange: [0, 1],
-              outputRange: [1, 1.1],
-            }),
-          }],
-          shadowRadius: this._active.interpolate({
-            inputRange: [0, 1],
-            outputRange: [2, 10],
-          }),
-        },
-        android: {
-          transform: [{
-            scale: this._active.interpolate({
-              inputRange: [0, 1],
-              outputRange: [1, 1.07],
-            }),
-          }],
-          elevation: this._active.interpolate({
-            inputRange: [0, 1],
-            outputRange: [2, 6],
-          }),
-        },
-      }),
-    };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (this.props.active !== nextProps.active) {
-      Animated.timing(this._active, {
-        duration: 300,
-        easing: Easing.bounce,
-        toValue: Number(nextProps.active),
-      }).start();
-    }
-  }
-
-  render() {
-    const {
-      data, updateKey, toggleItemStatus, updateFocusedHabitKey,
-      saveHabit, openItemModal, openHabitModal, startingDate,
-    } = this.props;
-
-    const { key, title, goal, items } = data;
-
-    return (
-      <Habit
-        key={key}
-        habitKey={key}
-        title={title}
-        goal={goal}
-        items={items}
-        updateKey={updateKey}
-        updateFocusedHabitKey={updateFocusedHabitKey}
-        toggleItemStatus={toggleItemStatus}
-        openItemModal={openItemModal}
-        openHabitModal={openHabitModal}
-        startingDate={startingDate}
-        updateTest={saveHabit}
-        {...this.props.sortHandlers}
-      />
-    );
-  }
-}
 
 class HabitListing extends React.Component {
   state = {
@@ -107,29 +32,29 @@ class HabitListing extends React.Component {
     startingDate: moment().startOf('isoweek'),
     updateKey: null,
     refreshing: false,
+    activeRow: null,
   };
-  
-  onRefresh = () => {
+
+  onRefresh = async () => {
     const { startingDate } = this.state;
     this.setState({ refreshing: true });
-    this.props.fetchHabits(true, startingDate).then(() => {
-      this.setState({ refreshing: false });
-    });
+    await this.props.fetchHabits(startingDate);
+    this.setState({ refreshing: false });
   }
 
-  onRemoveHabit = () => {
+  onRemoveHabit = async () => {
     const { activeHabit } = this.state;
     const { removeHabit } = this.props;
-    removeHabit(activeHabit)
-      .then(() => this.closeHabitModal());
+    await removeHabit(activeHabit);
+    this.closeHabitModal();
   }
 
-  onNewHabit = () => {
+  onNewHabit = async () => {
     const { createHabit } = this.props;
     const { startingDate } = this.state;
     const habitKey = generatePushID();
-    createHabit(startingDate, habitKey)
-      .then(() => this.openHabitModal(habitKey, '', 0))
+    await createHabit(startingDate, habitKey);
+    this.openHabitModal(habitKey, '', 0);
   }
 
   handleNewWeekSelection = (startingDate) => {
@@ -203,12 +128,22 @@ class HabitListing extends React.Component {
     });
   }
 
-  reorderRows = (move) => {
+  reorderRows = async (move) => {
     this.enableHabitListScroll();
     const { reorderHabits, habits } = this.props;
     const prevOrder = habits.map(h => h.key);
-    reorderHabits(prevOrder, move.from, move.to, move.row.data.key)
-      .then(() => this.forceUpdate());
+    this.setState({ activeRow: move.to });
+    await reorderHabits(prevOrder, move.from, move.to, move.row.data.key);
+    this.forceUpdate();
+  }
+
+  returnOrderedHabits = () => {
+    const { habits, habitOrder } = this.props;
+    return (habitOrder.length < 1) ?
+      habits :
+      habitOrder
+        .map(hid => habits.find(h => h.key === hid))
+        .filter(h => h !== undefined);
   }
 
   enableHabitListScroll = () => {
@@ -235,13 +170,13 @@ class HabitListing extends React.Component {
   renderNewHabitButton = () => {
     // Renders button animation downwards if no habits exist, aesthetical fix
     const direction = (this.props.habits.length < 1) ? 'down' : 'up';
-    return <RoundButton onPress={this.onNewHabit} title="New Habit" size={60} direction={direction}/>
+    return <RoundButton onPress={this.onNewHabit} title="New Habit" size={60} direction={direction} />;
   }
 
-  renderRow = (row) => {
+  renderRow = (row, layout, rowIndex) => {
     return (
-      <TouchableHighlight {...this.props.sortHandlers} underlayColor={null}>
-        <View {...this.props.sortHandlers}>
+      <TouchableHighlight underlayColor={null}>
+        <View >
           <Row
             data={row}
             toggleItemStatus={this.props.toggleHabitItemStatus}
@@ -251,7 +186,8 @@ class HabitListing extends React.Component {
             saveHabit={this.props.saveHabit}
             updateFocusedHabitKey={this.updateFocusedHabitKey}
             updateKey={this.state.updateKey}
-            {...this.props.sortHandlers}
+            active={rowIndex === this.state.activeRow}
+            disableAnimatedScrolling
           />
         </View>
       </TouchableHighlight>
@@ -259,7 +195,7 @@ class HabitListing extends React.Component {
   }
 
   render() {
-    const { loading, error, habits, habitOrder } = this.props;
+    const { loading, error } = this.props;
 
     // Loading
     if (loading) return <Loading />;
@@ -311,7 +247,7 @@ class HabitListing extends React.Component {
           >
             <CalendarStrip
               ref={(calendar) => { this.calendar = calendar; }}
-              updateWeek={false}i
+              updateWeek={false}
               daySelectionAnimation={{ type: 'border', duration: 100, borderWidth: 1, borderHighlightColor: 'rgba(0,0,0,0.8)' }}
               style={{ height: 100, paddingTop: 20, paddingBottom: 15 }}
               calendarHeaderStyle={{ paddingBottom: 15 }}
@@ -319,20 +255,17 @@ class HabitListing extends React.Component {
               iconContainer={{ width: 40 }}
               styleWeekend={false}
               onWeekChanged={this.handleNewWeekSelection}
+              onToday={()=>this.props.formatWeek(moment())}
             />
           </GestureRecognizer>
         </View>
         <SortableListView
           style={styles.list}
-          data={(habitOrder.length < 1) ?
-            habits :
-            habitOrder
-              .map(hid => habits.find(h => h.key === hid))
-              .filter(h => h !== undefined)
-          }
+          data={this.returnOrderedHabits()}
           limitScrolling
           removeClippedSubviews={false}
           onRowActive={this.disableHabitListScroll}
+          onMoveStart={this.activateRow}
           onMoveEnd={this.enableHabitListScroll}
           onRowMoved={this.reorderRows}
           renderRow={this.renderRow}
@@ -351,32 +284,23 @@ class HabitListing extends React.Component {
 
 HabitListing.propTypes = {
   error: PropTypes.string,
+  formatWeek: PropTypes.func.isRequired,
+  saveHabit: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   habitOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
   habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  reFetch: PropTypes.func,
   toggleHabitItemStatus: PropTypes.func.isRequired,
   saveHabitItemNotes: PropTypes.func.isRequired,
   reorderHabits: PropTypes.func.isRequired,
   fetchHabits: PropTypes.func.isRequired,
   removeHabit: PropTypes.func.isRequired,
   createHabit: PropTypes.func.isRequired,
+  clearHabitItem: PropTypes.func.isRequired,
 };
 
-Row.propTypes = {
-  data: PropTypes.object.isRequired,
-  updateKey: PropTypes.string,
-  toggleItemStatus: PropTypes.func.isRequired,
-  updateFocusedHabitKey: PropTypes.func.isRequired,
-  saveHabit: PropTypes.func.isRequired,
-  openItemModal: PropTypes.func.isRequired,
-  openHabitModal: PropTypes.func.isRequired,
-  startingDate: PropTypes.object.isRequired,
-}
 
 HabitListing.defaultProps = {
   error: null,
-  reFetch: null,
 };
 
 const styles = StyleSheet.create({

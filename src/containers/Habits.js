@@ -13,7 +13,6 @@ class HabitListing extends Component {
       habits: PropTypes.arrayOf(PropTypes.shape()).isRequired,
     }).isRequired,
     getHabits: PropTypes.func.isRequired,
-    setError: PropTypes.func.isRequired,
     toggleHabitItemStatus: PropTypes.func.isRequired,
     saveHabitItemNotes: PropTypes.func.isRequired,
     clearHabitItem: PropTypes.func.isRequired,
@@ -32,7 +31,7 @@ class HabitListing extends Component {
   /**
     * Fetch Data from API if logged in, then format weekly view
     */
-  fetchHabits = async (reFetch = false, date = moment()) => {
+  fetchHabits = async (date = moment()) => {
     const { auth, getHabits, formatWeek } = this.props;
 
     if (auth) await getHabits(date);
@@ -41,7 +40,7 @@ class HabitListing extends Component {
 
   render = () => {
     const { Layout, habits, createHabit, reorderHabits, removeHabit, saveHabit, clearHabitItem, toggleHabitItemStatus, saveHabitItemNotes, loading, formatWeek} = this.props;
-    
+
     return (
       <Layout
         error={habits.error}

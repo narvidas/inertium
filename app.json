@@ -1,15 +1,13 @@
 {
   "expo": {
-    "sdkVersion": "22.0.0",
+    "sdkVersion": "23.0.0",
     "name": "Inertium Habit Tracker",
     "slug": "inertium-habit-tracker",
     "icon": "src/images/app-icon.png",
-    "facebookAppId": "1821110811284283",
-    "facebookDisplayName": "Mark N",
 		"version": "1.0.0",
     "privacy": "public",
     "ios": {
       "bundleIdentifier": "com.narvidas.inertium"
-    },
+    }
   }
 }

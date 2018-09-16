@@ -2,7 +2,7 @@
   * Show Error
   */
 
-const statusReplace = async (dispatch, type, message) => dispatch({ type: 'STATUS_REPLACE', [type]: message});
+const statusReplace = async (dispatch, type, message) => dispatch({ type: 'STATUS_REPLACE', [type]: message });
 
 export default async (dispatch, type, val) => {
   // Validate types

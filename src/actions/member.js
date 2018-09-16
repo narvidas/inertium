@@ -12,8 +12,8 @@ const updateUserFirstLastName = (uid, firstName, lastName) => FirebaseRef.child(
 
 const userDetailsUpdate = async (dispatch, data) => dispatch({ type: 'USER_DETAILS_UPDATE', data });
 const userLogin = async (dispatch, data) => dispatch({ type: 'USER_LOGIN', data });
-const userReset = async (dispatch) => dispatch({ type: 'USER_RESET' });
-const dataReset = async (dispatch) => dispatch({ type: 'DATA_RESET' });
+const userReset = async dispatch => dispatch({ type: 'USER_RESET' });
+const dataReset = async dispatch => dispatch({ type: 'DATA_RESET' });
 /**
   * Sign Up to Firebase
   */
