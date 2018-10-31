@@ -8,7 +8,6 @@ import getTheme from '../../native-base-theme/components';
 import theme from '../../native-base-theme/variables/commonColor';
 
 import Routes from './routes/index';
-
 import Loading from './components/Loading';
 
 const Root = ({ store, persistor }) => (

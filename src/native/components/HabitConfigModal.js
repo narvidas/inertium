@@ -18,7 +18,9 @@ const confirmRemoval = (onRemove) => {
 };
 
 
-const HabitConfigModal = ({ visible, defaultValues, onSave, onClose, onRemove, onCustomise, handleChange }) => (
+const HabitConfigModal = ({
+  visible, defaultValues, onSave, onClose, onRemove, onCustomise, handleChange 
+}) => (
   <Modal
     visible={visible}
     animationType="slide"

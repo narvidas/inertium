@@ -29,6 +29,8 @@ export default function habitReducer(state = initialState, action) {
       const dayFrom = action.today.clone().startOf('isoWeek'); /* monday */
       const dayTo = dayFrom.clone().add(7, 'days'); /* sunday */
 
+      console.log(state.habits);
+
       // Deep-copy habitsraw
       let habits = objectToArray(state.habitsraw)
         .map((habit) => {
@@ -119,7 +121,7 @@ export default function habitReducer(state = initialState, action) {
         habits: {
           [habitIndex]: {
             items: {
-              [itemIndex]: { $set: action.item },
+              [itemIndex]: { $merge: action.item },
             },
           },
         },
@@ -127,6 +129,38 @@ export default function habitReducer(state = initialState, action) {
           [action.item.habitKey]: {
             items: {
               [action.item.key]: { $set: action.item },
+            },
+          },
+        },
+      });
+    }
+
+    case 'UPDATE_HABIT_ITEM_NOTES': {
+      // Find which habit by key
+      const habitIndex = state.habits.findIndex(habit => habit.key === action.item.habitKey);
+
+      // Find which item by date
+      const itemIndex = state.habits[habitIndex]
+        .items.findIndex(item => item.key === action.item.key);
+
+      return update(state, {
+        habits: {
+          [habitIndex]: {
+            items: {
+              [itemIndex]: {
+                notes: { $set: action.item.notes },
+                date: { $set: action.item.date },
+              },
+            },
+          },
+        },
+        habitsraw: {
+          [action.item.habitKey]: {
+            items: {
+              [action.item.key]: {
+                notes: { $set: action.item.notes },
+                date: { $set: action.item.date },
+              },
             },
           },
         },

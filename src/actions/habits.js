@@ -18,6 +18,7 @@ const replaceHabits = (dispatch, habitsraw) => dispatch({ type: 'HABITS_REPLACE'
 const replaceOrder = (dispatch, order) => dispatch({ type: 'HABITS_ORDER_REPLACE', order });
 const getWeek = (dispatch, today) => dispatch({ type: 'GET_WEEK', today });
 const updateHabitItemLocal = (dispatch, item) => dispatch({ type: 'UPDATE_HABIT_ITEM', item });
+const updateHabitItemNotesLocal= (dispatch, item) => dispatch({ type: 'UPDATE_HABIT_ITEM_NOTES', item });
 const saveHabitLocal = (dispatch, habit) => dispatch({ type: 'HABIT_UPDATE', habit });
 const createHabitLocal = (dispatch, habit) => dispatch({ type: 'HABIT_ADD', habit });
 const removeHabitLocal = (dispatch, habit) => dispatch({ type: 'HABIT_REMOVE', habit });
@@ -130,7 +131,7 @@ export const saveHabitItemNotes = (itemKey, habitKey, newNotes, startingDate, in
       notes: newNotes,
     };
 
-    await updateHabitItemLocal(dispatch, newItem);
+    await updateHabitItemNotesLocal(dispatch, newItem);
     await updateHabitItemRemote(newItem);
   };
 
@@ -193,7 +194,8 @@ export const createHabit = (today, habitKey) => async (dispatch, getState) => {
 
   // insert new habit into start
   const { habits } = getState();
-  const newOrder = habits.habitOrder.splice(0, 0, habitKey);
+  const newOrder = [...habits.habitOrder];
+  newOrder.splice(0, 0, habitKey);
 
   await createHabitLocal(dispatch, newHabit);
   await updateHabitOrderLocal(dispatch, newOrder);
@@ -249,6 +251,8 @@ export const clearHabitItem = (itemKey, habitKey) => async (dispatch) => {
   const itemToRemove = {
     habitKey,
     key: itemKey,
+    status: null,
+    notes: '',
   };
 
   await clearHabitItemLocal(dispatch, itemToRemove);

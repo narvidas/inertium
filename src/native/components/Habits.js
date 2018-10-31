@@ -137,13 +137,30 @@ class HabitListing extends React.Component {
     this.forceUpdate();
   }
 
+  habitReorder = (habitArray, orderArray) => {
+    const habitLength = habitArray.length();
+    const orderLength = orderArray.length();
+
+    if (habitLength > orderLength) {
+      const orderedHabits =
+        habitOrder
+          .map(hid => habits.find(h => h.key === hid))
+          
+
+    }
+    return habitArray.map(habit => )
+  }
+
   returnOrderedHabits = () => {
     const { habits, habitOrder } = this.props;
-    return (habitOrder.length < 1) ?
+
+    const habitsOrdered = (habitOrder.length < 1) ?
       habits :
       habitOrder
         .map(hid => habits.find(h => h.key === hid))
         .filter(h => h !== undefined);
+
+    return habitsOrdered;
   }
 
   enableHabitListScroll = () => {

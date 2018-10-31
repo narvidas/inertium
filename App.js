@@ -6,7 +6,7 @@ import configureStore from './src/store/index';
 // FacebookAds.AdSettings.addTestDevice(FacebookAds.AdSettings.currentDeviceHash);
 
 const { persistor, store } = configureStore();
-// persistor.purge(); // Debug to clear persist
+persistor.purge(); // Debug to clear persist
 console.ignoredYellowBox = ['Remote debugger'];
 
 export default function App() {

@@ -4,7 +4,9 @@ import { H3, Text, Button, Item, Label, Input } from 'native-base';
 import { View, Keyboard, StyleSheet, Modal, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const ItemConfigModal = ({ visible, defaultValues, onSave, onClose, onClear, handleChange }) => (
+const ItemConfigModal = ({
+  visible, defaultValues, onSave, onClose, onClear, handleChange,
+}) => (
   <Modal
     visible={visible}
     animationType="slide"
@@ -64,12 +66,13 @@ ItemConfigModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onClear: PropTypes.func.isRequired,
   handleChange: PropTypes.func,
-  defaultValues: PropTypes.string.isRequired,
+  defaultValues: PropTypes.string,
 };
 
 ItemConfigModal.defaultProps = {
   visible: false,
   handleChange: null,
+  defaultValues: '',
 };
 
 const styles = StyleSheet.create({
