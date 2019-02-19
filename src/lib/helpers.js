@@ -1,27 +1,26 @@
 /**
-  * Function to convert Firebase snapshot object of objets to array of objects
-  */
-export const snapshotToArray = snapshot => {
-    let array = [];
-    snapshot.forEach(childSnapshot => {
-        let item = childSnapshot.val();
-        item.key = childSnapshot.key;
-        array.push(item);
-    });
-    return array;
+ * Function to convert Firebase snapshot object of objets to array of objects
+ */
+export const snapshotToArray = (snapshot) => {
+  const array = [];
+  snapshot.forEach((childSnapshot) => {
+    const item = childSnapshot.val();
+    item.key = childSnapshot.key;
+    array.push(item);
+  });
+  return array;
 };
 
-
 /**
-  * Function to convert array to Firebase snapshot object
-  */
-export const arrayToSnapshot = array => {
-    let snapshot = {};
-    for(let i=0; i<array.length; i++){
-      const {key, ...rest} = array[i];
-      Object.assign(snapshot, {[key]: rest});
-    }
-    return snapshot;
+ * Function to convert array to Firebase snapshot object
+ */
+export const arrayToSnapshot = (array) => {
+  const snapshot = {};
+  for (let i = 0; i < array.length; i++) {
+    const { key, ...rest } = array[i];
+    Object.assign(snapshot, { [key]: rest });
+  }
+  return snapshot;
 };
 
 /**
@@ -29,15 +28,14 @@ export const arrayToSnapshot = array => {
     a nested (regular JS) object from an already acquired Firebase snapshot
   */
 export const objectToArray = (obj) => {
-  let array = [];
-  for (item in obj){
-    let arrayItem = obj[item];
+  const array = [];
+  for (item in obj) {
+    const arrayItem = obj[item];
     arrayItem.key = item;
     array.push(arrayItem);
-  };
+  }
   return array;
-}
-
+};
 
 /**
  * Source: https://gist.github.com/mikelehen/3596a30bd69384624c11
@@ -65,7 +63,7 @@ export const generatePushID = (function() {
 
   return function() {
     var now = new Date().getTime();
-    var duplicateTime = (now === lastPushTime);
+    var duplicateTime = now === lastPushTime;
     lastPushTime = now;
 
     var timeStampChars = new Array(8);
@@ -92,9 +90,8 @@ export const generatePushID = (function() {
     for (i = 0; i < 12; i++) {
       id += PUSH_CHARS.charAt(lastRandChars[i]);
     }
-    if(id.length != 20) throw new Error('Length should be 20.');
+    if (id.length != 20) throw new Error('Length should be 20.');
 
     return id;
   };
 })();
-

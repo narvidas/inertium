@@ -1,6 +1,6 @@
 export default {
   // Defaults
-  default: 'Hmm, an unknown error occured',
+  default: 'Oops, something has gone wrong.',
   timeout: 'Server Timed Out. Check your internet connection',
   invalidJson: 'Response returned is not valid JSON',
 
@@ -14,5 +14,4 @@ export default {
   missingEmail: 'Email is missing',
   missingPassword: 'Password is missing',
   passwordsDontMatch: 'Passwords do not match',
-
 };

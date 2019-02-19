@@ -1,19 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-
 import { signUp } from '../actions/member';
+import SignUpComponent from '../components/profile/SignUp';
 
-const SignUp = ({
-  Layout,
-  onFormSubmit,
-  member,
-  isLoading,
-  infoMessage,
-  errorMessage,
-  successMessage,
-}) => (
-  <Layout
+const SignUp = ({ onFormSubmit, member, isLoading, infoMessage, errorMessage, successMessage }) => (
+  <SignUpComponent
     member={member}
     loading={isLoading}
     info={infoMessage}
@@ -24,7 +16,6 @@ const SignUp = ({
 );
 
 SignUp.propTypes = {
-  Layout: PropTypes.func.isRequired,
   member: PropTypes.shape({}).isRequired,
   onFormSubmit: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
@@ -39,7 +30,7 @@ SignUp.defaultProps = {
   successMessage: null,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   member: state.member || {},
   isLoading: state.status.loading || false,
   infoMessage: state.status.info || null,
@@ -51,4 +42,7 @@ const mapDispatchToProps = {
   onFormSubmit: signUp,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SignUp);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(SignUp);

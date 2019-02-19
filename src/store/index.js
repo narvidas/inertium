@@ -21,21 +21,16 @@ const configureStore = () => {
   const store = createStore(
     reducer,
     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
-    compose(applyMiddleware(...middleware)),
+    compose(applyMiddleware(...middleware))
   );
 
-  const persistor = persistStore(
-    store,
-    null,
-    () => { store.getState(); },
-  );
+  const persistor = persistStore(store, null, () => {
+    store.getState();
+  });
 
   store.dispatch(verifyAuth());
 
   return { persistor, store };
-
-
 };
-
 
 export default configureStore;

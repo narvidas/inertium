@@ -1,23 +1,32 @@
-import moment from 'moment';
 import ErrorMessages from '../constants/errors';
 import statusMessage from './status';
 import { Firebase, FirebaseRef } from '../lib/firebase';
-import { syncLocalToRemote, getHabits, formatWeek } from './habits';
+import { syncLocalToRemote } from './habits';
 
-const getUserRef = uid => FirebaseRef.child(`users/${uid}`).once('value').then(snap => snap.val());
-const updateUserLastLoggedIn = uid => FirebaseRef.child(`users/${uid}`).update({ lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP });
-const setUserDetails = (uid, firstName, lastName) => FirebaseRef.child(`users/${uid}`).set({ firstName, lastName, signedUp: Firebase.database.ServerValue.TIMESTAMP, lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP });
-const updateUserFirstLastName = (uid, firstName, lastName) => FirebaseRef.child(`users/${uid}`).update({ firstName, lastName });
-
+const getUserRef = (uid) =>
+  FirebaseRef.child(`users/${uid}`)
+    .once('value')
+    .then((snap) => snap.val());
+const updateUserLastLoggedIn = (uid) =>
+  FirebaseRef.child(`users/${uid}`).update({ lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP });
+const setUserDetails = (uid, firstName, lastName) =>
+  FirebaseRef.child(`users/${uid}`).set({
+    firstName,
+    lastName,
+    signedUp: Firebase.database.ServerValue.TIMESTAMP,
+    lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP,
+  });
+const updateUserFirstLastName = (uid, firstName, lastName) =>
+  FirebaseRef.child(`users/${uid}`).update({ firstName, lastName });
 
 const userDetailsUpdate = async (dispatch, data) => dispatch({ type: 'USER_DETAILS_UPDATE', data });
 const userLogin = async (dispatch, data) => dispatch({ type: 'USER_LOGIN', data });
-const userReset = async dispatch => dispatch({ type: 'USER_RESET' });
-const dataReset = async dispatch => dispatch({ type: 'DATA_RESET' });
+const userReset = async (dispatch) => dispatch({ type: 'USER_RESET' });
+const dataReset = async (dispatch) => dispatch({ type: 'DATA_RESET' });
 /**
-  * Sign Up to Firebase
-  */
-export const signUp = formData => async (dispatch) => {
+ * Sign Up to Firebase
+ */
+export const signUp = (formData) => async (dispatch, getState) => {
   try {
     const { email, password, password2, firstName, lastName } = formData;
 
@@ -38,16 +47,18 @@ export const signUp = formData => async (dispatch) => {
     }
 
     await statusMessage(dispatch, 'loading', false);
+    await syncLocalToRemote(dispatch, getState);
+
     return Promise.resolve();
   } catch (error) {
     await statusMessage(dispatch, 'error', error.message);
     return Promise.reject();
   }
-}
+};
 
 /**
-  * Get this User's Details
-  */
+ * Get this User's Details
+ */
 
 const getUserData = async (dispatch) => {
   if (loggedIn()) {
@@ -60,9 +71,9 @@ const getUserData = async (dispatch) => {
 };
 
 /**
-  * Login to Firebase with Email/Password
-  */
-export const login = formData => async (dispatch, getState) => {
+ * Login to Firebase with Email/Password
+ */
+export const login = (formData) => async (dispatch, getState) => {
   try {
     const { email, password } = formData;
     await statusMessage(dispatch, 'loading', true);
@@ -94,9 +105,9 @@ export const login = formData => async (dispatch, getState) => {
 };
 
 /**
-  * Reset Password
-  */
-export const resetPassword = formData => async (dispatch) => {
+ * Reset Password
+ */
+export const resetPassword = (formData) => async (dispatch) => {
   try {
     const { email } = formData;
     // Validation checks
@@ -105,30 +116,22 @@ export const resetPassword = formData => async (dispatch) => {
 
     await Firebase.auth().sendPasswordResetEmail(email);
     await userReset(dispatch);
-    
-    await statusMessage(dispatch, 'loading', false); 
+
+    await statusMessage(dispatch, 'loading', false);
 
     return Promise.resolve();
   } catch (error) {
     await statusMessage(dispatch, 'error', error.message);
     return Promise.reject();
   }
-}
+};
 
 /**
-  * Update Profile
-  */
-export const updateProfile = formData => async (dispatch) => {
+ * Update Profile
+ */
+export const updateProfile = (formData) => async (dispatch) => {
   try {
-    const {
-      email,
-      password,
-      password2,
-      firstName,
-      lastName,
-      changeEmail,
-      changePassword,
-    } = formData;
+    const { email, password, password2, firstName, lastName, changeEmail, changePassword } = formData;
 
     // Are they a user?
     const user = Firebase.auth().currentUser;
@@ -162,10 +165,9 @@ export const updateProfile = formData => async (dispatch) => {
   }
 };
 
-
 /**
-  * Logout
-  */
+ * Logout
+ */
 export const logout = () => async (dispatch) => {
   await Firebase.auth().signOut();
   await userReset(dispatch);
@@ -174,19 +176,21 @@ export const logout = () => async (dispatch) => {
 
 export const verifyAuth = () => (dispatch) => {
   Firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        getUserData(dispatch);
-      }
-      // } else {
-      //   dispatch(logout());
-      // }
-    });
-}
+    if (user) {
+      getUserData(dispatch);
+    }
+    // } else {
+    //   dispatch(logout());
+    // }
+  });
+};
 
 /**
-  * returns true if Firebase is initialised and user object exists (i.e. logged-in)
-  */
+ * returns user object if Firebase is initialised and the user object itself exists (i.e. logged-in), false otherwise
+ */
 export const loggedIn = () => {
   const user = Firebase.auth().currentUser;
-  return (Firebase !== null && user !== null);
+  if (!Firebase || !user) return false;
+
+  return user;
 };

@@ -1,13 +1,7 @@
 import * as FirebaseModule from 'firebase';
 import firebaseConfig from '../constants/firebase';
 
-const {
-  apiKey,
-  authDomain,
-  databaseURL,
-  storageBucket,
-  messagingSenderId,
-} = firebaseConfig;
+const { apiKey, authDomain, databaseURL, storageBucket, messagingSenderId } = firebaseConfig;
 
 let firebaseInitialized = false;
 

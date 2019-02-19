@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import AnalyticsComponent from '../components/analytics';
 
 class Analytics extends Component {
   static propTypes = {
@@ -13,30 +14,32 @@ class Analytics extends Component {
     match: PropTypes.shape({
       params: PropTypes.shape({}),
     }),
-  }
+  };
 
   static defaultProps = {
     match: null,
-  }
+  };
 
   render = () => {
-  //   const { Layout, habits, match, createHabit, reorderHabits, removeHabit, saveHabit, clearHabitItem, toggleHabitItemStatus, saveHabitItemNotes, getHabits, getWeek} = this.props;
-  //   return (
-  //     <Layout
-  //       error={habits.error}
-  //       loading={habits.loading}
-  //       habits={habits.habits}
-  //     />
-  //   );
+    //   const { Layout, habits, match, createHabit, reorderHabits, removeHabit, saveHabit, clearHabitItem, toggleHabitItemStatus, saveHabitItemNotes, getHabits, getWeek} = this.props;
+    //   return (
+    //     <AnalyticsComponent
+    //       error={habits.error}
+    //       loading={habits.loading}
+    //       habits={habits.habits}
+    //     />
+    //   );
     return null;
-  }
+  };
 }
 
-const mapStateToProps = state => ({
-  habits: state.habits || {}
+const mapStateToProps = (state) => ({
+  habits: state.habits || {},
 });
 
-const mapDispatchToProps = {
-};
+const mapDispatchToProps = {};
 
-export default connect(mapStateToProps, mapDispatchToProps)(Analytics);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Analytics);

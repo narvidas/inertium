@@ -1,6 +1,6 @@
 export default {
-  habitOrder: [],
+  order: [],
   placeholder: true,
-  habits: [],
-  habitsraw: {},
+  week: [],
+  local: {},
 };

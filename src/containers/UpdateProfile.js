@@ -1,18 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-
 import { updateProfile } from '../actions/member';
+import UpdateProfileComponent from '../components/profile/UpdateProfile';
 
-const UpdateProfile = ({
-  Layout,
-  onFormSubmit,
-  member,
-  isLoading,
-  errorMessage,
-  successMessage,
-}) => (
-  <Layout
+const UpdateProfile = ({ onFormSubmit, member, isLoading, errorMessage, successMessage }) => (
+  <UpdateProfileComponent
     member={member}
     loading={isLoading}
     error={errorMessage}
@@ -22,7 +15,6 @@ const UpdateProfile = ({
 );
 
 UpdateProfile.propTypes = {
-  Layout: PropTypes.func.isRequired,
   member: PropTypes.shape({}).isRequired,
   onFormSubmit: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
@@ -35,7 +27,7 @@ UpdateProfile.defaultProps = {
   successMessage: null,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   member: state.member || {},
   isLoading: state.status.loading || false,
   errorMessage: state.status.error || null,
@@ -46,4 +38,7 @@ const mapDispatchToProps = {
   onFormSubmit: updateProfile,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(UpdateProfile);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(UpdateProfile);
