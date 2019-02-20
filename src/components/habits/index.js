@@ -13,6 +13,7 @@ import ItemConfigModal from './modals/ItemConfigModal';
 import RoundButton from '../common/RoundButton';
 import { generatePushID } from '../../lib/helpers';
 import Row from './components/Row';
+import { updateHabitOrder } from '../../actions/habits/remote';
 
 // import { FacebookAds } from 'expo';
 
@@ -42,8 +43,10 @@ class Habits extends React.Component {
 
   onRemoveHabit = async () => {
     const { activeHabit } = this.state;
-    const { removeHabit } = this.props;
+    const { removeHabit, habitOrder } = this.props;
+    const newOrder = habitOrder.filter((habitKey) => habitKey !== activeHabit);
     await removeHabit(activeHabit);
+    await updateHabitOrder(newOrder);
     this.closeHabitModal();
   };
 

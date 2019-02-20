@@ -30,12 +30,8 @@ export const setUserHabitOrder = (uid, order) => {
   FirebaseRef.child(`metadata/${uid}/habitOrder/`).set(order);
 };
 
-export const removeUserHabit = (uid, habit) => {
-  FirebaseRef.child(`habits/${uid}/${habit.key}`).remove();
-};
-
-export const removeUserHabitOrder = (uid, habit) => {
-  FirebaseRef.child(`metadata/${uid}/habitOrder/${habit.key}`).remove();
+export const removeUserHabit = (uid, habitKey) => {
+  FirebaseRef.child(`habits/${uid}/${habitKey}`).remove();
 };
 
 export const removeUserHabitItem = (uid, item) => {

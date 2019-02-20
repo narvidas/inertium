@@ -71,12 +71,11 @@ export const createHabit = async (habit, order) => {
 /**
  * Removes habits from the Firebase real-time database
  */
-export const removeHabit = async (habit) => {
+export const removeHabit = async (habitKey) => {
   const user = loggedIn();
 
   if (user) {
-    await firebase.removeUserHabit(user.uid, habit);
-    await firebase.removeUserHabitOrder(user.uid, habit);
+    await firebase.removeUserHabit(user.uid, habitKey);
   }
 };
 

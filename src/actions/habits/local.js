@@ -14,10 +14,10 @@ export const createHabit = (dispatch, habit) => {
   dispatch({ type: 'ADD_LOCAL_HABIT', habit });
   dispatch({ type: 'ADD_HABIT_ORDER', habit });
 };
-export const removeHabit = (dispatch, habit) => {
-  dispatch({ type: 'REMOVE_HABIT_LOCAL', habit });
-  dispatch({ type: 'REMOVE_HABIT_WEEK', habit });
-  dispatch({ type: 'REMOVE_HABIT_ORDER', habit });
+export const removeHabit = (dispatch, habitKey) => {
+  dispatch({ type: 'REMOVE_LOCAL_HABIT', habitKey });
+  dispatch({ type: 'REMOVE_WEEK_HABIT', habitKey });
+  dispatch({ type: 'REMOVE_HABIT_ORDER', habitKey });
 };
 export const clearHabitItem = (dispatch, item) => dispatch({ type: 'HABITS_ITEM_CLEAR', item });
 export const updateHabitOrder = (dispatch, newOrder) => {

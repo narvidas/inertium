@@ -109,7 +109,7 @@ export default function habitWeekReducer(state = initialState, action) {
 
     case 'REMOVE_WEEK_HABIT': {
       // Find which habit by key
-      const habitIndex = state.findIndex((habit) => habit.key === action.habit.key);
+      const habitIndex = state.findIndex((habit) => habit.key === action.habitKey);
 
       return update(state, {
         $splice: [[habitIndex, 1]],

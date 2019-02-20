@@ -167,11 +167,9 @@ export const createHabit = (today, habitKey) => async (dispatch, getState) => {
 /**
  * Remove habit
  */
-export const removeHabit = (key) => async (dispatch) => {
-  const habitToRemove = { key };
-
-  await local.removeHabit(dispatch, habitToRemove);
-  await remote.removeHabit(habitToRemove);
+export const removeHabit = (habitKey) => async (dispatch) => {
+  await local.removeHabit(dispatch, habitKey);
+  await remote.removeHabit(habitKey);
 };
 
 /**

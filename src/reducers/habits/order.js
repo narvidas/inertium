@@ -16,7 +16,7 @@ export default function habitOrderReducer(state = initialState, action) {
     }
 
     case 'REMOVE_HABIT_ORDER': {
-      const newOrder = state.filter((hid) => hid !== action.habit.key);
+      const newOrder = state.filter((hid) => hid !== action.habitKey);
 
       return update(state, {
         $set: newOrder,

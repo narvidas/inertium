@@ -55,7 +55,7 @@ export default function habitLocalReducer(state = initialState, action) {
 
     case 'REMOVE_LOCAL_HABIT': {
       return update(state, {
-        $unset: [action.habit.key],
+        $unset: [action.habitKey],
       });
     }
 
