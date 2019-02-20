@@ -18,19 +18,13 @@ class SignUp extends React.Component {
     error: null,
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      password2: '',
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
+  state = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    password2: '',
+  };
 
   handleChange = (name, val) => {
     this.setState({
@@ -39,11 +33,9 @@ class SignUp extends React.Component {
     });
   };
 
-  handleSubmit = () => {
-    this.props
-      .onFormSubmit(this.state)
-      .then(() => Actions.login())
-      .catch((e) => console.log(`Error: ${e}`));
+  handleSubmit = async () => {
+    await this.props.onFormSubmit(this.state);
+    await Actions.login();
   };
 
   render() {

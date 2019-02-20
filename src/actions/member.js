@@ -48,11 +48,8 @@ export const signUp = (formData) => async (dispatch, getState) => {
 
     await statusMessage(dispatch, 'loading', false);
     await syncLocalToRemote(dispatch, getState);
-
-    return Promise.resolve();
   } catch (error) {
     await statusMessage(dispatch, 'error', error.message);
-    return Promise.reject();
   }
 };
 
@@ -65,9 +62,7 @@ const getUserData = async (dispatch) => {
     const user = Firebase.auth().currentUser;
     const userDetails = await getUserRef(user.uid);
     userDetailsUpdate(dispatch, userDetails);
-    return Promise.resolve();
   }
-  return Promise.reject();
 };
 
 /**
@@ -97,10 +92,8 @@ export const login = (formData) => async (dispatch, getState) => {
     }
     await statusMessage(dispatch, 'loading', false);
     await userLogin(dispatch, res);
-    return Promise.resolve();
   } catch (error) {
     await statusMessage(dispatch, 'error', error.message);
-    return Promise.reject();
   }
 };
 
@@ -118,11 +111,8 @@ export const resetPassword = (formData) => async (dispatch) => {
     await userReset(dispatch);
 
     await statusMessage(dispatch, 'loading', false);
-
-    return Promise.resolve();
   } catch (error) {
     await statusMessage(dispatch, 'error', error.message);
-    return Promise.reject();
   }
 };
 
@@ -157,11 +147,8 @@ export const updateProfile = (formData) => async (dispatch) => {
     await getUserData(dispatch);
 
     await statusMessage(dispatch, 'success', 'Profile Updated');
-
-    return Promise.resolve();
   } catch (error) {
     await statusMessage(dispatch, 'error', error.message);
-    return Promise.reject();
   }
 };
 
@@ -179,9 +166,6 @@ export const verifyAuth = () => (dispatch) => {
     if (user) {
       getUserData(dispatch);
     }
-    // } else {
-    //   dispatch(logout());
-    // }
   });
 };
 

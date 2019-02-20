@@ -22,16 +22,10 @@ class Login extends React.Component {
     member: {},
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: props.member && props.member.email ? props.member.email : '',
-      password: '',
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
+  state = {
+    email: this.props.member && this.props.member.email ? this.props.member.email : '',
+    password: '',
+  };
 
   handleChange = (name, val) => {
     this.setState({
@@ -40,11 +34,9 @@ class Login extends React.Component {
     });
   };
 
-  handleSubmit = () => {
-    this.props
-      .onFormSubmit(this.state)
-      .then(() => Actions.pop())
-      .catch((e) => console.log(`Error: ${e}`));
+  handleSubmit = async () => {
+    await this.props.onFormSubmit(this.state);
+    await Actions.pop();
   };
 
   render() {

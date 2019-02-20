@@ -37,21 +37,15 @@ class UpdateProfile extends React.Component {
     success: null,
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      firstName: props.member.firstName || '',
-      lastName: props.member.lastName || '',
-      email: props.member.email || '',
-      password: '',
-      password2: '',
-      changeEmail: false,
-      changePassword: false,
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
+  state = {
+    firstName: this.props.member.firstName || '',
+    lastName: this.props.member.lastName || '',
+    email: this.props.member.email || '',
+    password: '',
+    password2: '',
+    changeEmail: false,
+    changePassword: false,
+  };
 
   handleChange = (name, val) => {
     this.setState({
@@ -60,11 +54,8 @@ class UpdateProfile extends React.Component {
     });
   };
 
-  handleSubmit = () => {
-    this.props
-      .onFormSubmit(this.state)
-      .then(() => console.log('Profile Updated'))
-      .catch((e) => console.log(`Error: ${e}`));
+  handleSubmit = async () => {
+    await this.props.onFormSubmit(this.state);
   };
 
   render() {
