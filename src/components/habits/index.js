@@ -5,7 +5,12 @@ import CalendarStrip from 'react-native-calendar-strip';
 import SortableListView from 'react-native-sortable-listview';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import moment from 'moment';
-import { View, StyleSheet, TouchableHighlight, RefreshControl } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableHighlight,
+  RefreshControl,
+} from 'react-native';
 
 import HabitConfigModal from './modals/HabitConfigModal';
 import HabitCustomisationModal from './modals/HabitCustomisationModal';
@@ -44,7 +49,7 @@ class Habits extends React.Component {
   onRemoveHabit = async () => {
     const { activeHabit } = this.state;
     const { removeHabit, habitOrder } = this.props;
-    const newOrder = habitOrder.filter((habitKey) => habitKey !== activeHabit);
+    const newOrder = habitOrder.filter(habitKey => habitKey !== activeHabit);
     await removeHabit(activeHabit);
     await updateHabitOrder(newOrder);
     this.closeHabitModal();
@@ -58,14 +63,14 @@ class Habits extends React.Component {
     this.openHabitModal(habitKey);
   };
 
-  handleNewWeekSelection = (startingDate) => {
+  handleNewWeekSelection = startingDate => {
     this.setState({
       startingDate,
     });
     this.props.formatWeek(startingDate);
   };
 
-  updateFocusedHabitKey = (key) => {
+  updateFocusedHabitKey = key => {
     this.setState({
       updateKey: key,
     });
@@ -129,10 +134,10 @@ class Habits extends React.Component {
     });
   };
 
-  reorderRows = async (move) => {
+  reorderRows = async move => {
     this.enableHabitListScroll();
     const { reorderHabits, habits } = this.props;
-    const prevOrder = habits.map((h) => h.key);
+    const prevOrder = habits.map(h => h.key);
     this.setState({ activeRow: move.to });
     await reorderHabits(prevOrder, move.from, move.to, move.row.data.key);
     this.forceUpdate();
@@ -144,7 +149,9 @@ class Habits extends React.Component {
     const habitsOrdered =
       habitOrder.length < 1
         ? habits
-        : habitOrder.map((hid) => habits.find((h) => h.key === hid)).filter((h) => h !== undefined);
+        : habitOrder
+            .map(hid => habits.find(h => h.key === hid))
+            .filter(h => h !== undefined);
 
     return habitsOrdered;
   };
@@ -158,26 +165,49 @@ class Habits extends React.Component {
   };
 
   saveItem = () => {
-    const { activeItem, activeHabit, notes, startingDate, activeRowID } = this.state;
-    this.props.saveHabitItemNotes(activeItem, activeHabit, notes, startingDate, activeRowID);
+    const {
+      activeItem,
+      activeHabit,
+      notes,
+      startingDate,
+      activeRowID,
+    } = this.state;
+    this.props.saveHabitItemNotes(
+      activeItem,
+      activeHabit,
+      notes,
+      startingDate,
+      activeRowID
+    );
     this.updateFocusedHabitKey(activeHabit);
     this.closeItemModal();
   };
 
   clearItem = () => {
     const { activeItem, activeHabit, startingDate, activeRowID } = this.state;
-    this.props.clearHabitItem(activeItem, activeHabit, startingDate, activeRowID);
+    this.props.clearHabitItem(
+      activeItem,
+      activeHabit,
+      startingDate,
+      activeRowID
+    );
     this.closeItemModal();
   };
 
   renderNewHabitButton = () => {
     // Renders button animation downwards if no habits exist, aesthetical fix
     const direction = this.props.habits.length < 1 ? 'down' : 'up';
-    return <RoundButton onPress={this.onNewHabit} title="New Habit" size={60} direction={direction} />;
+    return (
+      <RoundButton
+        onPress={this.onNewHabit}
+        title="New Habit"
+        size={60}
+        direction={direction}
+      />
+    );
   };
 
   renderRow = (row, layout, rowIndex) => {
-    console.log(row);
     return (
       <TouchableHighlight underlayColor={null}>
         <View>
@@ -208,10 +238,9 @@ class Habits extends React.Component {
     //       .catch(error => {})
     //   }, 10000);
     // }
-    console.log('got here');
 
     return (
-      <Container>
+      <Container style={{ backgroundColor: 'white' }}>
         <View style={{ paddingBottom: 20 }}>
           <ItemConfigModal
             visible={this.state.itemModalVisible}
@@ -243,7 +272,7 @@ class Habits extends React.Component {
             onSwipeRight={() => this.calendar.getPreviousWeek()}
           >
             <CalendarStrip
-              ref={(calendar) => {
+              ref={calendar => {
                 this.calendar = calendar;
               }}
               updateWeek={false}
@@ -274,7 +303,12 @@ class Habits extends React.Component {
           onRowMoved={this.reorderRows}
           renderRow={this.renderRow}
           renderFooter={this.renderNewHabitButton}
-          refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.onRefresh} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this.onRefresh}
+            />
+          }
         />
       </Container>
     );

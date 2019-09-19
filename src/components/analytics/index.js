@@ -1,8 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Circle } from 'react-native-svg';
-import { AreaChart, ProgressCircle } from 'react-native-svg-charts';
-import { View, Container, Content, Text, Icon, Picker, Form } from 'native-base';
+// // import { Circle } from 'react-native-svg';
+// import { AreaChart, ProgressCircle } from 'react-native-svg-charts';
+import {
+  View,
+  Container,
+  Content,
+  Text,
+  Icon,
+  Picker,
+  Form,
+} from 'native-base';
 import platform from '../../../native-base-theme/variables/commonColor';
 import Spacer from '../common/Spacer';
 
@@ -12,10 +20,10 @@ class Analytics extends React.Component {
     habitData: this.props.habits[0],
   };
 
-  onValueChange = (value) => {
+  onValueChange = value => {
     this.setState({
       habitSelected: value,
-      habitData: this.props.habits.find((h) => h.key === value),
+      habitData: this.props.habits.find(h => h.key === value),
     });
   };
 
@@ -26,7 +34,7 @@ class Analytics extends React.Component {
     return (
       <Container>
         <Content padder>
-          <Form>
+          {/* <Form>
             <Picker
               mode="dropdown"
               iosIcon={<Icon name="ios-arrow-down-outline" />}
@@ -85,7 +93,7 @@ class Analytics extends React.Component {
             renderDecorator={({ x, y, index, value }) => (
               <Circle key={index} cx={x(index)} cy={y(value)} r={4} stroke={'rgb(134, 65, 244)'} fill={'white'} />
             )}
-          />
+          /> */}
         </Content>
       </Container>
     );

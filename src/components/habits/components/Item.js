@@ -3,21 +3,31 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 
-const Item = (props) => {
+const Item = props => {
   const { id, startingDate, status } = props;
   const date = startingDate.clone().add(id, 'days');
   const weekDay = date.format('ddd').toUpperCase();
   const weekDate = date.date();
   return (
     <View style={styles.dateContainer}>
-      <Text style={status === 'done' ? styles.dateNameDone : styles.dateNameUndone}>{weekDay}</Text>
-      <Text style={status === 'done' ? styles.dateNumberDone : styles.dateNumberUndone}>{weekDate}</Text>
+      <Text
+        style={status === 'done' ? styles.dateNameDone : styles.dateNameUndone}
+      >
+        {weekDay}
+      </Text>
+      <Text
+        style={
+          status === 'done' ? styles.dateNumberDone : styles.dateNumberUndone
+        }
+      >
+        {weekDate}
+      </Text>
     </View>
   );
 };
 
 Item.propTypes = {
-  id: PropTypes.string.isRequired,
+  id: PropTypes.number.isRequired,
   startingDate: PropTypes.instanceOf(moment).isRequired,
   status: PropTypes.string,
 };
