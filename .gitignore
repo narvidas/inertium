@@ -4,3 +4,4 @@ documentation/
 .expo/
 npm-debug.*
 src/constants/firebase.js
+.DS_Store
