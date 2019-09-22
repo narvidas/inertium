@@ -1,11 +1,11 @@
 {
   "expo": {
-    "sdkVersion": "32.0.0",
+    "sdkVersion": "35.0.0",
     "name": "Inertium Habit Tracker",
     "slug": "inertium-habit-tracker",
     "icon": "src/images/app-icon.png",
     "platforms": ["ios"],
-    "version": "1.0.0",
+    "version": "1.2.1",
     "orientation": "portrait",
     "privacy": "public",
     "splash": {
