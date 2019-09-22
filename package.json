@@ -48,7 +48,6 @@
     "react-native-action-button": "^2.8.5",
     "react-native-calendar-strip": "git+https://github.com/narvidas/react-native-calendar-strip.git",
     "react-native-easy-toast": "^1.1.0",
-    "react-native-fbads": "^4.2.2",
     "react-native-gesture-handler": "^1.0.7",
     "react-native-router-flux": "4.0.6",
     "react-native-sortable-list": "0.0.21",

@@ -1,9 +1,6 @@
 import React from 'react';
 import Root from './src/index';
 import configureStore from './src/store/index';
-// import { FacebookAds } from 'expo';
-
-// FacebookAds.AdSettings.addTestDevice(FacebookAds.AdSettings.currentDeviceHash);
 
 const { persistor, store } = configureStore();
 // persistor.purge(); // Debug to clear persist

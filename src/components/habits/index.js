@@ -20,8 +20,6 @@ import { generatePushID } from '../../lib/helpers';
 import Row from './components/Row';
 import { updateHabitOrder } from '../../actions/habits/remote';
 
-// import { FacebookAds } from 'expo';
-
 class Habits extends React.Component {
   state = {
     itemModalVisible: false,
@@ -92,7 +90,6 @@ class Habits extends React.Component {
       startingDate,
       activeRowID: rowID,
       scrollHabits: true,
-      adShown: false,
     });
   };
 
@@ -229,16 +226,6 @@ class Habits extends React.Component {
   };
 
   render() {
-    // const placementId = "205216370287292_205223896953206";
-    // if (!this.state.adShown){
-    //   this.state.adShown = true
-    //   setTimeout(()=>{
-    //     FacebookAds.InterstitialAdManager.showAd(placementId)
-    //       .then(didClick => {})
-    //       .catch(error => {})
-    //   }, 10000);
-    // }
-
     return (
       <Container style={{ backgroundColor: 'white' }}>
         <View style={{ paddingBottom: 20 }}>
