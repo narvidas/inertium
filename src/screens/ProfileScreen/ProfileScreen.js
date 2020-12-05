@@ -2,8 +2,8 @@ import { Body, Container, Content, Icon, Left, List, ListItem, Text } from "nati
 import React, { useContext } from "react";
 import { useObjectVal } from "react-firebase-hooks/database";
 import { View } from "react-native";
-import Header from "../../components/Header";
-import Loading from "../../components/Loading";
+import { Header } from "../../components/Header";
+import { Loading } from "../../components/Loading";
 import FirebaseContext from "../../config/firebaseContext";
 
 const Actions = {};

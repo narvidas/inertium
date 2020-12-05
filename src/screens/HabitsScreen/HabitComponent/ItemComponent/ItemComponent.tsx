@@ -1,6 +1,9 @@
 import format from "date-fns/format";
+import parseISO from "date-fns/parseISO";
 import React, { FC, useState } from "react";
 import { Text, TouchableHighlight, View } from "react-native";
+import { useDispatch } from "react-redux";
+import { updateItemStatus } from "../../habits.slice";
 import { Item, Status } from "../../types";
 import { styles } from "./ItemComponent.styles";
 
@@ -11,26 +14,40 @@ const getStyle = (status: Status) => {
 };
 
 interface OwnProps {
+  habitId: string;
   defaultStatus: Status;
 }
 
 type Props = Item & OwnProps;
 
-export const ItemComponent: FC<Props> = ({ defaultStatus, date }) => {
+export const ItemComponent: FC<Props> = ({ habitId, defaultStatus, ...item }) => {
+  const dispatch = useDispatch();
+  const [status, setStatus] = useState(defaultStatus);
+
+  const date = parseISO(item.date);
   const dayOfWeekWord = format(date, "EEE"); // E.g. 'SUN' for Sunday
   const dayOfMonthNumber = format(date, "d"); // E.g. '14' for 14th December
-  const [status, setStatus] = useState(defaultStatus);
+
+  const updateStatus = () => {
+    let newStatus = defaultStatus;
+    if (status === "default") newStatus = "done";
+    if (status === "done") newStatus = "fail";
+    if (status === "fail") newStatus = "default";
+
+    const newItem = { ...item, status: newStatus };
+    setStatus(newStatus);
+    dispatch(updateItemStatus({ habitId, item: newItem }));
+  };
+
   return (
     <TouchableHighlight
       activeOpacity={1}
       underlayColor="rgba(0,0,0,0.25)"
       style={[styles.box, getStyle(status)]}
-      onPress={() => {
-        if (status === "default") setStatus("done");
-        if (status === "done") setStatus("fail");
-        if (status === "fail") setStatus("default");
+      onPress={updateStatus}
+      onLongPress={() => {
+        /*open item modal*/
       }}
-      // onLongPress={() => openItemModal(item.key, habitKey, item.notes, startingDate, rowID)}
     >
       <View style={styles.dateContainer}>
         <Text style={[styles.dayOfWeekWord, getStyle(status)]}>{dayOfWeekWord}</Text>

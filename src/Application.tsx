@@ -4,16 +4,17 @@ import { AppLoading } from "expo";
 import { Asset } from "expo-asset";
 import * as Font from "expo-font";
 import { Root, StyleProvider } from "native-base";
-import React, { FC, useEffect, useMemo, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { View } from "react-native";
 import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 import styles from "../App.styles";
 import { fonts, images } from "../assets";
 import getTheme from "../native-base-theme/components";
 import theme from "../native-base-theme/variables/commonColor";
 import initFirebase from "./config/firebase";
 import FirebaseContext from "./config/firebaseContext";
-import { getStore } from "./config/rtk/store";
+import { persistor, store } from "./config/rtk/store";
 import { HabitsScreen } from "./screens/HabitsScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { Tab, tabs } from "./Tab";
@@ -37,10 +38,11 @@ const handleLoadingError = error => {
 };
 
 export const Application: FC = () => {
-  const store = useMemo(getStore, []);
+  // persistor.purge(); // Debug to clear persist
   const [isLoadingComplete, setLoadingComplete] = useState(false);
   const [firebaseValues, setFirebaseValues] = useState();
   const isFirebaseInitComplete = !!firebaseValues;
+
   useEffect(() => {
     initFirebase().then(values => setFirebaseValues(values));
   }, []);
@@ -59,20 +61,22 @@ export const Application: FC = () => {
     <Root>
       <View style={styles.container}>
         <Provider store={store}>
-          <StyleProvider style={getTheme(theme)}>
-            <FirebaseContext.Provider value={firebaseValues}>
-              <NavigationContainer>
-                <Tab.Navigator
-                  tabBar={props => (
-                    <AnimatedTabBar animation="iconWithLabel" preset="material" tabs={tabs} {...props} />
-                  )}
-                >
-                  <Tab.Screen name="Habits" component={HabitsScreen} />
-                  <Tab.Screen name="Profile" component={ProfileScreen} />
-                </Tab.Navigator>
-              </NavigationContainer>
-            </FirebaseContext.Provider>
-          </StyleProvider>
+          <PersistGate loading={null} persistor={persistor}>
+            <StyleProvider style={getTheme(theme)}>
+              <FirebaseContext.Provider value={firebaseValues}>
+                <NavigationContainer>
+                  <Tab.Navigator
+                    tabBar={props => (
+                      <AnimatedTabBar animation="iconWithLabel" preset="material" tabs={tabs} {...props} />
+                    )}
+                  >
+                    <Tab.Screen name="Habits" component={HabitsScreen} />
+                    <Tab.Screen name="Profile" component={ProfileScreen} />
+                  </Tab.Navigator>
+                </NavigationContainer>
+              </FirebaseContext.Provider>
+            </StyleProvider>
+          </PersistGate>
         </Provider>
       </View>
     </Root>

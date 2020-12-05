@@ -2,7 +2,7 @@ import { Text } from "native-base";
 import PropTypes from "prop-types";
 import React from "react";
 import { View } from "react-native";
-import Colors from "../../native-base-theme/variables/commonColor";
+import Colors from "../../../native-base-theme/variables/commonColor";
 
 const Messages = ({ message, type }) => (
   <View

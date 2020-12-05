@@ -3,10 +3,10 @@ import { Button, Container, Content, Form, Input, Item, Label, Text } from "nati
 import React, { useContext, useState } from "react";
 import { Actions } from "react-native-router-flux";
 import * as Yup from "yup";
-import Header from "../../components/Header";
-import Loading from "../../components/Loading";
-import Messages from "../../components/Messages";
-import Spacer from "../../components/Spacer";
+import Header from "../../components/Header/Header";
+import Loading from "../../components/Loading/Loading";
+import Messages from "../../components/Messages/Messages";
+import Spacer from "../../components/Spacer/Spacer";
 import FirebaseContext from "../../config/firebaseContext";
 
 export const SignUpScreen = () => {

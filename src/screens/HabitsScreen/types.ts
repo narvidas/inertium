@@ -1,5 +1,5 @@
 export interface Habit {
-  key: string;
+  id: string;
   title: string;
   goal: number;
   items: Item[];
@@ -9,13 +9,13 @@ export interface Habit {
 export type Status = "default" | "done" | "fail";
 
 export interface Item {
-  key: string;
+  id: string;
   status: Status;
-  date: Date;
+  date: string;
   notes?: string;
   meta?: Meta;
 }
 
 interface Meta {
-  lastUpdate: Date;
+  lastUpdate: string;
 }

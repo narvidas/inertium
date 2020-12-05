@@ -2,10 +2,10 @@ import { Formik } from "formik";
 import { Button, Container, Content, Form, Input, Item, Label, Text } from "native-base";
 import React, { useContext, useState } from "react";
 import * as Yup from "yup";
-import Header from "../../components/Header";
-import Loading from "../../components/Loading";
-import Messages from "../../components/Messages";
-import Spacer from "../../components/Spacer";
+import { Header } from "../../components/Header";
+import { Loading } from "../../components/Loading";
+import { Messages } from "../../components/Messages";
+import { Spacer } from "../../components/Spacer";
 import FirebaseContext from "../../config/firebaseContext";
 
 export const ForgotPasswordScreen = () => {

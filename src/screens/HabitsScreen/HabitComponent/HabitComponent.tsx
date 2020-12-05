@@ -1,11 +1,14 @@
 import addDays from "date-fns/addDays";
+import formatISO from "date-fns/formatISO";
 import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
+import parseISO from "date-fns/parseISO";
 import { List, ListItem } from "native-base";
 import React, { FC } from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
-import Spacer from "../../../components/Spacer";
+import { View } from "react-native";
+import { Spacer } from "../../../components/Spacer/Spacer";
 import { Habit, Item } from "../types";
+import { styles } from "./HabitComponent.styles";
 import { HeaderComponent } from "./HeaderComponent";
 import { ItemComponent } from "./ItemComponent";
 
@@ -14,25 +17,26 @@ const DAYS_IN_WEEK = 7;
 const getRecordedItemsForThisWeek = (items: Item[], startOfWeek: Date) => {
   const endOfWeek = addDays(startOfWeek, DAYS_IN_WEEK);
 
-  return items.filter(item => isWithinInterval(item.date, { start: startOfWeek, end: endOfWeek }));
+  return items.filter(item => isWithinInterval(parseISO(item.date), { start: startOfWeek, end: endOfWeek }));
 };
 
 interface OwnProps {
+  habitId: string;
   startOfWeek: Date;
 }
 
 type Props = Habit & OwnProps;
 
-export const HabitComponent: FC<Props> = ({ key, items, title, goal, startOfWeek }) => {
+export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOfWeek }) => {
   const recordedItemsForThisWeek = getRecordedItemsForThisWeek(items, startOfWeek);
 
   const weekItems = [...Array(DAYS_IN_WEEK)].map((_, index) => {
     const itemDate = addDays(startOfWeek, index);
-    const recordedItem = recordedItemsForThisWeek.find(item => isSameDay(itemDate, item.date));
+    const recordedItem = recordedItemsForThisWeek.find(item => isSameDay(itemDate, parseISO(item.date)));
 
     const unrecordedItem: Item = {
-      key: `habit-${key}-item-${index}`,
-      date: itemDate,
+      id: `habit-${habitId}-item-${index}`,
+      date: formatISO(itemDate),
       notes: "",
       status: "default",
     };
@@ -42,7 +46,7 @@ export const HabitComponent: FC<Props> = ({ key, items, title, goal, startOfWeek
 
   const renderItem = (item: Item) => (
     <ListItem style={styles.list}>
-      <ItemComponent {...item} defaultStatus={item.status} />
+      <ItemComponent {...item} habitId={habitId} defaultStatus={item.status} />
     </ListItem>
   );
 
@@ -71,18 +75,3 @@ export const HabitComponent: FC<Props> = ({ key, items, title, goal, startOfWeek
     </View>
   );
 };
-
-const boxWH = Dimensions.get("window").width / 8;
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: boxWH / 2,
-  },
-  list: {
-    padding: 0,
-    borderBottomWidth: 0,
-    marginLeft: 0,
-    paddingLeft: 0,
-    paddingRight: 0,
-    marginRight: 0,
-  },
-});

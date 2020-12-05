@@ -1,22 +1,26 @@
-import { configureStore } from "@reduxjs/toolkit";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
+import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from "redux-persist";
 import rootReducer from "./rootReducer";
 
-export const getStore = () =>
+const persistConfig = {
+  key: "habitsState",
+  storage: AsyncStorage,
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+const getStore = () =>
   configureStore({
-    reducer: rootReducer,
+    reducer: persistedReducer,
+    devTools: process.env.NODE_ENV !== "production",
+    middleware: getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
   });
 
-/* istanbul ignore next */
-/* eslint-disable */
-if (process.env.NODE_ENV === "development" && module.hot) {
-  module.hot.accept("./rootReducer", () => {
-    const newRootReducer = require("./rootReducer").default;
-    store.replaceReducer(newRootReducer);
-  });
-}
-/*eslint-enable */
-
-const store = getStore();
+export const store = getStore();
+export const persistor = persistStore(store);
 export type AppDispatch = typeof store.dispatch;
-
-export default store;

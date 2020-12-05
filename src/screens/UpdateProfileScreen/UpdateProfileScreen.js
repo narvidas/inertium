@@ -16,10 +16,10 @@ import {
 import React, { useContext, useState } from "react";
 import { useObjectVal } from "react-firebase-hooks/database";
 import * as Yup from "yup";
-import Header from "../../components/Header";
-import Loading from "../../components/Loading";
-import Messages from "../../components/Messages";
-import Spacer from "../../components/Spacer";
+import { Header } from "../../components/Header";
+import { Loading } from "../../components/Loading";
+import { Messages } from "../../components/Messages";
+import { Spacer } from "../../components/Spacer";
 import FirebaseContext from "../../config/firebaseContext";
 
 export const UpdateProfileScreen = () => {
