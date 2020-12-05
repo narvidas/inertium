@@ -1,7 +1,7 @@
 import { Formik } from "formik";
 import { Button, Container, Content, Form, Input, Item, Label, Text } from "native-base";
 import React, { useContext, useState } from "react";
-import { Actions } from "react-native-router-flux";
+// import { Actions } from "react-native-router-flux";
 import * as Yup from "yup";
 import Header from "../../components/Header";
 import Loading from "../../components/Loading";
@@ -18,7 +18,7 @@ export const LogInScreen = () => {
     setLoading(true);
     try {
       await auth.signInWithEmailAndPassword(values.email, values.password);
-      Actions.profileHome();
+      // Actions.profileHome();
     } catch (e) {
       setError(e.message);
     }

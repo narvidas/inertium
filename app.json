@@ -1,26 +1,21 @@
 {
   "expo": {
-    "name": "MonadReactNativeStarter",
-    "slug": "monad-react-native-starter",
+    "name": "inertium",
+    "slug": "inertium-habit-tracker",
     "privacy": "public",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#737373"
+      "backgroundColor": "#48914d"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     }
