@@ -4,9 +4,10 @@ import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
 import { List, ListItem } from "native-base";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { View } from "react-native";
 import { Spacer } from "../../../components/Spacer/Spacer";
+import { HabitConfigModal } from "../HabitConfigModal";
 import { Habit, Item } from "../types";
 import { styles } from "./HabitComponent.styles";
 import { HeaderComponent } from "./HeaderComponent";
@@ -28,6 +29,7 @@ interface OwnProps {
 type Props = Habit & OwnProps;
 
 export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOfWeek }) => {
+  const [configModalVisible, setConfigModalVisible] = useState(false);
   const recordedItemsForThisWeek = getRecordedItemsForThisWeek(items, startOfWeek);
 
   const weekItems = [...Array(DAYS_IN_WEEK)].map((_, index) => {
@@ -55,6 +57,7 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
 
   return (
     <View>
+      <HabitConfigModal visible={configModalVisible} onSave={() => {}} onClose={() => {}} onRemove={() => {}} />
       <Spacer size={15} />
       <View style={styles.container}>
         <HeaderComponent

@@ -75,6 +75,20 @@ const habitsSlice = createSlice({
         state.habits[habitIndex].items.push(item);
       }
     },
+    createNewHabit(state, action: PayloadAction<{ title: string; goal: number }>) {
+      const { title, goal } = action.payload;
+
+      state.habits.push({
+        id: title,
+        title,
+        goal,
+        items: [],
+        meta: {
+          lastUpdatedOn: formatISO(new Date()),
+          createdOn: formatISO(new Date()),
+        },
+      });
+    },
   },
 });
 
@@ -82,5 +96,6 @@ export const habitsSelector = (state: RootState) => state.habitsState.habits;
 
 export const { updateHabits } = habitsSlice.actions;
 export const { updateItemStatus } = habitsSlice.actions;
+export const { createNewHabit } = habitsSlice.actions;
 
 export default habitsSlice.reducer;

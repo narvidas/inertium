@@ -17,5 +17,6 @@ export interface Item {
 }
 
 interface Meta {
-  lastUpdate: string;
+  createdOn: string;
+  lastUpdatedOn: string;
 }
