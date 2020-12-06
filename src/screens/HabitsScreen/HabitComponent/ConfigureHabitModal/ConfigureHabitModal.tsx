@@ -60,7 +60,6 @@ export const ConfigureHabitModal: FC<Props> = ({
 
   const submit = ({ title, goal }: Values) => {
     if (title && goal) onSave(title, goal);
-    onClose();
   };
 
   return (

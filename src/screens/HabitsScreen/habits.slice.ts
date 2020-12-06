@@ -89,6 +89,18 @@ const habitsSlice = createSlice({
         },
       });
     },
+    updateHabit(state, action: PayloadAction<{ habitId: string; title: string; goal: number }>) {
+      const { habitId, title, goal } = action.payload;
+
+      const habitIndex = state.habits.findIndex(h => h.id === habitId);
+
+      state.habits[habitIndex].goal = goal;
+      state.habits[habitIndex].title = title;
+    },
+    removeHabit(state, action: PayloadAction<{ habitId: string }>) {
+      const { habitId } = action.payload;
+      state.habits = state.habits.filter(h => h.id !== habitId);
+    },
   },
 });
 
@@ -97,5 +109,7 @@ export const habitsSelector = (state: RootState) => state.habitsState.habits;
 export const { updateHabits } = habitsSlice.actions;
 export const { updateItemStatus } = habitsSlice.actions;
 export const { createNewHabit } = habitsSlice.actions;
+export const { updateHabit } = habitsSlice.actions;
+export const { removeHabit } = habitsSlice.actions;
 
 export default habitsSlice.reducer;

@@ -6,7 +6,9 @@ import parseISO from "date-fns/parseISO";
 import { List, ListItem } from "native-base";
 import React, { FC, useState } from "react";
 import { View } from "react-native";
+import { useDispatch } from "react-redux";
 import { Spacer } from "../../../components/Spacer/Spacer";
+import { removeHabit, updateHabit } from "../habits.slice";
 import { Habit, Item } from "../types";
 import { ConfigureHabitModal } from "./ConfigureHabitModal";
 import { styles } from "./HabitComponent.styles";
@@ -29,6 +31,7 @@ interface OwnProps {
 type Props = Habit & OwnProps;
 
 export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOfWeek }) => {
+  const dispatch = useDispatch();
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const recordedItemsForThisWeek = getRecordedItemsForThisWeek(items, startOfWeek);
 
@@ -60,9 +63,15 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
       <ConfigureHabitModal
         visible={configModalVisible}
         defaultValues={{ title, goal }}
-        onSave={() => {}}
+        onSave={(title, goal) => {
+          dispatch(updateHabit({ habitId, title, goal }));
+          setConfigModalVisible(false);
+        }}
         onClose={() => setConfigModalVisible(false)}
-        onRemove={() => {}}
+        onRemove={() => {
+          dispatch(removeHabit({ habitId }));
+          setConfigModalVisible(false);
+        }}
       />
       <Spacer size={15} />
       <View style={styles.container}>
