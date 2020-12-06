@@ -4,6 +4,7 @@ export interface Habit {
   goal: number;
   items: Item[];
   meta: Meta;
+  order: number;
 }
 
 export type Status = "default" | "done" | "fail";

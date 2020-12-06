@@ -48,18 +48,37 @@ const habitsSlice = createSlice({
     },
     createNewHabit(state, action: PayloadAction<{ title: string; goal: number }>) {
       const { title, goal } = action.payload;
+      const lastInList = state.habits.length;
 
       state.habits.push({
         id: title,
         title,
         goal,
         items: [],
+        order: lastInList,
         meta: {
           isDeleted: false,
           lastUpdatedOn: formatISO(new Date()),
           createdOn: formatISO(new Date()),
         },
       });
+    },
+    reorderHabit(state, action: PayloadAction<{ habitId: string; newOrder: number }>) {
+      const { habitId, newOrder } = action.payload;
+      const habitIndex = state.habits.findIndex(h => h.id === habitId);
+
+      const oldOrder = state.habits[habitIndex].order;
+      state.habits[habitIndex].order = newOrder;
+      (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
+
+      // Shift all remaining order of habits
+      for (let habit of state.habits) {
+        const needsReordering = habit.order > oldOrder;
+        if (needsReordering) {
+          habit.order = habit.order + 1;
+        }
+        habit.meta.lastUpdatedOn = formatISO(new Date());
+      }
     },
     updateHabit(state, action: PayloadAction<{ habitId: string; title: string; goal: number }>) {
       const { habitId, title, goal } = action.payload;
@@ -76,8 +95,17 @@ const habitsSlice = createSlice({
 
       const habitIndex = state.habits.findIndex(h => h.id === habitId);
       (state.habits[habitIndex].meta as Meta).isDeleted = true;
-
       (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
+
+      // Shift all remaining order of habits
+      const oldOrder = state.habits[habitIndex].order;
+      for (let habit of state.habits) {
+        const needsReordering = habit.order > oldOrder;
+        if (needsReordering) {
+          habit.order = habit.order - 1;
+        }
+        habit.meta.lastUpdatedOn = formatISO(new Date());
+      }
     },
   },
 });
