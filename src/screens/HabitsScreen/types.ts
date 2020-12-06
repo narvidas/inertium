@@ -3,7 +3,7 @@ export interface Habit {
   title: string;
   goal: number;
   items: Item[];
-  meta?: Meta;
+  meta: Meta;
 }
 
 export type Status = "default" | "done" | "fail";
@@ -13,10 +13,11 @@ export interface Item {
   status: Status;
   date: string;
   notes?: string;
-  meta?: Meta;
+  meta: Meta;
 }
 
-interface Meta {
+export interface Meta {
+  isDeleted: boolean;
   createdOn: string;
   lastUpdatedOn: string;
 }

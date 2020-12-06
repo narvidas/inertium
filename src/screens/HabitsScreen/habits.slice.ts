@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import addDays from "date-fns/addDays";
 import formatISO from "date-fns/formatISO";
 import { RootState } from "../../config/rtk/rootReducer";
-import { Habit, Item } from "./types";
+import { Habit, Item, Meta } from "./types";
 
 interface HabitsState {
   habits: Habit[];
@@ -17,39 +17,6 @@ const initialState: HabitsState = {
       title: "Some Habit",
       goal: 3,
       items: [],
-    },
-  ],
-};
-const initialState2: HabitsState = {
-  habits: [
-    {
-      key: "habit1",
-      title: "Some Habit",
-      goal: 3,
-      items: [
-        {
-          key: "item1",
-          status: "done",
-          date: today,
-        },
-      ],
-    },
-    {
-      key: "habit2",
-      title: "Another Habit",
-      goal: 5,
-      items: [
-        {
-          key: "item1",
-          status: "done",
-          date: today,
-        },
-        {
-          key: "item2",
-          status: "fail",
-          date: tomorrow,
-        },
-      ],
     },
   ],
 };
@@ -74,6 +41,8 @@ const habitsSlice = createSlice({
       } else {
         state.habits[habitIndex].items.push(item);
       }
+
+      (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
     },
     createNewHabit(state, action: PayloadAction<{ title: string; goal: number }>) {
       const { title, goal } = action.payload;
@@ -84,6 +53,7 @@ const habitsSlice = createSlice({
         goal,
         items: [],
         meta: {
+          isDeleted: false,
           lastUpdatedOn: formatISO(new Date()),
           createdOn: formatISO(new Date()),
         },
@@ -96,15 +66,21 @@ const habitsSlice = createSlice({
 
       state.habits[habitIndex].goal = goal;
       state.habits[habitIndex].title = title;
+
+      (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
     },
     removeHabit(state, action: PayloadAction<{ habitId: string }>) {
       const { habitId } = action.payload;
-      state.habits = state.habits.filter(h => h.id !== habitId);
+
+      const habitIndex = state.habits.findIndex(h => h.id === habitId);
+      (state.habits[habitIndex].meta as Meta).isDeleted = true;
+
+      (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
     },
   },
 });
 
-export const habitsSelector = (state: RootState) => state.habitsState.habits;
+export const habitsSelector = (state: RootState) => state.habitsState.habits.filter(h => !h.meta?.isDeleted);
 
 export const { updateHabits } = habitsSlice.actions;
 export const { updateItemStatus } = habitsSlice.actions;

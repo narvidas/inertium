@@ -1,6 +1,6 @@
 import format from "date-fns/format";
 import parseISO from "date-fns/parseISO";
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { Text, TouchableHighlight, View } from "react-native";
 import { useDispatch } from "react-redux";
 import { updateItemStatus } from "../../habits.slice";
@@ -15,27 +15,24 @@ const getStyle = (status: Status) => {
 
 interface OwnProps {
   habitId: string;
-  defaultStatus: Status;
 }
 
 type Props = Item & OwnProps;
 
-export const ItemComponent: FC<Props> = ({ habitId, defaultStatus, ...item }) => {
+export const ItemComponent: FC<Props> = ({ habitId, ...item }) => {
   const dispatch = useDispatch();
-  const [status, setStatus] = useState(defaultStatus);
 
   const date = parseISO(item.date);
   const dayOfWeekWord = format(date, "EEE"); // E.g. 'SUN' for Sunday
   const dayOfMonthNumber = format(date, "d"); // E.g. '14' for 14th December
 
   const updateStatus = () => {
-    let newStatus = defaultStatus;
-    if (status === "default") newStatus = "done";
-    if (status === "done") newStatus = "fail";
-    if (status === "fail") newStatus = "default";
+    let newStatus: Status = "default";
+    if (item.status === "default") newStatus = "done";
+    if (item.status === "done") newStatus = "fail";
+    if (item.status === "fail") newStatus = "default";
 
     const newItem = { ...item, status: newStatus };
-    setStatus(newStatus);
     dispatch(updateItemStatus({ habitId, item: newItem }));
   };
 
@@ -43,15 +40,15 @@ export const ItemComponent: FC<Props> = ({ habitId, defaultStatus, ...item }) =>
     <TouchableHighlight
       activeOpacity={1}
       underlayColor="rgba(0,0,0,0.25)"
-      style={[styles.box, getStyle(status)]}
+      style={[styles.box, getStyle(item.status)]}
       onPress={updateStatus}
       onLongPress={() => {
         /*open item modal*/
       }}
     >
       <View style={styles.dateContainer}>
-        <Text style={[styles.dayOfWeekWord, getStyle(status)]}>{dayOfWeekWord}</Text>
-        <Text style={[styles.dayOfMonthNumber, getStyle(status)]}>{dayOfMonthNumber}</Text>
+        <Text style={[styles.dayOfWeekWord, getStyle(item.status)]}>{dayOfWeekWord}</Text>
+        <Text style={[styles.dayOfMonthNumber, getStyle(item.status)]}>{dayOfMonthNumber}</Text>
       </View>
     </TouchableHighlight>
   );

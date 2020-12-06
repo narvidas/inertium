@@ -20,6 +20,8 @@ const validationSchema = Yup.object().shape({
   title: Yup.string().required("Title is required!"),
   goal: Yup.number()
     .required("Weekly goal number is required!")
+    .min(0, "Cannot be a negative number!")
+    .max(7, "Week has only 7 days!")
     .typeError("Must be a numeric value!"),
 });
 

@@ -8,6 +8,7 @@ import React, { FC, useMemo, useState } from "react";
 import { View } from "react-native";
 import { useDispatch } from "react-redux";
 import { Spacer } from "../../../components/Spacer/Spacer";
+import { generatePushID } from "../../../utils/generatePushID";
 import { removeHabit, updateHabit } from "../habits.slice";
 import { Habit, Item } from "../types";
 import { ConfigureHabitModal } from "./ConfigureHabitModal";
@@ -17,10 +18,32 @@ import { ItemComponent } from "./ItemComponent";
 
 const DAYS_IN_WEEK = 7;
 
-const getRecordedItemsForThisWeek = (items: Item[], startOfWeek: Date) => {
-  const endOfWeek = addDays(startOfWeek, DAYS_IN_WEEK);
+const unrecordedItem = (date: Date): Item => {
+  return {
+    id: generatePushID(),
+    date: formatISO(date),
+    status: "default",
+    meta: {
+      isDeleted: false,
+      lastUpdatedOn: formatISO(new Date()),
+      createdOn: formatISO(new Date()),
+    },
+  };
+};
 
+const filterInGivenWeek = (items: Item[], startOfWeek: Date) => {
+  const endOfWeek = addDays(startOfWeek, DAYS_IN_WEEK);
   return items.filter(item => isWithinInterval(parseISO(item.date), { start: startOfWeek, end: endOfWeek }));
+};
+
+const backfillWeekItems = (recordedItems: Item[], startOfWeek: Date) => {
+  const emptyWeekArray = [...Array(DAYS_IN_WEEK)];
+
+  return emptyWeekArray.map((_, index) => {
+    const itemDate = addDays(startOfWeek, index);
+    const recordedItem = recordedItems.find(item => isSameDay(itemDate, parseISO(item.date)));
+    return recordedItem || unrecordedItem(itemDate);
+  });
 };
 
 interface OwnProps {
@@ -35,26 +58,15 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
   const [configModalVisible, setConfigModalVisible] = useState(false);
 
   const weekItems = useMemo(() => {
-    const recordedItemsForThisWeek = getRecordedItemsForThisWeek(items, startOfWeek);
+    const recordedItemsForThisWeek = filterInGivenWeek(items, startOfWeek);
+    const weekItems = backfillWeekItems(recordedItemsForThisWeek, startOfWeek);
 
-    const emptyWeekArray = [...Array(DAYS_IN_WEEK)];
-    return emptyWeekArray.map((_, index) => {
-      const itemDate = addDays(startOfWeek, index);
-      const recordedItem = recordedItemsForThisWeek.find(item => isSameDay(itemDate, parseISO(item.date)));
-
-      const unrecordedItem: Item = {
-        id: `habit-${habitId}-item-${index}`,
-        date: formatISO(itemDate),
-        status: "default",
-      };
-
-      return recordedItem || unrecordedItem;
-    });
+    return weekItems;
   }, [items, startOfWeek]);
 
   const renderItem = (item: Item) => (
     <ListItem style={styles.list}>
-      <ItemComponent {...item} habitId={habitId} defaultStatus={item.status} />
+      <ItemComponent {...item} habitId={habitId} />
     </ListItem>
   );
 

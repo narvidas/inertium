@@ -1,4 +1,4 @@
-import startOfWeek from "date-fns/startOfWeek";
+import dateFnsStartOfWeek from "date-fns/startOfWeek";
 import { Container, Content } from "native-base";
 import React, { FC, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,7 +13,9 @@ export const HabitsScreen: FC = () => {
   const dispatch = useDispatch();
   const [newHabitModalVisible, setNewHabitModalVisible] = useState(false);
 
-  const mondayOfCurrentWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const mondayOfCurrentWeek = dateFnsStartOfWeek(new Date(), { weekStartsOn: 1 });
+  const [startOfWeek, setStartOfWeek] = useState(mondayOfCurrentWeek);
+
   const habits = useSelector(habitsSelector);
   const newHabitButtonDirection = habits.length < 1 ? "down" : "up";
 
@@ -26,10 +28,10 @@ export const HabitsScreen: FC = () => {
       />
       <Content>
         <Spacer />
-        <CalendarStripComponent />
+        <CalendarStripComponent onWeekChanged={setStartOfWeek} />
         <Spacer size={30} />
         {habits.map(habit => (
-          <HabitComponent habitId={habit.id} startOfWeek={mondayOfCurrentWeek} {...habit} />
+          <HabitComponent habitId={habit.id} startOfWeek={startOfWeek} {...habit} />
         ))}
         <Spacer size={50} />
         <RoundButton
