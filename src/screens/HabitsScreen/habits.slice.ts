@@ -28,7 +28,7 @@ const habitsSlice = createSlice({
     updateHabits(state, action: PayloadAction<Habit[]>) {
       state.habits = action.payload;
     },
-    updateItemStatus(state, action: PayloadAction<{ habitId: string; item: Item }>) {
+    updateOrCreateItem(state, action: PayloadAction<{ habitId: string; item: Item }>) {
       const { habitId, item } = action.payload;
 
       const habitIndex = state.habits.findIndex(h => h.id === habitId);
@@ -37,7 +37,9 @@ const habitsSlice = createSlice({
       const recordedItemExists = itemIndex >= 0;
 
       if (recordedItemExists) {
+        state.habits[habitIndex].items[itemIndex].notes = item.notes;
         state.habits[habitIndex].items[itemIndex].status = item.status;
+        state.habits[habitIndex].items[itemIndex].meta.lastUpdatedOn = formatISO(new Date());
       } else {
         state.habits[habitIndex].items.push(item);
       }
@@ -83,7 +85,7 @@ const habitsSlice = createSlice({
 export const habitsSelector = (state: RootState) => state.habitsState.habits.filter(h => !h.meta?.isDeleted);
 
 export const { updateHabits } = habitsSlice.actions;
-export const { updateItemStatus } = habitsSlice.actions;
+export const { updateOrCreateItem } = habitsSlice.actions;
 export const { createNewHabit } = habitsSlice.actions;
 export const { updateHabit } = habitsSlice.actions;
 export const { removeHabit } = habitsSlice.actions;

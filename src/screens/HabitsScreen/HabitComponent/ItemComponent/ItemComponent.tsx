@@ -1,11 +1,12 @@
 import format from "date-fns/format";
 import parseISO from "date-fns/parseISO";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Text, TouchableHighlight, View } from "react-native";
 import { useDispatch } from "react-redux";
-import { updateItemStatus } from "../../habits.slice";
+import { updateOrCreateItem } from "../../habits.slice";
 import { Item, Status } from "../../types";
 import { styles } from "./ItemComponent.styles";
+import { ItemModal } from "./ItemModal";
 
 const getStyle = (status: Status) => {
   if (status === "done") return styles.done;
@@ -21,6 +22,7 @@ type Props = Item & OwnProps;
 
 export const ItemComponent: FC<Props> = ({ habitId, ...item }) => {
   const dispatch = useDispatch();
+  const [itemModalVisible, setItemModalVisible] = useState(false);
 
   const date = parseISO(item.date);
   const dayOfWeekWord = format(date, "EEE"); // E.g. 'SUN' for Sunday
@@ -33,23 +35,29 @@ export const ItemComponent: FC<Props> = ({ habitId, ...item }) => {
     if (item.status === "fail") newStatus = "default";
 
     const newItem = { ...item, status: newStatus };
-    dispatch(updateItemStatus({ habitId, item: newItem }));
+    dispatch(updateOrCreateItem({ habitId, item: newItem }));
   };
 
   return (
-    <TouchableHighlight
-      activeOpacity={1}
-      underlayColor="rgba(0,0,0,0.25)"
-      style={[styles.box, getStyle(item.status)]}
-      onPress={updateStatus}
-      onLongPress={() => {
-        /*open item modal*/
-      }}
-    >
-      <View style={styles.dateContainer}>
-        <Text style={[styles.dayOfWeekWord, getStyle(item.status)]}>{dayOfWeekWord}</Text>
-        <Text style={[styles.dayOfMonthNumber, getStyle(item.status)]}>{dayOfMonthNumber}</Text>
-      </View>
-    </TouchableHighlight>
+    <>
+      <ItemModal
+        defaultValues={{ notes: item.notes }}
+        visible={itemModalVisible}
+        onSave={notes => dispatch(updateOrCreateItem({ habitId, item: { ...item, notes } }))}
+        onClose={() => setItemModalVisible(false)}
+      />
+      <TouchableHighlight
+        activeOpacity={1}
+        underlayColor="rgba(0,0,0,0.25)"
+        style={[styles.box, getStyle(item.status)]}
+        onPress={updateStatus}
+        onLongPress={() => setItemModalVisible(true)}
+      >
+        <View style={styles.dateContainer}>
+          <Text style={[styles.dayOfWeekWord, getStyle(item.status)]}>{dayOfWeekWord}</Text>
+          <Text style={[styles.dayOfMonthNumber, getStyle(item.status)]}>{dayOfMonthNumber}</Text>
+        </View>
+      </TouchableHighlight>
+    </>
   );
 };

@@ -17,7 +17,8 @@ export const HabitsScreen: FC = () => {
   const [startOfWeek, setStartOfWeek] = useState(mondayOfCurrentWeek);
 
   const habits = useSelector(habitsSelector);
-  const newHabitButtonDirection = habits.length < 1 ? "down" : "up";
+  const habitsExist = !!habits.length;
+  const newHabitButtonDirection = habitsExist ? "up" : "down";
 
   return (
     <Container>
@@ -33,7 +34,7 @@ export const HabitsScreen: FC = () => {
         {habits.map(habit => (
           <HabitComponent habitId={habit.id} startOfWeek={startOfWeek} {...habit} />
         ))}
-        <Spacer size={50} />
+        {habitsExist && <Spacer size={50} />}
         <RoundButton
           title="New habit"
           onPress={() => setNewHabitModalVisible(true)}
