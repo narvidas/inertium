@@ -20,8 +20,8 @@ export const styles = StyleSheet.create({
   },
   buttonIcon: {
     marginLeft: 15,
-    fontSize: 22,
-    height: 22,
+    fontSize: 32,
+    height: 32,
     color: "white",
   },
   buttonContainer: {

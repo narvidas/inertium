@@ -29,7 +29,6 @@ const habitsSlice = createSlice({
       const { habitId, item } = action.payload;
 
       const habit = state.habits[habitId];
-      console.log("habit", state.habits);
       const itemIndex = habit.items.findIndex(i => i.id === item.id);
       const recordedItemExists = itemIndex >= 0;
 
@@ -41,7 +40,7 @@ const habitsSlice = createSlice({
         habit.items.push(item);
       }
 
-      (habit.meta as Meta).lastUpdatedOn = now;
+      habit.meta.lastUpdatedOn = now;
     },
     createNewHabit(state, action: PayloadAction<{ title: string; goal: number }>) {
       const { title, goal } = action.payload;
@@ -60,23 +59,6 @@ const habitsSlice = createSlice({
       };
       state.order.push(id);
     },
-    // reorderHabit(state, action: PayloadAction<{ habitId: string; newOrder: number }>) {
-    //   const { habitId, newOrder } = action.payload;
-    //   const habit = state.habits[habitId];
-
-    //   const oldOrder = habit.order;
-    //   habit.order = newOrder;
-    //   (habit.meta as Meta).lastUpdatedOn = now;
-
-    //   // Shift all remaining order of habits
-    //   for (let habit of Object.values(filterDeleted(state.habits))) {
-    //     const needsReordering = habit.order > oldOrder;
-    //     if (needsReordering) {
-    //       habit.order = habit.order + 1;
-    //     }
-    //     habit.meta.lastUpdatedOn = now;
-    //   }
-    // },
     updateHabitOrder(state, action: PayloadAction<{ newOrder: Array<string> }>) {
       const { newOrder } = action.payload;
       state.order = newOrder;

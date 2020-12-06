@@ -35,4 +35,10 @@ export const styles = StyleSheet.create({
     fontSize: boxWH / 3,
     color: "rgba(0,0,0,0.25)",
   },
+  notesDot: {
+    color: "rgba(0,0,0,0.25)",
+    fontWeight: "bold",
+    fontSize: boxWH / 3,
+    marginTop: -4,
+  },
 });

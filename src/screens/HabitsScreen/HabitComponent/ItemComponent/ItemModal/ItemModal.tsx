@@ -37,7 +37,7 @@ export const ItemModal: FC<Props> = ({ visible, defaultValues, onSave, onClose }
   };
 
   const submit = ({ notes }: Values) => {
-    if (notes) onSave(notes);
+    onSave(notes || "");
     onClose();
   };
 

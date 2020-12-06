@@ -1,3 +1,4 @@
+import { View } from "native-base";
 import React, { FC, useRef } from "react";
 import CalendarStrip from "react-native-calendar-strip";
 import GestureRecognizer from "react-native-swipe-gestures";
@@ -10,7 +11,7 @@ interface Props {
 export const CalendarStripComponent: FC<Props> = ({ onWeekChanged, onToday }) => {
   const ref = useRef(null);
   return (
-    <>
+    <View style={{ paddingTop: 10, paddingBottom: 20 }}>
       <GestureRecognizer
         onSwipeLeft={() => ref.current?.getNextWeek()}
         onSwipeRight={() => ref.current?.getPreviousWeek()}
@@ -33,6 +34,6 @@ export const CalendarStripComponent: FC<Props> = ({ onWeekChanged, onToday }) =>
           onToday={() => onToday?.()}
         />
       </GestureRecognizer>
-    </>
+    </View>
   );
 };

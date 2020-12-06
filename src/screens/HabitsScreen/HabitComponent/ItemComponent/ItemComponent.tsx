@@ -27,6 +27,7 @@ export const ItemComponent: FC<Props> = ({ habitId, ...item }) => {
   const date = parseISO(item.date);
   const dayOfWeekWord = format(date, "EEE"); // E.g. 'SUN' for Sunday
   const dayOfMonthNumber = format(date, "d"); // E.g. '14' for 14th December
+  const notesExist = item.notes && item.notes !== "";
 
   const updateStatus = () => {
     let newStatus: Status = "default";
@@ -56,6 +57,7 @@ export const ItemComponent: FC<Props> = ({ habitId, ...item }) => {
         <View style={styles.dateContainer}>
           <Text style={[styles.dayOfWeekWord, getStyle(item.status)]}>{dayOfWeekWord}</Text>
           <Text style={[styles.dayOfMonthNumber, getStyle(item.status)]}>{dayOfMonthNumber}</Text>
+          {notesExist ? <Text style={styles.notesDot}>{`.`}</Text> : null}
         </View>
       </TouchableHighlight>
     </>
