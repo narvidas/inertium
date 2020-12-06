@@ -1,5 +1,5 @@
 import dateFnsStartOfWeek from "date-fns/startOfWeek";
-import { Container, Content, Root } from "native-base";
+import { Container, Content, Root, View } from "native-base";
 import React, { FC, useState } from "react";
 import { RefreshControl } from "react-native";
 import SortableList from "react-native-sortable-list";
@@ -9,7 +9,7 @@ import { Spacer } from "../../components/Spacer";
 import { sleep } from "../../utils/sleep";
 import { successToast } from "../../utils/toast";
 import { CalendarStripComponent } from "./CalendarStripComponent";
-import { createNewHabit, habitsSelector } from "./habits.slice";
+import { createNewHabit, habitsSelector, updateHabitOrder } from "./habits.slice";
 import { styles } from "./HabitsScreen.styles";
 import { NewHabitModal } from "./NewHabitModal";
 import { Row } from "./Row";
@@ -22,8 +22,8 @@ export const HabitsScreen: FC = () => {
   const mondayOfCurrentWeek = dateFnsStartOfWeek(new Date(), { weekStartsOn: 1 });
   const [startOfWeek, setStartOfWeek] = useState(mondayOfCurrentWeek);
 
-  const habits = useSelector(habitsSelector);
-  const habitsExist = !!habits.length;
+  const habits = Object.values(useSelector(habitsSelector));
+  const habitsExist = !!Object.values(habits).length;
   const newHabitButtonDirection = habitsExist ? "up" : "down";
 
   const sync = async () => {
@@ -46,16 +46,21 @@ export const HabitsScreen: FC = () => {
           <SortableList
             data={habits}
             renderRow={({ data, active }) => <Row habit={data} active={active} startOfWeek={startOfWeek} />}
+            onReleaseRow={(_, newOrderByIndex: Array<number>) => {
+              const newOrder = newOrderByIndex.map(index => habits[index].id);
+              dispatch(updateHabitOrder({ newOrder }));
+            }}
             refreshControl={<RefreshControl refreshing={syncing} onRefresh={sync} />}
             renderFooter={() => (
               <>
                 {habitsExist && <Spacer size={50} />}
-                <RoundButton
-                  title="New habit"
-                  onPress={() => setNewHabitModalVisible(true)}
-                  direction={newHabitButtonDirection}
-                />
-                {habitsExist && <Spacer size={100} />}
+                <View style={{ paddingBottom: 100 }}>
+                  <RoundButton
+                    title="New habit"
+                    onPress={() => setNewHabitModalVisible(true)}
+                    direction={newHabitButtonDirection}
+                  />
+                </View>
               </>
             )}
           />

@@ -1,121 +1,128 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import addDays from "date-fns/addDays";
 import formatISO from "date-fns/formatISO";
 import { RootState } from "../../config/rtk/rootReducer";
+import { generatePushID } from "../../utils/generatePushID";
 import { Habit, Item, Meta } from "./types";
 
+type Habits = { [key: string]: Habit };
+
 interface HabitsState {
-  habits: Habit[];
+  habits: Habits;
+  order: Array<string>;
 }
 
-const today = formatISO(new Date());
-const tomorrow = formatISO(addDays(new Date(), 1));
+const now = formatISO(new Date());
+
 const initialState: HabitsState = {
-  habits: [
-    {
-      key: "habit1",
-      title: "Some Habit",
-      goal: 3,
-      items: [],
-    },
-  ],
+  habits: {},
+  order: [],
 };
 
 const habitsSlice = createSlice({
   name: "habitsState",
   initialState,
   reducers: {
-    updateHabits(state, action: PayloadAction<Habit[]>) {
+    updateHabits(state, action: PayloadAction<Habits>) {
       state.habits = action.payload;
     },
     updateOrCreateItem(state, action: PayloadAction<{ habitId: string; item: Item }>) {
       const { habitId, item } = action.payload;
 
-      const habitIndex = state.habits.findIndex(h => h.id === habitId);
-      const habit = state.habits[habitIndex];
+      const habit = state.habits[habitId];
+      console.log("habit", state.habits);
       const itemIndex = habit.items.findIndex(i => i.id === item.id);
       const recordedItemExists = itemIndex >= 0;
 
       if (recordedItemExists) {
-        state.habits[habitIndex].items[itemIndex].notes = item.notes;
-        state.habits[habitIndex].items[itemIndex].status = item.status;
-        state.habits[habitIndex].items[itemIndex].meta.lastUpdatedOn = formatISO(new Date());
+        habit.items[itemIndex].notes = item.notes;
+        habit.items[itemIndex].status = item.status;
+        habit.items[itemIndex].meta.lastUpdatedOn = now;
       } else {
-        state.habits[habitIndex].items.push(item);
+        habit.items.push(item);
       }
 
-      (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
+      (habit.meta as Meta).lastUpdatedOn = now;
     },
     createNewHabit(state, action: PayloadAction<{ title: string; goal: number }>) {
       const { title, goal } = action.payload;
-      const lastInList = state.habits.length;
+      const id = generatePushID();
 
-      state.habits.push({
-        id: title,
+      state.habits[id] = {
+        id,
         title,
         goal,
         items: [],
-        order: lastInList,
         meta: {
           isDeleted: false,
-          lastUpdatedOn: formatISO(new Date()),
-          createdOn: formatISO(new Date()),
+          lastUpdatedOn: now,
+          createdOn: now,
         },
-      });
+      };
+      state.order.push(id);
     },
-    reorderHabit(state, action: PayloadAction<{ habitId: string; newOrder: number }>) {
-      const { habitId, newOrder } = action.payload;
-      const habitIndex = state.habits.findIndex(h => h.id === habitId);
+    // reorderHabit(state, action: PayloadAction<{ habitId: string; newOrder: number }>) {
+    //   const { habitId, newOrder } = action.payload;
+    //   const habit = state.habits[habitId];
 
-      const oldOrder = state.habits[habitIndex].order;
-      state.habits[habitIndex].order = newOrder;
-      (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
+    //   const oldOrder = habit.order;
+    //   habit.order = newOrder;
+    //   (habit.meta as Meta).lastUpdatedOn = now;
 
-      // Shift all remaining order of habits
-      for (let habit of state.habits) {
-        const needsReordering = habit.order > oldOrder;
-        if (needsReordering) {
-          habit.order = habit.order + 1;
-        }
-        habit.meta.lastUpdatedOn = formatISO(new Date());
-      }
+    //   // Shift all remaining order of habits
+    //   for (let habit of Object.values(filterDeleted(state.habits))) {
+    //     const needsReordering = habit.order > oldOrder;
+    //     if (needsReordering) {
+    //       habit.order = habit.order + 1;
+    //     }
+    //     habit.meta.lastUpdatedOn = now;
+    //   }
+    // },
+    updateHabitOrder(state, action: PayloadAction<{ newOrder: Array<string> }>) {
+      const { newOrder } = action.payload;
+      state.order = newOrder;
     },
     updateHabit(state, action: PayloadAction<{ habitId: string; title: string; goal: number }>) {
       const { habitId, title, goal } = action.payload;
 
-      const habitIndex = state.habits.findIndex(h => h.id === habitId);
+      const habit = state.habits[habitId];
 
-      state.habits[habitIndex].goal = goal;
-      state.habits[habitIndex].title = title;
-
-      (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
+      habit.goal = goal;
+      habit.title = title;
+      (habit.meta as Meta).lastUpdatedOn = now;
     },
     removeHabit(state, action: PayloadAction<{ habitId: string }>) {
       const { habitId } = action.payload;
 
-      const habitIndex = state.habits.findIndex(h => h.id === habitId);
-      (state.habits[habitIndex].meta as Meta).isDeleted = true;
-      (state.habits[habitIndex].meta as Meta).lastUpdatedOn = formatISO(new Date());
+      const habit = state.habits[habitId];
+      (habit.meta as Meta).isDeleted = true;
+      (habit.meta as Meta).lastUpdatedOn = now;
 
-      // Shift all remaining order of habits
-      const oldOrder = state.habits[habitIndex].order;
-      for (let habit of state.habits) {
-        const needsReordering = habit.order > oldOrder;
-        if (needsReordering) {
-          habit.order = habit.order - 1;
-        }
-        habit.meta.lastUpdatedOn = formatISO(new Date());
-      }
+      state.order = state.order.filter(id => id !== habit.id);
     },
   },
 });
 
-export const habitsSelector = (state: RootState) => state.habitsState.habits.filter(h => !h.meta?.isDeleted);
+const filterDeleted = (habits: Habits): Habits =>
+  Object.keys(habits)
+    .filter(key => !habits[key].meta?.isDeleted)
+    .reduce((obj, key) => {
+      return {
+        ...obj,
+        [key]: habits[key],
+      };
+    }, {});
+
+export const habitsSelector = (state: RootState) => {
+  const habits = filterDeleted(state.habitsState.habits);
+  const sortedHabits = state.habitsState.order.map(key => habits[key]);
+  return sortedHabits;
+};
 
 export const { updateHabits } = habitsSlice.actions;
 export const { updateOrCreateItem } = habitsSlice.actions;
 export const { createNewHabit } = habitsSlice.actions;
 export const { updateHabit } = habitsSlice.actions;
 export const { removeHabit } = habitsSlice.actions;
+export const { updateHabitOrder } = habitsSlice.actions;
 
 export default habitsSlice.reducer;
