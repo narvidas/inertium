@@ -7,8 +7,8 @@ import { List, ListItem } from "native-base";
 import React, { FC, useState } from "react";
 import { View } from "react-native";
 import { Spacer } from "../../../components/Spacer/Spacer";
-import { HabitConfigModal } from "../HabitConfigModal";
 import { Habit, Item } from "../types";
+import { ConfigureHabitModal } from "./ConfigureHabitModal";
 import { styles } from "./HabitComponent.styles";
 import { HeaderComponent } from "./HeaderComponent";
 import { ItemComponent } from "./ItemComponent";
@@ -57,14 +57,18 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
 
   return (
     <View>
-      <HabitConfigModal visible={configModalVisible} onSave={() => {}} onClose={() => {}} onRemove={() => {}} />
+      <ConfigureHabitModal
+        visible={configModalVisible}
+        defaultValues={{ title, goal }}
+        onSave={() => {}}
+        onClose={() => setConfigModalVisible(false)}
+        onRemove={() => {}}
+      />
       <Spacer size={15} />
       <View style={styles.container}>
         <HeaderComponent
           title={`${title} (${completedGoalCount}/${totalGoalCount})`}
-          onCogPress={() => {
-            /*open habit modal */
-          }}
+          onCogPress={() => setConfigModalVisible(true)}
         />
         <List
           dataArray={weekItems}

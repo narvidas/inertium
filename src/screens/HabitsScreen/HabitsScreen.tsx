@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { RoundButton } from "../../components/RoundButton";
 import { Spacer } from "../../components/Spacer";
 import { HabitComponent } from "./HabitComponent";
-import { HabitConfigModal } from "./HabitConfigModal";
 import { createNewHabit, habitsSelector } from "./habits.slice";
+import { NewHabitModal } from "./NewHabitModal";
 
 export const HabitsScreen: FC = () => {
   const dispatch = useDispatch();
@@ -18,11 +18,10 @@ export const HabitsScreen: FC = () => {
 
   return (
     <Container>
-      <HabitConfigModal
+      <NewHabitModal
         visible={newHabitModalVisible}
         onSave={(title, goal) => dispatch(createNewHabit({ title, goal }))}
         onClose={() => setNewHabitModalVisible(false)}
-        onRemove={() => {}}
       />
       <Content>
         <Spacer />
