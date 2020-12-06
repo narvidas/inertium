@@ -4,7 +4,7 @@ import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
 import { List, ListItem } from "native-base";
-import React, { FC, useState } from "react";
+import React, { FC, useMemo, useState } from "react";
 import { View } from "react-native";
 import { useDispatch } from "react-redux";
 import { Spacer } from "../../../components/Spacer/Spacer";
@@ -33,21 +33,24 @@ type Props = Habit & OwnProps;
 export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOfWeek }) => {
   const dispatch = useDispatch();
   const [configModalVisible, setConfigModalVisible] = useState(false);
-  const recordedItemsForThisWeek = getRecordedItemsForThisWeek(items, startOfWeek);
 
-  const weekItems = [...Array(DAYS_IN_WEEK)].map((_, index) => {
-    const itemDate = addDays(startOfWeek, index);
-    const recordedItem = recordedItemsForThisWeek.find(item => isSameDay(itemDate, parseISO(item.date)));
+  const weekItems = useMemo(() => {
+    const recordedItemsForThisWeek = getRecordedItemsForThisWeek(items, startOfWeek);
 
-    const unrecordedItem: Item = {
-      id: `habit-${habitId}-item-${index}`,
-      date: formatISO(itemDate),
-      notes: "",
-      status: "default",
-    };
+    const emptyWeekArray = [...Array(DAYS_IN_WEEK)];
+    return emptyWeekArray.map((_, index) => {
+      const itemDate = addDays(startOfWeek, index);
+      const recordedItem = recordedItemsForThisWeek.find(item => isSameDay(itemDate, parseISO(item.date)));
 
-    return recordedItem || unrecordedItem;
-  });
+      const unrecordedItem: Item = {
+        id: `habit-${habitId}-item-${index}`,
+        date: formatISO(itemDate),
+        status: "default",
+      };
+
+      return recordedItem || unrecordedItem;
+    });
+  }, [items, startOfWeek]);
 
   const renderItem = (item: Item) => (
     <ListItem style={styles.list}>

@@ -4,6 +4,7 @@ import React, { FC, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RoundButton } from "../../components/RoundButton";
 import { Spacer } from "../../components/Spacer";
+import { CalendarStripComponent } from "./CalendarStripComponent";
 import { HabitComponent } from "./HabitComponent";
 import { createNewHabit, habitsSelector } from "./habits.slice";
 import { NewHabitModal } from "./NewHabitModal";
@@ -25,6 +26,8 @@ export const HabitsScreen: FC = () => {
       />
       <Content>
         <Spacer />
+        <CalendarStripComponent />
+        <Spacer size={30} />
         {habits.map(habit => (
           <HabitComponent habitId={habit.id} startOfWeek={mondayOfCurrentWeek} {...habit} />
         ))}
