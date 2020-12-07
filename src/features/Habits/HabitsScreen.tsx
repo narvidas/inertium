@@ -8,11 +8,11 @@ import { RoundButton } from "../../components/RoundButton";
 import { Spacer } from "../../components/Spacer";
 import { sleep } from "../../utils/sleep";
 import { successToast } from "../../utils/toast";
+import { AnimatedRow } from "./AnimatedRow";
 import { CalendarStripComponent } from "./CalendarStripComponent";
 import { createNewHabit, habitsSelector, updateHabitOrder } from "./habits.slice";
 import { styles } from "./HabitsScreen.styles";
 import { NewHabitModal } from "./NewHabitModal";
-import { Row } from "./Row";
 
 export const HabitsScreen: FC = () => {
   const dispatch = useDispatch();
@@ -45,7 +45,7 @@ export const HabitsScreen: FC = () => {
           <CalendarStripComponent onWeekChanged={setStartOfWeek} />
           <SortableList
             data={habits}
-            renderRow={({ data, active }) => <Row habit={data} active={active} startOfWeek={startOfWeek} />}
+            renderRow={({ data, active }) => <AnimatedRow habit={data} active={active} startOfWeek={startOfWeek} />}
             onReleaseRow={(_, newOrderByIndex: Array<number>) => {
               const newOrder = newOrderByIndex.map(index => habits[index].id);
               dispatch(updateHabitOrder({ newOrder }));

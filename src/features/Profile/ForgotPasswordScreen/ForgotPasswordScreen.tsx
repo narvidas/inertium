@@ -1,24 +1,27 @@
 import { Formik } from "formik";
 import { Button, Container, Content, Form, Input, Item, Label, Text } from "native-base";
-import React, { useContext, useState } from "react";
-// import { Actions } from "react-native-router-flux";
+import React, { FC, useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
-import Header from "../../components/Header/Header";
-import Loading from "../../components/Loading/Loading";
-import Messages from "../../components/Messages/Messages";
-import Spacer from "../../components/Spacer/Spacer";
-import FirebaseContext from "../../config/firebaseContext";
+import { Header } from "../../../components/Header";
+import { Loading } from "../../../components/Loading";
+import { Spacer } from "../../../components/Spacer";
+import FirebaseContext from "../../../config/firebaseContext";
+import { errorToast } from "../../../utils/toast";
+import { styles } from "./ForgotPasswordScreen.styles";
 
-export const LogInScreen = () => {
-  const [error, setError] = useState();
+export const ForgotPasswordScreen: FC = () => {
+  const [error, setError] = useState<string>();
   const { auth } = useContext(FirebaseContext);
   const [loading, setLoading] = useState(false);
 
-  const login = async values => {
+  useEffect(() => {
+    if (error) errorToast(error);
+  }, [error]);
+
+  const resetPassword = async values => {
     setLoading(true);
     try {
-      await auth.signInWithEmailAndPassword(values.email, values.password);
-      // Actions.profileHome();
+      await auth.sendPasswordResetEmail(values.email);
     } catch (e) {
       setError(e.message);
     }
@@ -44,33 +47,33 @@ export const LogInScreen = () => {
 
   return (
     <Container>
-      <Content padder>
+      <Content contentContainerStyle={styles.content}>
         <Header title="Welcome back" content="Please use your email and password to login." />
-        {error && <Messages message={error} />}
         {loading && <Loading />}
         <Formik
           validationSchema={validationSchema}
-          onSubmit={login}
+          onSubmit={resetPassword}
           validateOnChange={false}
           validateOnBlur={false}
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ email: "" }}
           render={({ handleChange, handleSubmit, errors }) => (
             <>
               {updateError(errors)}
               <Form>
                 <Item stackedLabel>
                   <Label>Email</Label>
-                  <Input autoCapitalize="none" keyboardType="email-address" onChangeText={handleChange("email")} />
-                </Item>
-                <Item stackedLabel>
-                  <Label>Password</Label>
-                  <Input secureTextEntry onChangeText={handleChange("password")} />
+                  <Input
+                    autoCapitalize="none"
+                    name="email"
+                    keyboardType="email-address"
+                    onChangeText={handleChange("email")}
+                  />
                 </Item>
 
                 <Spacer size={20} />
 
                 <Button block onPress={handleSubmit}>
-                  <Text>Login</Text>
+                  <Text>Reset Password</Text>
                 </Button>
               </Form>
             </>
@@ -80,5 +83,3 @@ export const LogInScreen = () => {
     </Container>
   );
 };
-
-export default LogInScreen;

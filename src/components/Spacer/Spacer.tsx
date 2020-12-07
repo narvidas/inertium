@@ -5,4 +5,4 @@ interface Props {
   size?: number;
 }
 
-export const Spacer: FC<Props> = ({ size = 20 }) => <View style={{ flex: 1, height: size }} />;
+export const Spacer: FC<Props> = ({ size = 20 }) => <View style={{ marginTop: size }} />;

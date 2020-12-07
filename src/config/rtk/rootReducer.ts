@@ -1,5 +1,5 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import { HabitsStateReducer } from "../../screens/HabitsScreen";
+import { HabitsStateReducer } from "../../features/Habits";
 
 const rootReducer = combineReducers({
   habitsState: HabitsStateReducer,

@@ -1,7 +1,7 @@
 import { H1, Text } from "native-base";
 import React, { FC } from "react";
 import { View } from "react-native";
-import { Spacer } from "../Spacer";
+import { styles } from "./Header.styles";
 
 interface Props {
   title: string;
@@ -9,17 +9,8 @@ interface Props {
 }
 
 export const Header: FC<Props> = ({ title = "Header", content }) => (
-  <View>
-    <Spacer size={25} />
-    <H1>{title}</H1>
-    {!!content && (
-      <View>
-        <Spacer size={10} />
-        <Text>{content}</Text>
-      </View>
-    )}
-    <Spacer size={25} />
+  <View style={styles.container}>
+    <H1 style={styles.title}>{title}</H1>
+    {!!content && <Text>{content}</Text>}
   </View>
 );
-
-export default Header;

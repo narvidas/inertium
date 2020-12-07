@@ -1,4 +1,3 @@
-import AnimatedTabBar from "@gorhom/animated-tabbar";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppLoading } from "expo";
 import { Asset } from "expo-asset";
@@ -12,12 +11,10 @@ import styles from "../App.styles";
 import { fonts, images } from "../assets";
 import getTheme from "../native-base-theme/components";
 import theme from "../native-base-theme/variables/commonColor";
+import { TabNavigation } from "./components/TabNavigation";
 import initFirebase from "./config/firebase";
 import FirebaseContext from "./config/firebaseContext";
 import { persistor, store } from "./config/rtk/store";
-import { HabitsScreen } from "./screens/HabitsScreen";
-import { ProfileScreen } from "./screens/ProfileScreen";
-import { Tab, tabs } from "./Tab";
 
 // Disable React Native in-app warnings
 console.disableYellowBox = true;
@@ -65,14 +62,7 @@ export const Application: FC = () => {
             <StyleProvider style={getTheme(theme)}>
               <FirebaseContext.Provider value={firebaseValues}>
                 <NavigationContainer>
-                  <Tab.Navigator
-                    tabBar={props => (
-                      <AnimatedTabBar animation="iconWithLabel" preset="material" tabs={tabs} {...props} />
-                    )}
-                  >
-                    <Tab.Screen name="Habits" component={HabitsScreen} />
-                    <Tab.Screen name="Profile" component={ProfileScreen} />
-                  </Tab.Navigator>
+                  <TabNavigation />
                 </NavigationContainer>
               </FirebaseContext.Provider>
             </StyleProvider>

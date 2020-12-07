@@ -9,7 +9,7 @@ interface Props {
   startOfWeek: Date;
 }
 
-export const Row: FC<Props> = ({ startOfWeek, habit, active }) => {
+export const AnimatedRow: FC<Props> = ({ startOfWeek, habit, active }) => {
   const animation = useRef(new Animated.Value(0)).current;
 
   const style = useMemo(() => {

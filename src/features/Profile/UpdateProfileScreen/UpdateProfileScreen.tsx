@@ -13,31 +13,33 @@ import {
   Text,
   View,
 } from "native-base";
-import React, { useContext, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { useObjectVal } from "react-firebase-hooks/database";
 import * as Yup from "yup";
-import { Header } from "../../components/Header";
-import { Loading } from "../../components/Loading";
-import { Messages } from "../../components/Messages";
-import { Spacer } from "../../components/Spacer";
-import FirebaseContext from "../../config/firebaseContext";
+import { Header } from "../../../components/Header";
+import { Loading } from "../../../components/Loading";
+import { Spacer } from "../../../components/Spacer";
+import FirebaseContext from "../../../config/firebaseContext";
+import { errorToast, successToast } from "../../../utils/toast";
+import { styles } from "./UpdateProfileScreen.styles";
 
-export const UpdateProfileScreen = () => {
+export const UpdateProfileScreen: FC = () => {
   const { db, auth } = useContext(FirebaseContext);
   const uid = (auth.currentUser && auth.currentUser.uid) || "";
   const currentUserDbRef = db.ref(`users/${uid}`);
   const [currentUser, loadingUser] = useObjectVal(currentUserDbRef);
 
-  const [error, setError] = useState();
-  const [message, setMessage] = useState();
+  const [error, setError] = useState<string>();
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showChangeEmail, setShowChangeEmail] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (error) errorToast(error);
+  }, [error]);
+
   const updateProfile = async values => {
     setError(undefined);
-    setMessage(undefined);
-
     setLoading(true);
     const { firstName, lastName, email, password, password2 } = values;
     try {
@@ -48,7 +50,7 @@ export const UpdateProfileScreen = () => {
         await auth.currentUser.updateEmail(email);
       }
       if (showChangePassword) await auth.currentUser.updatePassword(password);
-      setMessage("Updated successfully");
+      successToast("Updated successfully");
     } catch (e) {
       setError(e.message);
     }
@@ -87,23 +89,17 @@ export const UpdateProfileScreen = () => {
     if (errors) {
       const errorMessages = Object.values(errors);
       const errorMessagesExist = errorMessages.length > 0;
-      if (errorMessagesExist) {
-        setMessage(undefined);
-        setError(errorMessages[0]);
-      }
+      if (errorMessagesExist) setError(errorMessages[0]);
     }
   };
 
   if (loadingUser) return <Loading />;
   const { firstName, lastName, email } = currentUser;
-  console.log(currentUser);
 
   return (
     <Container>
-      <Content padder>
-        <Header title="Welcome back" content="Please use your email and password to login." />
-        {error && <Messages message={error} />}
-        {message && <Messages message={message} type="success" />}
+      <Content contentContainerStyle={styles.content}>
+        <Header title="Update Profile" content="You can update your account details below." />
         {(loading || loadingUser) && <Loading />}
         <Formik
           validationSchema={validationSchema}
@@ -189,9 +185,22 @@ export const UpdateProfileScreen = () => {
 
                 <Spacer size={20} />
 
-                <Button block onPress={handleSubmit}>
+                <Button success block onPress={handleSubmit}>
                   <Text>Update Profile</Text>
                 </Button>
+
+                <Spacer size={40} />
+                <View style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}>
+                  <Button
+                    small
+                    danger
+                    onPress={() => {
+                      /* TODO delete account*/
+                    }}
+                  >
+                    <Text>Delete Account</Text>
+                  </Button>
+                </View>
               </Form>
             </>
           )}
