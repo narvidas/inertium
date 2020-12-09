@@ -4,12 +4,13 @@ import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
 import { List, ListItem } from "native-base";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Spacer } from "../../../components/Spacer/Spacer";
 import { generatePushID } from "../../../utils/generatePushID";
-import { removeHabit, updateHabit } from "../habits.slice";
+import { sync } from "../habit.sync";
+import { habitSelector, removeHabit, updateHabit } from "../habits.slice";
 import { Habit, Item } from "../types";
 import { ConfigureHabitModal } from "./ConfigureHabitModal";
 import { styles } from "./HabitComponent.styles";
@@ -22,6 +23,7 @@ const unrecordedItem = (date: Date): Item => {
   return {
     id: generatePushID(),
     date: formatISO(date),
+    notes: "",
     status: "default",
     meta: {
       isDeleted: false,
@@ -55,7 +57,14 @@ type Props = Habit & OwnProps;
 
 export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOfWeek }) => {
   const dispatch = useDispatch();
+  const habit = useSelector(habitSelector(habitId));
   const [configModalVisible, setConfigModalVisible] = useState(false);
+
+  useEffect(() => {
+    if (habit) {
+      sync.syncHabit(habitId);
+    }
+  }, [habit]);
 
   const weekItems = useMemo(() => {
     const recordedItemsForThisWeek = filterInGivenWeek(items, startOfWeek);
@@ -79,7 +88,7 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
         visible={configModalVisible}
         defaultValues={{ title, goal }}
         onSave={(title, goal) => {
-          dispatch(updateHabit({ habitId, title, goal }));
+          dispatch(updateHabit({ id: habitId, title, goal }));
           setConfigModalVisible(false);
         }}
         onClose={() => setConfigModalVisible(false)}

@@ -17,6 +17,7 @@ const setStoredCurrentUser = async auth => {
   } catch {}
 };
 
+let firebaseValues;
 const initFirebase = async () => {
   const firebaseAlreadyInitialised = firebase.apps.length;
   const instance = firebaseAlreadyInitialised ? firebase.apps[0] : firebase.initializeApp(config);
@@ -29,12 +30,17 @@ const initFirebase = async () => {
   const storage = instance.storage();
 
   const updateStoredCurrentUser = async () => setStoredCurrentUser(instance.auth().currentUser);
-  return {
+
+  const values = {
     storage,
     auth,
     db,
     updateStoredCurrentUser,
   };
+
+  firebaseValues = values;
+  return values;
 };
 
+export const getFirebaseValues = () => firebaseValues;
 export default initFirebase;

@@ -1,16 +1,16 @@
 import dateFnsStartOfWeek from "date-fns/startOfWeek";
 import { Container, Content, Root, View } from "native-base";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { RefreshControl } from "react-native";
 import SortableList from "react-native-sortable-list";
 import { useDispatch, useSelector } from "react-redux";
 import { RoundButton } from "../../components/RoundButton";
 import { Spacer } from "../../components/Spacer";
-import { sleep } from "../../utils/sleep";
 import { successToast } from "../../utils/toast";
 import { AnimatedRow } from "./AnimatedRow";
 import { CalendarStripComponent } from "./CalendarStripComponent";
-import { createNewHabit, habitsSelector, updateHabitOrder } from "./habits.slice";
+import { sync } from "./habit.sync";
+import { createNewHabit, habitsSelector, orderSelector, updateHabitOrder } from "./habits.slice";
 import { styles } from "./HabitsScreen.styles";
 import { NewHabitModal } from "./NewHabitModal";
 
@@ -18,6 +18,7 @@ export const HabitsScreen: FC = () => {
   const dispatch = useDispatch();
   const [syncing, setSyncing] = useState(false);
   const [newHabitModalVisible, setNewHabitModalVisible] = useState(false);
+  const order = useSelector(orderSelector);
 
   const mondayOfCurrentWeek = dateFnsStartOfWeek(new Date(), { weekStartsOn: 1 });
   const [startOfWeek, setStartOfWeek] = useState(mondayOfCurrentWeek);
@@ -26,12 +27,16 @@ export const HabitsScreen: FC = () => {
   const habitsExist = !!Object.values(habits).length;
   const newHabitButtonDirection = habitsExist ? "up" : "down";
 
-  const sync = async () => {
+  const syncAll = async () => {
     setSyncing(true);
-    await sleep();
+    await sync.syncAll();
     setSyncing(false);
     successToast("Sync complete.");
   };
+
+  useEffect(() => {
+    if (order) sync.syncHabitOrder();
+  }, [order]);
 
   return (
     <Root>
@@ -50,7 +55,7 @@ export const HabitsScreen: FC = () => {
               const newOrder = newOrderByIndex.map(index => habits[index].id);
               dispatch(updateHabitOrder({ newOrder }));
             }}
-            refreshControl={<RefreshControl refreshing={syncing} onRefresh={sync} />}
+            refreshControl={<RefreshControl refreshing={syncing} onRefresh={syncAll} />}
             renderFooter={() => (
               <>
                 {habitsExist && <Spacer size={50} />}
