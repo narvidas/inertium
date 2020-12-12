@@ -9,8 +9,15 @@ const syncAll = async () => {
   await syncHabits();
 };
 
+const isNotLoggedIn = () => {
+  const { auth } = getFirebaseValues();
+  return !(auth && auth.currentUser);
+};
+
 const syncHabitOrder = async () => {
   const { auth, db } = getFirebaseValues();
+  if (isNotLoggedIn()) return;
+
   const uid = auth.currentUser.uid;
   const habitOrderDbRef = db.ref(`metadata/${uid}/habitOrder`);
   const remoteHabitOrder = (await habitOrderDbRef.once("value")).val() as HabitOrder;
@@ -29,6 +36,8 @@ const syncHabitOrder = async () => {
 
 const syncHabit = async (habitId: string) => {
   const { auth, db } = getFirebaseValues();
+  if (isNotLoggedIn()) return;
+
   const uid = auth.currentUser.uid;
   const habitDbRef = db.ref(`habits/${uid}/${habitId}`);
   const remoteHabit = (await habitDbRef.once("value")).val() as Habit;
@@ -69,6 +78,8 @@ const syncHabit = async (habitId: string) => {
 
 const syncHabits = async () => {
   const { auth, db } = getFirebaseValues();
+  if (isNotLoggedIn()) return;
+
   const uid = auth.currentUser.uid;
 
   const habitsDbRef = db.ref(`habits/${uid}`);
