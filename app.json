@@ -3,8 +3,8 @@
     "name": "inertium",
     "slug": "inertium-habit-tracker",
     "privacy": "public",
-    "platforms": ["ios", "android"],
-    "version": "1.0.0",
+    "platforms": ["ios"],
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "splash": {
@@ -17,7 +17,10 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
-    }
+      "supportsTablet": true,
+      "bundleIdentifier": "com.monad.inertium"
+    },
+    "description": "",
+    "scheme": "inertium"
   }
 }
