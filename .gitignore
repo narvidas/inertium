@@ -9,5 +9,7 @@ npm-debug.*
 *.orig.*
 web-build/
 web-report/
+coverage/
+testReport/
 .DS_Store
 firebaseConfig.js

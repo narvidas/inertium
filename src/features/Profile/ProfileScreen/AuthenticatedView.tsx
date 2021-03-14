@@ -4,7 +4,7 @@ import React, { FC, useContext } from "react";
 import { useObjectVal } from "react-firebase-hooks/database";
 import { Header } from "../../../components/Header";
 import { Loading } from "../../../components/Loading";
-import FirebaseContext from "../../../config/firebaseContext";
+import FirebaseContext from "../../../config/remote/firebaseContext";
 
 interface Props {
   navigation: NavigationProp<any>;

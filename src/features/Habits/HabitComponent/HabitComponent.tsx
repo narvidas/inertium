@@ -4,12 +4,12 @@ import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
 import { List, ListItem } from "native-base";
-import React, { FC, useEffect, useMemo, useState } from "react";
+import React, { FC, useContext, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Spacer } from "../../../components/Spacer/Spacer";
+import SyncContext from "../../../config/remote/syncContext";
 import { generatePushID } from "../../../utils/generatePushID";
-import { sync } from "../habit.sync";
 import { habitSelector, removeHabit, updateHabit } from "../habits.slice";
 import { Habit, Item } from "../types";
 import { ConfigureHabitModal } from "./ConfigureHabitModal";
@@ -59,10 +59,11 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
   const dispatch = useDispatch();
   const habit = useSelector(habitSelector(habitId));
   const [configModalVisible, setConfigModalVisible] = useState(false);
+  const { syncHabit } = useContext(SyncContext);
 
   useEffect(() => {
     if (habit) {
-      sync.syncHabit(habitId);
+      syncHabit(habitId);
     }
   }, [habit]);
 

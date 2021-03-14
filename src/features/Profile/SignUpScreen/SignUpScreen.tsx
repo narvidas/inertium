@@ -6,7 +6,7 @@ import * as Yup from "yup";
 import { Header } from "../../../components/Header/Header";
 import { Loading } from "../../../components/Loading/Loading";
 import { Spacer } from "../../../components/Spacer/Spacer";
-import FirebaseContext from "../../../config/firebaseContext";
+import FirebaseContext from "../../../config/remote/firebaseContext";
 import { errorToast } from "../../../utils/toast";
 import { styles } from "./SignUpScreen.styles";
 

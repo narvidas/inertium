@@ -1,15 +1,15 @@
 import dateFnsStartOfWeek from "date-fns/startOfWeek";
 import { Container, Content, Root, View } from "native-base";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { RefreshControl } from "react-native";
 import SortableList from "react-native-sortable-list";
 import { useDispatch, useSelector } from "react-redux";
 import { RoundButton } from "../../components/RoundButton";
 import { Spacer } from "../../components/Spacer";
+import SyncContext from "../../config/remote/syncContext";
 import { successToast } from "../../utils/toast";
 import { AnimatedRow } from "./AnimatedRow";
 import { CalendarStripComponent } from "./CalendarStripComponent";
-import { sync } from "./habit.sync";
 import { createNewHabit, habitsSelector, orderSelector, updateHabitOrder } from "./habits.slice";
 import { styles } from "./HabitsScreen.styles";
 import { NewHabitModal } from "./NewHabitModal";
@@ -19,6 +19,7 @@ export const HabitsScreen: FC = () => {
   const [syncing, setSyncing] = useState(false);
   const [newHabitModalVisible, setNewHabitModalVisible] = useState(false);
   const order = useSelector(orderSelector);
+  const { syncAll, syncHabitOrder } = useContext(SyncContext);
 
   const mondayOfCurrentWeek = dateFnsStartOfWeek(new Date(), { weekStartsOn: 1 });
   const [startOfWeek, setStartOfWeek] = useState(mondayOfCurrentWeek);
@@ -27,23 +28,26 @@ export const HabitsScreen: FC = () => {
   const habitsExist = !!Object.values(habits).length;
   const newHabitButtonDirection = habitsExist ? "up" : "down";
 
-  const syncAll = async () => {
+  const onRefresh = async () => {
     setSyncing(true);
-    await sync.syncAll();
+    await syncAll();
     setSyncing(false);
     successToast("Sync complete.");
   };
 
   useEffect(() => {
-    if (order) sync.syncHabitOrder();
+    if (order) syncHabitOrder();
   }, [order]);
 
   return (
-    <Root>
+    <Root testID="root">
       <Container>
         <NewHabitModal
           visible={newHabitModalVisible}
-          onSave={(title, goal) => dispatch(createNewHabit({ title, goal }))}
+          onSave={async (title, goal) => {
+            dispatch(createNewHabit({ title, goal }));
+            await syncAll();
+          }}
           onClose={() => setNewHabitModalVisible(false)}
         />
         <Content contentContainerStyle={styles.list} scrollEnabled={false}>
@@ -55,7 +59,7 @@ export const HabitsScreen: FC = () => {
               const newOrder = newOrderByIndex.map(index => habits[index].id);
               dispatch(updateHabitOrder({ newOrder }));
             }}
-            refreshControl={<RefreshControl refreshing={syncing} onRefresh={syncAll} />}
+            refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
             renderFooter={() => (
               <>
                 {habitsExist && <Spacer size={50} />}

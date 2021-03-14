@@ -19,7 +19,7 @@ import * as Yup from "yup";
 import { Header } from "../../../components/Header";
 import { Loading } from "../../../components/Loading";
 import { Spacer } from "../../../components/Spacer";
-import FirebaseContext from "../../../config/firebaseContext";
+import FirebaseContext from "../../../config/remote/firebaseContext";
 import { errorToast, successToast } from "../../../utils/toast";
 import { styles } from "./UpdateProfileScreen.styles";
 

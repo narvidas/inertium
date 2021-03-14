@@ -12,8 +12,10 @@ import { fonts, images } from "../assets";
 import getTheme from "../native-base-theme/components";
 import theme from "../native-base-theme/variables/commonColor";
 import { TabNavigation } from "./components/TabNavigation";
-import initFirebase from "./config/firebase";
-import FirebaseContext from "./config/firebaseContext";
+import initFirebase, { getFirebaseValues } from "./config/remote/firebase";
+import FirebaseContext from "./config/remote/firebaseContext";
+import { createSync } from "./config/remote/sync";
+import SyncContext from "./config/remote/syncContext";
 import { persistor, store } from "./config/rtk/store";
 
 // Disable React Native in-app warnings
@@ -37,15 +39,18 @@ const handleLoadingError = error => {
 export const Application: FC = () => {
   // persistor.purge(); // Debug to clear persist
   const [isLoadingComplete, setLoadingComplete] = useState(false);
-  const [firebaseValues, setFirebaseValues] = useState();
-  const isFirebaseInitComplete = !!firebaseValues;
+  const [sync, setSync] = useState({});
 
   useEffect(() => {
-    initFirebase().then(values => setFirebaseValues(values));
+    initFirebase().then(() => {
+      const sync = createSync(store, getFirebaseValues);
+      setSync(sync);
+    });
   }, []);
 
+  const isFirebaseInitComplete = !!getFirebaseValues();
   const loading = !isLoadingComplete || !isFirebaseInitComplete;
-  if (loading)
+  if (loading) {
     return (
       <AppLoading
         startAsync={loadResourcesAsync}
@@ -53,6 +58,7 @@ export const Application: FC = () => {
         onFinish={() => setLoadingComplete(true)}
       />
     );
+  }
 
   return (
     <Root>
@@ -60,11 +66,13 @@ export const Application: FC = () => {
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <StyleProvider style={getTheme(theme)}>
-              <FirebaseContext.Provider value={firebaseValues}>
-                <NavigationContainer>
-                  <TabNavigation />
-                </NavigationContainer>
-              </FirebaseContext.Provider>
+              <SyncContext.Provider value={sync}>
+                <FirebaseContext.Provider value={getFirebaseValues()}>
+                  <NavigationContainer>
+                    <TabNavigation />
+                  </NavigationContainer>
+                </FirebaseContext.Provider>
+              </SyncContext.Provider>
             </StyleProvider>
           </PersistGate>
         </Provider>
