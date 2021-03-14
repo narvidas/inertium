@@ -64,6 +64,7 @@ export const ConfigureHabitModal: FC<Props> = ({
     if (title && goal) onSave(title, goal);
   };
 
+  if (!visible) return null;
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <Root>
@@ -88,6 +89,7 @@ export const ConfigureHabitModal: FC<Props> = ({
                         <Input
                           style={styles.input}
                           onChangeText={handleChange("title")}
+                          accessibilityLabel="change habit name"
                           name="title"
                           defaultValue={defaultValues?.title}
                         />
@@ -99,6 +101,7 @@ export const ConfigureHabitModal: FC<Props> = ({
                         <Input
                           style={styles.input}
                           onChangeText={handleChange("goal")}
+                          accessibilityLabel="change goal"
                           keyboardType="numeric"
                           name="goal"
                           defaultValue={String(defaultValues?.goal)}

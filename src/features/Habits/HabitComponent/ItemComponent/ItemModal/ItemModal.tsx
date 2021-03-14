@@ -41,6 +41,7 @@ export const ItemModal: FC<Props> = ({ visible, defaultValues, onSave, onClose }
     onClose();
   };
 
+  if (!visible) return null;
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <Root>

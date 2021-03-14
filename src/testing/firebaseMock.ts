@@ -5,7 +5,7 @@ firebase.initializeApp = jest.fn();
 const data = { name: "data" };
 const snapshot = { val: () => data, exportVal: () => data, exists: jest.fn(() => true) };
 
-export const db = jest.fn().mockReturnValue({
+firebase.database = jest.fn().mockReturnValue({
   ref: jest.fn().mockReturnThis(),
   on: jest.fn((eventType, callback) => callback(snapshot)),
   update: jest.fn(() => Promise.resolve(snapshot)),
@@ -13,7 +13,7 @@ export const db = jest.fn().mockReturnValue({
   once: jest.fn(() => Promise.resolve(snapshot)),
 });
 
-export const auth = jest.fn().mockReturnValue({
+firebase.auth = jest.fn().mockReturnValue({
   currentUser: true,
   signOut() {
     return Promise.resolve();

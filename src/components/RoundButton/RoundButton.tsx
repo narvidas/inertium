@@ -15,7 +15,7 @@ interface Props {
 
 export const RoundButton: FC<Props> = ({ onPress, title, size = 50, direction = "down" }) => (
   <View style={styles.container}>
-    <ActionButton size={size} buttonColor="rgba(72,145,77,1)" verticalOrientation={direction}>
+    <ActionButton size={size} buttonColor="rgba(72,145,77,1)" verticalOrientation={direction} testID="round-button">
       <ActionButton.Item buttonColor="#e74c3c" title={title} onPress={onPress}>
         <Icon name="md-create" style={styles.icon} />
       </ActionButton.Item>

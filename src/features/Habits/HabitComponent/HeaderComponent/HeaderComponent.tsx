@@ -6,15 +6,22 @@ import { styles } from "./HeaderComponent.styles";
 interface Props {
   title: string;
   onCogPress: () => void;
+  accessibilityLabel?: string;
 }
 
-export const HeaderComponent: FC<Props> = ({ title, onCogPress }) => (
+export const HeaderComponent: FC<Props> = ({ title, onCogPress, accessibilityLabel }) => (
   <View style={styles.container}>
     <View>
       <H3>{title}</H3>
     </View>
     <View>
-      <TouchableHighlight activeOpacity={1} style={styles.button} underlayColor="rgba(0,0,0,0.1)" onPress={onCogPress}>
+      <TouchableHighlight
+        activeOpacity={1}
+        style={styles.button}
+        underlayColor="rgba(0,0,0,0.1)"
+        onPress={onCogPress}
+        accessibilityLabel={accessibilityLabel}
+      >
         <Icon name="ios-settings" style={styles.icon} />
       </TouchableHighlight>
     </View>

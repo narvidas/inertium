@@ -102,6 +102,7 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
       <View style={styles.container}>
         <HeaderComponent
           title={`${title} (${completedGoalCount}/${totalGoalCount})`}
+          accessibilityLabel={`Configure habit ${title}`}
           onCogPress={() => setConfigModalVisible(true)}
         />
         <List

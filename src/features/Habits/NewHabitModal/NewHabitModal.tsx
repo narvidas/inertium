@@ -45,6 +45,7 @@ export const NewHabitModal: FC<Props> = ({ visible, onSave, onClose }) => {
     onClose();
   };
 
+  if (!visible) return null;
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <Root>
@@ -65,14 +66,22 @@ export const NewHabitModal: FC<Props> = ({ visible, onSave, onClose }) => {
                     </View>
                     <View style={styles.inputContainer}>
                       <Item>
-                        <Label>Habit name:</Label>
-                        <Input style={styles.input} onChangeText={handleChange("title")} name="title" />
+                        <Label for="habit-name">Habit name:</Label>
+                        <Input
+                          id="habit-name"
+                          accessibilityLabel="habit name"
+                          style={styles.input}
+                          onChangeText={handleChange("title")}
+                          name="title"
+                        />
                       </Item>
                     </View>
                     <View style={styles.inputContainer}>
                       <Item>
-                        <Label>Weekly goal:</Label>
+                        <Label for="goal">Weekly goal:</Label>
                         <Input
+                          id="goal"
+                          accessibilityLabel="goal"
                           style={styles.input}
                           onChangeText={handleChange("goal")}
                           keyboardType="numeric"

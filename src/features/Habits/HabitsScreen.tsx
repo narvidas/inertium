@@ -52,27 +52,29 @@ export const HabitsScreen: FC = () => {
         />
         <Content contentContainerStyle={styles.list} scrollEnabled={false}>
           <CalendarStripComponent onWeekChanged={setStartOfWeek} />
-          <SortableList
-            data={habits}
-            renderRow={({ data, active }) => <AnimatedRow habit={data} active={active} startOfWeek={startOfWeek} />}
-            onReleaseRow={(_, newOrderByIndex: Array<number>) => {
-              const newOrder = newOrderByIndex.map(index => habits[index].id);
-              dispatch(updateHabitOrder({ newOrder }));
-            }}
-            refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
-            renderFooter={() => (
-              <>
-                {habitsExist && <Spacer size={50} />}
-                <View style={{ paddingBottom: 100 }}>
-                  <RoundButton
-                    title="New habit"
-                    onPress={() => setNewHabitModalVisible(true)}
-                    direction={newHabitButtonDirection}
-                  />
-                </View>
-              </>
-            )}
-          />
+          <View testID="habit-list">
+            <SortableList
+              data={habits}
+              renderRow={({ data, active }) => <AnimatedRow habit={data} active={active} startOfWeek={startOfWeek} />}
+              onReleaseRow={(_, newOrderByIndex: Array<number>) => {
+                const newOrder = newOrderByIndex.map(index => habits[index].id);
+                dispatch(updateHabitOrder({ newOrder }));
+              }}
+              refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
+              renderFooter={() => (
+                <>
+                  {habitsExist && <Spacer size={50} />}
+                  <View style={{ paddingBottom: 100 }}>
+                    <RoundButton
+                      title="New habit"
+                      onPress={() => setNewHabitModalVisible(true)}
+                      direction={newHabitButtonDirection}
+                    />
+                  </View>
+                </>
+              )}
+            />
+          </View>
         </Content>
       </Container>
     </Root>

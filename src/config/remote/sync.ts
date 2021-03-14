@@ -4,6 +4,13 @@ import { Habit, HabitOrder, Habits } from "../../features/Habits/types";
 import { areArraysEqual } from "../../utils/areArraysEqual";
 import { getFirebaseValues } from "./firebase";
 
+export interface Sync {
+  syncAll: () => Promise<void>;
+  syncHabitOrder: () => Promise<void>;
+  syncHabit: (habitId: string) => Promise<void>;
+  syncHabits: () => Promise<void>;
+}
+
 export const createSync = (store: EnhancedStore<any>, getValues = getFirebaseValues) => {
   const syncAll = async () => {
     await syncHabitOrder();
@@ -124,10 +131,11 @@ export const createSync = (store: EnhancedStore<any>, getValues = getFirebaseVal
     remainingHabitIds.map(habitId => syncHabit(habitId));
   };
 
-  return {
+  const sync: Sync = {
     syncAll,
     syncHabitOrder,
     syncHabit,
     syncHabits,
   };
+  return sync;
 };

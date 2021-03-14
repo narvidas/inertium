@@ -1,12 +1,6 @@
 import React from "react";
+import { Sync } from "./sync";
 
-export interface SyncContextValues {
-  syncAll: () => Promise<void>;
-  syncHabitOrder: () => Promise<void>;
-  syncHabit: (habitId: string) => Promise<void>;
-  syncHabits: () => Promise<void>;
-}
-
-const SyncContext = React.createContext<Partial<SyncContextValues>>({});
+const SyncContext = React.createContext<Partial<Sync>>({});
 
 export default SyncContext;

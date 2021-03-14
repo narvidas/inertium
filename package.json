@@ -11,6 +11,7 @@
     "prettier": "prettier 'src/**/*' --write",
     "lint": "eslint 'src/**/*.jsx'",
     "test": "jest --coverage",
+    "test-detect": "jest --runInBand --detectOpenHandles",
     "test:watch": "jest --watch --coverage",
     "storybook": "start-storybook -p 7007",
     "storybook:build": "build-storybook -c .storybook -o .out"
