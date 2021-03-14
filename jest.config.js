@@ -7,6 +7,7 @@ module.exports = {
       statements: 100,
     },
   },
+  testEnvironment: "jsdom",
   setupFiles: ["core-js"],
   setupFilesAfterEnv: ["<rootDir>/setupTests.ts"],
   testPathIgnorePatterns: ["node_modules", "native-base-theme"],
