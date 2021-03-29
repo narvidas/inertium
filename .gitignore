@@ -12,4 +12,5 @@ web-report/
 coverage/
 testReport/
 .DS_Store
+yarn-error.log
 firebaseConfig.js
