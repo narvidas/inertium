@@ -62,9 +62,7 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
   const { syncHabit } = useContext(SyncContext);
 
   useEffect(() => {
-    if (habit) {
-      syncHabit(habitId);
-    }
+    habit && syncHabit(habitId);
   }, [habit]);
 
   const weekItems = useMemo(() => {
@@ -99,7 +97,7 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
         }}
       />
       <Spacer size={15} />
-      <View style={styles.container}>
+      <View style={styles.container} testID="habit-container">
         <HeaderComponent
           title={`${title} (${completedGoalCount}/${totalGoalCount})`}
           accessibilityLabel={`Configure habit ${title}`}

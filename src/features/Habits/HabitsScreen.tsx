@@ -13,6 +13,7 @@ import { CalendarStripComponent } from "./CalendarStripComponent";
 import { createNewHabit, habitsSelector, orderSelector, updateHabitOrder } from "./habits.slice";
 import { styles } from "./HabitsScreen.styles";
 import { NewHabitModal } from "./NewHabitModal";
+import { Habit } from "./types";
 
 export const HabitsScreen: FC = () => {
   const dispatch = useDispatch();
@@ -36,7 +37,7 @@ export const HabitsScreen: FC = () => {
   };
 
   useEffect(() => {
-    if (order) syncHabitOrder();
+    order && syncHabitOrder();
   }, [order]);
 
   return (
@@ -54,9 +55,12 @@ export const HabitsScreen: FC = () => {
           <CalendarStripComponent onWeekChanged={setStartOfWeek} />
           <View testID="habit-list">
             <SortableList
+              testID="sortable-habit-list"
               data={habits}
-              renderRow={({ data, active }) => <AnimatedRow habit={data} active={active} startOfWeek={startOfWeek} />}
-              onReleaseRow={(_, newOrderByIndex: Array<number>) => {
+              renderRow={({ data, active }: { data: Habit; active: boolean }) => (
+                <AnimatedRow habit={data} active={active} startOfWeek={startOfWeek} />
+              )}
+              onReleaseRow={(_: unknown, newOrderByIndex: Array<number>) => {
                 const newOrder = newOrderByIndex.map(index => habits[index].id);
                 dispatch(updateHabitOrder({ newOrder }));
               }}

@@ -20,9 +20,6 @@ const habitsSlice = createSlice({
   name: "habitsState",
   initialState,
   reducers: {
-    updateHabits(state, action: PayloadAction<Habits>) {
-      state.habits = action.payload;
-    },
     updateOrCreateItem(state, action: PayloadAction<{ habitId: string; item: Item }>) {
       const { habitId, item } = action.payload;
 
@@ -105,10 +102,7 @@ export const habitsSelector = (state: RootState) => {
 
 export const orderSelector = (state: RootState) => state.habitsState.order;
 export const habitSelector = (habitId: string) => (state: RootState) => state.habitsState.habits[habitId];
-export const itemSelector = (habitId: string, itemId: string) => (state: RootState) =>
-  state.habitsState.habits[habitId].items.find(item => item.id === itemId);
 
-export const { updateHabits } = habitsSlice.actions;
 export const { updateOrCreateItem } = habitsSlice.actions;
 export const { createNewHabit } = habitsSlice.actions;
 export const { updateHabit } = habitsSlice.actions;

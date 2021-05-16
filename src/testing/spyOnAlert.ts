@@ -6,6 +6,8 @@ interface MockAlertActions {
 
 type MockedCall = Readonly<[string, string, ReadonlyArray<AlertButton>]>;
 
+// Testing mock/helper
+/* istanbul ignore next */
 export default function spyOnAlert(): MockAlertActions {
   jest.spyOn(Alert, "alert");
 

@@ -28,12 +28,12 @@ export const ItemModal: FC<Props> = ({ visible, defaultValues, onSave, onClose }
     if (error) errorToast(error);
   }, [error]);
 
-  const updateError = (errors: FormikErrors<Values>) => {
-    if (errors) {
-      const errorMessages = Object.values(errors);
-      const errorMessagesExist = errorMessages.length > 0;
-      if (errorMessagesExist) setError(errorMessages[0]);
-    }
+  // Using safe defaults for error values (extra safety), in practise impossible hence ignored in coverage
+  /* istanbul ignore next */
+  const updateError = (errors: FormikErrors<Values> = {}) => {
+    const errorMessages = Object.values(errors);
+    const errorMessagesExist = errorMessages.length > 0;
+    if (errorMessagesExist) setError(errorMessages[0]);
   };
 
   const submit = ({ notes }: Values) => {
@@ -66,6 +66,7 @@ export const ItemModal: FC<Props> = ({ visible, defaultValues, onSave, onClose }
                         <Input
                           style={styles.input}
                           onChangeText={handleChange("notes")}
+                          accessibilityLabel="change item notes"
                           name="notes"
                           multiline
                           defaultValue={defaultValues.notes}

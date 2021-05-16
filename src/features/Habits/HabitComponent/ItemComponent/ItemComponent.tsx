@@ -54,7 +54,7 @@ export const ItemComponent: FC<Props> = ({ habitId, ...item }) => {
         onPress={updateStatus}
         onLongPress={() => setItemModalVisible(true)}
       >
-        <View style={styles.dateContainer}>
+        <View style={styles.dateContainer} testID="item-container">
           <Text style={[styles.dayOfWeekWord, getStyle(item.status)]}>{dayOfWeekWord}</Text>
           <Text style={[styles.dayOfMonthNumber, getStyle(item.status)]}>{dayOfMonthNumber}</Text>
           {notesExist ? <Text style={styles.notesDot}>{`.`}</Text> : null}
