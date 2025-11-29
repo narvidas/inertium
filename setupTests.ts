@@ -1,6 +1,7 @@
 import mockAsyncStorage from "@react-native-async-storage/async-storage/jest/async-storage-mock";
 // Jest matchers built into @testing-library/react-native v12.4+
 import "@testing-library/react-native/build/matchers/extend-expect";
+import "react-native-gesture-handler/jestSetup";
 
 jest.mock("@react-native-async-storage/async-storage", () => mockAsyncStorage);
 

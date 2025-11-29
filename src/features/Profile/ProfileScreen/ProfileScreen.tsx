@@ -1,5 +1,5 @@
 import { NavigationProp } from "@react-navigation/native";
-import { Container, Content } from "native-base";
+import { Container, Content } from "../../../ui";
 import React, { FC, useContext, useState } from "react";
 import FirebaseContext from "../../../config/remote/firebaseContext";
 import SyncContext from "../../../config/remote/syncContext";

@@ -237,12 +237,13 @@ describe("Habits", () => {
       // Wait for habits to render by finding their titles
       await findByText(/run 5k/);
 
-      // SortableList is inside habit-list View - get its first child
+      // DraggableFlatList is inside habit-list View - get its first child
       const habitListView = await findByTestId("habit-list");
-      const [sortableHabitList] = habitListView.children;
+      const [draggableList] = habitListView.children;
 
-      const newOrderByIndex = [1, 0]; // Simulate reordering (swapping of two items in list)
-      fireEvent(sortableHabitList, "onReleaseRow", undefined, newOrderByIndex);
+      // Simulate reordering (swapping of two items in list) - new data order with habit2 first
+      const reorderedData = [habitBefore2, habitBefore1];
+      fireEvent(draggableList, "onDragEnd", { data: reorderedData, from: 0, to: 1 });
 
       await waitFor(() => {
         expect(sync.syncHabitOrder).toHaveBeenCalled();

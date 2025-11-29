@@ -1,5 +1,5 @@
 import { Formik } from "formik";
-import { Button, Container, Content, Form, Input, Item, Label, Text } from "native-base";
+import { Button, Container, Content, Form, Input, Item, Label, Text } from "../../../ui";
 import React, { FC, useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import { Header } from "../../../components/Header";

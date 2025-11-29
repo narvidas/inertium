@@ -1,6 +1,6 @@
 import { NavigationProp } from "@react-navigation/native";
 import { Formik } from "formik";
-import { Button, Container, Content, Form, Input, Item, Label, Root, Text, View } from "native-base";
+import { Button, Container, Content, Form, Input, Item, Label, Root, Text, View } from "../../../ui";
 import React, { FC, useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import { Header } from "../../../components/Header/Header";

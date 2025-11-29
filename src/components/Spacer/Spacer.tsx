@@ -1,4 +1,4 @@
-import { View } from "native-base";
+import { View } from "../../ui";
 import React, { FC } from "react";
 
 interface Props {

@@ -1,8 +1,10 @@
 import dateFnsStartOfWeek from "date-fns/startOfWeek";
-import { Container, Content, Root, View } from "native-base";
+import { Container, Content, Root, View } from "../../ui";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { RefreshControl } from "react-native";
-import SortableList from "react-native-sortable-list";
+import DraggableFlatList, { RenderItemParams, DragEndParams } from "react-native-draggable-flatlist";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { RoundButton } from "../../components/RoundButton";
 import { Spacer } from "../../components/Spacer";
@@ -40,47 +42,58 @@ export const HabitsScreen: FC = () => {
     order && syncHabitOrder();
   }, [order]);
 
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<Habit>) => (
+    <AnimatedRow habit={item} active={isActive} startOfWeek={startOfWeek} onDrag={drag} />
+  );
+
+  const onDragEnd = ({ data }: DragEndParams<Habit>) => {
+    const newOrder = data.map(habit => habit.id);
+    dispatch(updateHabitOrder({ newOrder }));
+  };
+
+  const ListFooter = () => (
+    <>
+      {habitsExist && <Spacer size={50} />}
+      <View style={{ paddingBottom: 100 }}>
+        <RoundButton
+          title="New habit"
+          onPress={() => setNewHabitModalVisible(true)}
+          direction={newHabitButtonDirection}
+        />
+      </View>
+    </>
+  );
+
   return (
     <Root testID="root">
-      <Container>
-        <NewHabitModal
-          visible={newHabitModalVisible}
-          onSave={async (title, goal) => {
-            dispatch(createNewHabit({ title, goal }));
-            await syncAll();
-          }}
-          onClose={() => setNewHabitModalVisible(false)}
-        />
-        <Content contentContainerStyle={styles.list} scrollEnabled={false}>
-          <CalendarStripComponent onWeekChanged={setStartOfWeek} />
-          <View testID="habit-list">
-            <SortableList
-              testID="sortable-habit-list"
-              data={habits}
-              renderRow={({ data, active }: { data: Habit; active: boolean }) => (
-                <AnimatedRow habit={data} active={active} startOfWeek={startOfWeek} />
-              )}
-              onReleaseRow={(_: unknown, newOrderByIndex: Array<number>) => {
-                const newOrder = newOrderByIndex.map(index => habits[index].id);
-                dispatch(updateHabitOrder({ newOrder }));
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+          <Container>
+            <NewHabitModal
+              visible={newHabitModalVisible}
+              onSave={async (title, goal) => {
+                dispatch(createNewHabit({ title, goal }));
+                await syncAll();
               }}
-              refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
-              renderFooter={() => (
-                <>
-                  {habitsExist && <Spacer size={50} />}
-                  <View style={{ paddingBottom: 100 }}>
-                    <RoundButton
-                      title="New habit"
-                      onPress={() => setNewHabitModalVisible(true)}
-                      direction={newHabitButtonDirection}
-                    />
-                  </View>
-                </>
-              )}
+              onClose={() => setNewHabitModalVisible(false)}
             />
-          </View>
-        </Content>
-      </Container>
+            <Content contentContainerStyle={styles.list} scrollEnabled={false}>
+              <CalendarStripComponent onWeekChanged={setStartOfWeek} />
+              <View testID="habit-list">
+                <DraggableFlatList
+                  testID="sortable-habit-list"
+                  data={habits}
+                  renderItem={renderItem}
+                  keyExtractor={(item) => item.id}
+                  onDragEnd={onDragEnd}
+                  refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
+                  ListFooterComponent={ListFooter}
+                />
+              </View>
+            </Content>
+          </Container>
+        </SafeAreaView>
+      </GestureHandlerRootView>
     </Root>
   );
 };
