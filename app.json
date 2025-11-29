@@ -3,7 +3,9 @@
     "name": "inertium",
     "slug": "inertium-habit-tracker",
     "privacy": "public",
-    "platforms": ["ios"],
+    "platforms": [
+      "ios"
+    ],
     "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,12 +17,19 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.monad.inertium"
     },
     "description": "",
-    "scheme": "inertium"
+    "scheme": "inertium",
+    "plugins": [
+      "expo-asset",
+      "expo-font",
+      "expo-secure-store"
+    ]
   }
 }

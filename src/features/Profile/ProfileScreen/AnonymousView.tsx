@@ -1,5 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
-import { Body, Icon, Left, List, ListItem, Text, View } from "native-base";
+import { Body, Left, List, ListItem, Text, View } from "native-base";
 import React, { FC } from "react";
 import { Header } from "../../../components/Header";
 
@@ -17,7 +18,7 @@ export const AnonymousView: FC<Props> = ({ navigation }) => (
       <List>
         <ListItem onPress={() => navigation.navigate("Login")} icon>
           <Left>
-            <Icon name="power" />
+            <Ionicons name="log-in-outline" size={24} color="#555" />
           </Left>
           <Body>
             <Text>Login</Text>
@@ -25,7 +26,7 @@ export const AnonymousView: FC<Props> = ({ navigation }) => (
         </ListItem>
         <ListItem onPress={() => navigation.navigate("Register")} icon>
           <Left>
-            <Icon name="add-circle" />
+            <Ionicons name="add-circle-outline" size={24} color="#555" />
           </Left>
           <Body>
             <Text>Register</Text>
@@ -33,7 +34,7 @@ export const AnonymousView: FC<Props> = ({ navigation }) => (
         </ListItem>
         <ListItem onPress={() => navigation.navigate("Forgot Password")} icon>
           <Left>
-            <Icon name="help-buoy" />
+            <Ionicons name="help-circle-outline" size={24} color="#555" />
           </Left>
           <Body>
             <Text>Forgot Password</Text>

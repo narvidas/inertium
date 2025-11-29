@@ -78,13 +78,13 @@ export const ItemModal: FC<Props> = ({ visible, defaultValues, onSave, onClose }
                     <View style={styles.buttonContainer}>
                       <View style={{ marginRight: 10 }}>
                         <Button onPress={handleSubmit} success>
-                          <Ionicons name="ios-checkmark" style={styles.buttonIcon} />
+                          <Ionicons name="checkmark" style={styles.buttonIcon} />
                           <Text>Save</Text>
                         </Button>
                       </View>
                       <View>
                         <Button onPress={onClose}>
-                          <Ionicons name="ios-close" style={styles.buttonIcon} />
+                          <Ionicons name="close" style={styles.buttonIcon} />
                           <Text>Close</Text>
                         </Button>
                       </View>

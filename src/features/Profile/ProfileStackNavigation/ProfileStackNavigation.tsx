@@ -1,4 +1,4 @@
-import { createStackNavigator } from "@react-navigation/stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { ForgotPasswordScreen } from "../ForgotPasswordScreen";
 import { LogInScreen } from "../LogInScreen";
@@ -6,7 +6,7 @@ import { ProfileScreen } from "../ProfileScreen";
 import { SignUpScreen } from "../SignUpScreen";
 import { UpdateProfileScreen } from "../UpdateProfileScreen";
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const screenOptionStyle = {
   headerStyle: {

@@ -1,5 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
-import { Body, Icon, Left, List, ListItem, Text, View } from "native-base";
+import { Body, Left, List, ListItem, Text, View } from "native-base";
 import React, { FC, useContext } from "react";
 import { useObjectVal } from "react-firebase-hooks/database";
 import { Header } from "../../../components/Header";
@@ -31,7 +32,7 @@ export const AuthenticatedView: FC<Props> = ({ navigation }) => {
       <List>
         <ListItem onPress={() => navigation.navigate("Update Profile")} icon>
           <Left>
-            <Icon name="person-add" />
+            <Ionicons name="person-add-outline" size={24} color="#555" />
           </Left>
           <Body>
             <Text>Update My Profile</Text>
@@ -39,7 +40,7 @@ export const AuthenticatedView: FC<Props> = ({ navigation }) => {
         </ListItem>
         <ListItem onPress={logout} icon>
           <Left>
-            <Icon name="power" />
+            <Ionicons name="power-outline" size={24} color="#555" />
           </Left>
           <Body>
             <Text>Logout</Text>

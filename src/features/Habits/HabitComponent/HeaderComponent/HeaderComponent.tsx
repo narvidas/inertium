@@ -1,4 +1,5 @@
-import { H3, Icon, View } from "native-base";
+import { Ionicons } from "@expo/vector-icons";
+import { H3, View } from "native-base";
 import React, { FC } from "react";
 import { TouchableHighlight } from "react-native";
 import { styles } from "./HeaderComponent.styles";
@@ -22,7 +23,7 @@ export const HeaderComponent: FC<Props> = ({ title, onCogPress, accessibilityLab
         onPress={onCogPress}
         accessibilityLabel={accessibilityLabel}
       >
-        <Icon name="ios-settings" style={styles.icon} />
+        <Ionicons name="settings-outline" size={24} color="#555" style={{ marginLeft: 5, marginRight: 5 }} />
       </TouchableHighlight>
     </View>
   </View>
