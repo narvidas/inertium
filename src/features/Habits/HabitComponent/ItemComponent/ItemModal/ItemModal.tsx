@@ -69,8 +69,9 @@ export const ItemModal: FC<Props> = ({ visible, defaultValues, onSave, onClose }
                           accessibilityLabel="change item notes"
                           name="notes"
                           multiline
+                          lines={7}
                           defaultValue={defaultValues.notes}
-                          maxHeight={100}
+                          maxHeight={300}
                           autoGrow
                         />
                       </Item>
