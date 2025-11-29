@@ -31,6 +31,7 @@ export const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 10,
+    height: 100,
   },
   inputContainer: {
     paddingTop: 50,
