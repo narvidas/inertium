@@ -1,4 +1,8 @@
 // This file runs before modules are loaded (via setupFiles)
+
+// Set up Expo environment variables for jest-expo
+process.env.EXPO_OS = "ios";
+
 // Patch ViewPropTypes for native-base v2 compatibility with RN 0.72+
 const RN = require("react-native");
 const deprecatedPropTypes = require("deprecated-react-native-prop-types");
@@ -38,3 +42,4 @@ Object.defineProperty(RN, "TextPropTypes", {
 if (RN.Keyboard && !RN.Keyboard.removeListener) {
   RN.Keyboard.removeListener = () => {};
 }
+

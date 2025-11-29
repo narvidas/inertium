@@ -22,12 +22,18 @@ describe("Habits", () => {
   });
 
   test("Triggers sync when swiping down", async () => {
-    const { getByText, getByTestId, sync } = render(<HabitsScreen />);
-    getByTestId("root");
+    const { getByText, findByTestId, sync } = render(<HabitsScreen />);
+    await findByTestId("root");
     expect(sync.syncAll).not.toHaveBeenCalled();
 
-    const [scrollableList] = getByTestId("habit-list").children;
-    refresh(scrollableList);
+    const habitList = await findByTestId("habit-list");
+    const [scrollableList] = habitList.children;
+
+    // Fire the onRefresh callback from the RefreshControl
+    const { refreshControl } = scrollableList.props;
+    if (refreshControl && refreshControl.props.onRefresh) {
+      await refreshControl.props.onRefresh();
+    }
 
     await waitFor(() => {
       expect(sync.syncAll).toHaveBeenCalled();
@@ -126,7 +132,7 @@ describe("Habits", () => {
 
       expect(sync.syncAll).not.toHaveBeenCalled();
 
-      const editHabitButton = getByLabelText(/configure habit run 5k/i);
+      const editHabitButton = await findByLabelText(/configure habit run 5k/i);
       fireEvent.press(editHabitButton);
 
       getByText(/edit habit/i);
@@ -153,13 +159,13 @@ describe("Habits", () => {
       });
     });
     test("Can cancel editing a habit", async () => {
-      const { getByText, getByLabelText, sync, store } = render(<HabitsScreen />);
+      const { findByLabelText, getByText, sync, store } = render(<HabitsScreen />);
       store.dispatch(createNewHabit({ title: "run 5k", goal: 4 }));
       const habitsBefore = store.getState().habitsState.habits;
 
       expect(sync.syncAll).not.toHaveBeenCalled();
 
-      const editHabitButton = getByLabelText(/configure habit run 5k/i);
+      const editHabitButton = await findByLabelText(/configure habit run 5k/i);
       fireEvent.press(editHabitButton);
 
       getByText(/edit habit/i);
@@ -172,7 +178,7 @@ describe("Habits", () => {
       expect(sync.syncAll).not.toHaveBeenCalled();
     });
     test("Can remove a habit", async () => {
-      const { getByText, getByLabelText, sync, store } = render(<HabitsScreen />);
+      const { findByLabelText, getByText, sync, store } = render(<HabitsScreen />);
       store.dispatch(createNewHabit({ title: "run 5k", goal: 4 }));
       store.dispatch(createNewHabit({ title: "stronglift 5x5", goal: 3 }));
       jest.clearAllMocks();
@@ -187,7 +193,7 @@ describe("Habits", () => {
       const orderBefore = Object.values(store.getState().habitsState.order);
       expect(orderBefore.length).toBe(2);
 
-      const editHabitButton = getByLabelText(/configure habit run 5k/i);
+      const editHabitButton = await findByLabelText(/configure habit run 5k/i);
       fireEvent.press(editHabitButton);
 
       getByText(/edit habit/i);
@@ -213,7 +219,7 @@ describe("Habits", () => {
       });
     });
     test("Can reorder habits", async () => {
-      const { getByTestId, sync, store } = render(<HabitsScreen />);
+      const { findByText, findByTestId, sync, store } = render(<HabitsScreen />);
       store.dispatch(createNewHabit({ title: "run 5k", goal: 4 }));
       store.dispatch(createNewHabit({ title: "stronglift 5x5", goal: 3 }));
       jest.clearAllMocks();
@@ -228,8 +234,11 @@ describe("Habits", () => {
       expect(orderBefore[0]).toBe(habitBefore1.id);
       expect(orderBefore[1]).toBe(habitBefore2.id);
 
+      // Wait for habits to render by finding their titles
+      await findByText(/run 5k/);
+
       // SortableList is inside habit-list View - get its first child
-      const habitListView = getByTestId("habit-list");
+      const habitListView = await findByTestId("habit-list");
       const [sortableHabitList] = habitListView.children;
 
       const newOrderByIndex = [1, 0]; // Simulate reordering (swapping of two items in list)
@@ -247,7 +256,7 @@ describe("Habits", () => {
   });
   describe("Items", () => {
     test("Can change item status when tapping on them", async () => {
-      const { getByTestId, sync, store } = render(<HabitsScreen />);
+      const { findByTestId, sync, store } = render(<HabitsScreen />);
       store.dispatch(createNewHabit({ title: "run 5k", goal: 4 }));
       jest.clearAllMocks();
 
@@ -259,7 +268,7 @@ describe("Habits", () => {
 
       // Select Monday as success (single tap)
       const getWeekItems = async () => {
-        const habitContainer = getByTestId("habit-container");
+        const habitContainer = await findByTestId("habit-container");
         return await within(habitContainer).findAllByTestId("item-container");
       };
       const [monday] = await getWeekItems();
@@ -299,7 +308,7 @@ describe("Habits", () => {
     });
 
     test("Can input notes into an item upon a long press", async () => {
-      const { getByTestId, getByText, findByLabelText, sync, store } = render(<HabitsScreen />);
+      const { findByTestId, getByText, findByLabelText, sync, store } = render(<HabitsScreen />);
       store.dispatch(createNewHabit({ title: "run 5k", goal: 4 }));
       jest.clearAllMocks();
 
@@ -310,7 +319,7 @@ describe("Habits", () => {
       expect(habitBefore.items.length).toBe(0);
 
       const getWeekItems = async () => {
-        const habitContainer = getByTestId("habit-container");
+        const habitContainer = await findByTestId("habit-container");
         return await within(habitContainer).findAllByTestId("item-container");
       };
       const [_, tuesday] = await getWeekItems();
@@ -404,7 +413,7 @@ describe("Habits", () => {
       expect(habitAfter.items.length).toBe(0);
     });
     test("Will accept an empty string as valid notes as save it (minor UX improvement for fluidity in use)", async () => {
-      const { getByTestId, getByText, findByLabelText, sync, store } = render(<HabitsScreen />);
+      const { findByTestId, getByText, findByLabelText, sync, store } = render(<HabitsScreen />);
       store.dispatch(createNewHabit({ title: "run 5k", goal: 4 }));
       jest.clearAllMocks();
 
@@ -415,7 +424,7 @@ describe("Habits", () => {
       expect(habitBefore.items.length).toBe(0);
 
       const getWeekItems = async () => {
-        const habitContainer = getByTestId("habit-container");
+        const habitContainer = await findByTestId("habit-container");
         return await within(habitContainer).findAllByTestId("item-container");
       };
       const [monday] = await getWeekItems();

@@ -3,7 +3,7 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/database";
 import "firebase/compat/storage";
-import config from "./firebaseConfig";
+import { config } from "./firebaseConfig";
 
 const getStoredCurrentUser = async () => {
   try {
@@ -26,18 +26,20 @@ const initFirebase = async () => {
   const instance = firebaseAlreadyInitialised ? firebase.apps[0] : firebase.initializeApp(config);
 
   const auth = instance.auth();
-  const storedCurrentUser = await getStoredCurrentUser();
-  auth.currentUser = auth.currentUser || storedCurrentUser;
-
   const db = instance.database();
   const storage = instance.storage();
 
-  const updateStoredCurrentUser = async () => setStoredCurrentUser(instance.auth().currentUser);
+  // Note: auth.currentUser is read-only in Firebase v10+
+  // The stored user is used for UI hints only; actual auth state comes from Firebase
+  const storedCurrentUser = await getStoredCurrentUser();
+
+  const updateStoredCurrentUser = async () => setStoredCurrentUser(auth.currentUser);
 
   const values = {
     storage,
     auth,
     db,
+    storedCurrentUser, // Provide stored user separately for initial UI state
     updateStoredCurrentUser,
   };
 

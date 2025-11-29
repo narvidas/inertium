@@ -111,20 +111,20 @@ export const ConfigureHabitModal: FC<Props> = ({
                     <View style={styles.buttonContainer}>
                       <View style={{ marginRight: 10 }}>
                         <Button onPress={handleSubmit} success>
-                          <Ionicons name="ios-checkmark" style={styles.buttonIcon} />
+                          <Ionicons name="checkmark" style={styles.buttonIcon} />
                           <Text>Save</Text>
                         </Button>
                       </View>
                       <View>
                         <Button onPress={onClose}>
-                          <Ionicons name="ios-close" style={styles.buttonIcon} />
+                          <Ionicons name="close" style={styles.buttonIcon} />
                           <Text>Close</Text>
                         </Button>
                       </View>
                     </View>
                     <View style={styles.buttonContainer}>
                       <Button onPress={() => confirmRemoval(onRemove)} danger>
-                        <Ionicons name="md-trash" style={styles.buttonIcon} />
+                        <Ionicons name="trash" style={styles.buttonIcon} />
                         <Text>Remove habit</Text>
                       </Button>
                     </View>

@@ -1,17 +1,32 @@
-import AnimatedTabBar from "@gorhom/animated-tabbar";
+import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React, { FC } from "react";
 import { HabitsScreen } from "../../features/Habits";
 import { ProfileStackNavigation } from "../../features/Profile/ProfileStackNavigation";
-import { tabs } from "./tabs";
 
 const Tab = createBottomTabNavigator();
 
 export const TabNavigation: FC = () => (
   <Tab.Navigator
-    tabBar={props => <AnimatedTabBar animation="iconWithLabel" preset="material" tabs={tabs} {...props} />}
+    screenOptions={{
+      tabBarActiveTintColor: "#48914d",
+      tabBarInactiveTintColor: "#888888",
+      headerShown: false,
+    }}
   >
-    <Tab.Screen name="Habits" component={HabitsScreen} />
-    <Tab.Screen name="Profile" component={ProfileStackNavigation} />
+    <Tab.Screen
+      name="Habits"
+      component={HabitsScreen}
+      options={{
+        tabBarIcon: ({ color, size }) => <Ionicons name="checkmark-done" size={size} color={color} />,
+      }}
+    />
+    <Tab.Screen
+      name="Profile"
+      component={ProfileStackNavigation}
+      options={{
+        tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+      }}
+    />
   </Tab.Navigator>
 );
