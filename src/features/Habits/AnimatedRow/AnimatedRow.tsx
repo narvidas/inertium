@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useMemo, useRef } from "react";
-import { Animated, Easing, Platform } from "react-native";
+import { Animated, Easing, Platform, TouchableOpacity } from "react-native";
 import { HabitComponent } from "../HabitComponent";
 import { Habit } from "../types";
 
@@ -7,9 +7,10 @@ interface Props {
   habit: Habit;
   active: boolean;
   startOfWeek: Date;
+  onDrag?: () => void;
 }
 
-export const AnimatedRow: FC<Props> = ({ startOfWeek, habit, active }) => {
+export const AnimatedRow: FC<Props> = ({ startOfWeek, habit, active, onDrag }) => {
   const animation = useRef(new Animated.Value(0)).current;
 
   const style = useMemo(() => {
@@ -58,8 +59,10 @@ export const AnimatedRow: FC<Props> = ({ startOfWeek, habit, active }) => {
   }, [active]);
 
   return (
-    <Animated.View style={style}>
-      <HabitComponent habitId={habit.id} startOfWeek={startOfWeek} {...habit} />
-    </Animated.View>
+    <TouchableOpacity onLongPress={onDrag} delayLongPress={200} activeOpacity={1}>
+      <Animated.View style={style}>
+        <HabitComponent habitId={habit.id} startOfWeek={startOfWeek} {...habit} />
+      </Animated.View>
+    </TouchableOpacity>
   );
 };

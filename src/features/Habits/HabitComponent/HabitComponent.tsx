@@ -3,7 +3,7 @@ import formatISO from "date-fns/formatISO";
 import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
-import { List, ListItem } from "native-base";
+import { List, ListItem } from "../../../ui";
 import React, { FC, useContext, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";

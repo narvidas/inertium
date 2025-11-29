@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
-import { Body, Left, List, ListItem, Text, View } from "native-base";
+import { Body, Left, List, ListItem, Text, View } from "../../../ui";
 import React, { FC } from "react";
 import { Header } from "../../../components/Header";
 

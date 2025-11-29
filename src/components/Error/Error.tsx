@@ -1,4 +1,4 @@
-import { Container, Content, H3, Text } from "native-base";
+import { Container, Content, H3, Text } from "../../ui";
 import React, { FC } from "react";
 
 interface Props {

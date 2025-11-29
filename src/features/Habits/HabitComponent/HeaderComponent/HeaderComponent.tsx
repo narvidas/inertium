@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { H3, View } from "native-base";
+import { H3, View } from "../../../../ui";
 import React, { FC } from "react";
 import { TouchableHighlight } from "react-native";
 import { styles } from "./HeaderComponent.styles";

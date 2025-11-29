@@ -12,7 +12,7 @@ import {
   ListItem,
   Text,
   View,
-} from "native-base";
+} from "../../../ui";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { useObjectVal } from "react-firebase-hooks/database";
 import * as Yup from "yup";

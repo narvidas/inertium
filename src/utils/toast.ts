@@ -1,4 +1,4 @@
-import { Toast } from "native-base";
+import { Toast } from "../ui";
 
 export const errorToast = (message: string) => {
   Toast.show({

@@ -1,4 +1,4 @@
-import { View } from "native-base";
+import { View } from "../../../ui";
 import React, { FC, useRef } from "react";
 import CalendarStrip from "react-native-calendar-strip";
 import GestureRecognizer from "react-native-swipe-gestures";

@@ -1,4 +1,9 @@
-import Colors from "../../native-base-theme/variables/commonColor";
+// Theme colors
+const Colors = {
+  brandPrimary: "#5A9C5E",
+  textColor: "#333",
+  fontSizeBase: 16,
+};
 
 export default {
   navbarProps: {

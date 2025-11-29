@@ -10,11 +10,11 @@ module.exports = {
   testEnvironment: "jsdom",
   setupFiles: ["core-js", "<rootDir>/jest.setup.js"],
   setupFilesAfterEnv: ["<rootDir>/setupTests.ts"],
-  testPathIgnorePatterns: ["node_modules", "native-base-theme"],
+  testPathIgnorePatterns: ["node_modules"],
   coveragePathIgnorePatterns: [
     "node_modules",
-    "native-base-theme",
     "/testing/",
+    "/ui/",
     "index\\.ts$",
     "index\\.js$",
   ],
@@ -25,7 +25,7 @@ module.exports = {
   moduleDirectories: ["node_modules", "src"],
   moduleNameMapper: { "^.+\\.(css|less|scss)$": "babel-jest" },
   transformIgnorePatterns: [
-    "node_modules/(?!(jest-)?react-native|@react-native|@codler|react-clone-referenced-element|@react-native-community|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|@sentry/.*|firebase)",
+    "node_modules/(?!(jest-)?react-native|@react-native|@codler|react-clone-referenced-element|@react-native-community|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|@sentry/.*|firebase|react-native-draggable-flatlist|react-native-calendar-strip|react-native-reanimated|react-native-gesture-handler|react-native-swipe-gestures|nativewind|react-native-css-interop)",
   ],
   globals: { DEV: true },
   verbose: true,

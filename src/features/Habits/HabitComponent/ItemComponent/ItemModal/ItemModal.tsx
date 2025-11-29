@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Formik, FormikErrors } from "formik";
-import { Button, H3, Input, Item, Label, Root, Text } from "native-base";
+import { Button, H3, Input, Item, Label, Root, Text } from "../../../../../ui";
 import React, { FC, useEffect, useState } from "react";
 import { Keyboard, KeyboardAvoidingView, Modal, TouchableWithoutFeedback, View } from "react-native";
 import * as Yup from "yup";
@@ -83,7 +83,7 @@ export const ItemModal: FC<Props> = ({ visible, defaultValues, onSave, onClose }
                         </Button>
                       </View>
                       <View>
-                        <Button onPress={onClose}>
+                        <Button onPress={onClose} secondary>
                           <Ionicons name="close" style={styles.buttonIcon} />
                           <Text>Close</Text>
                         </Button>

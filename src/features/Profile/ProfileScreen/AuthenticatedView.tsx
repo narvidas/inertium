@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
-import { Body, Left, List, ListItem, Text, View } from "native-base";
+import { Body, Left, List, ListItem, Text, View } from "../../../ui";
 import React, { FC, useContext } from "react";
 import { useObjectVal } from "react-firebase-hooks/database";
 import { Header } from "../../../components/Header";
