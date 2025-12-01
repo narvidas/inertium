@@ -1,7 +1,7 @@
 import { View } from "../../../ui";
 import React, { FC, useRef } from "react";
-import CalendarStrip from "react-native-calendar-strip";
 import GestureRecognizer from "react-native-swipe-gestures";
+import { CalendarStrip, CalendarStripRef } from "../../../components/CalendarStrip";
 
 interface Props {
   onWeekChanged: (startOfNewWeek: Date) => void;
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const CalendarStripComponent: FC<Props> = ({ onWeekChanged, onToday }) => {
-  const ref = useRef(null);
+  const ref = useRef<CalendarStripRef>(null);
   return (
     <View style={{ paddingTop: 10, paddingBottom: 20 }}>
       <GestureRecognizer
@@ -18,7 +18,6 @@ export const CalendarStripComponent: FC<Props> = ({ onWeekChanged, onToday }) =>
       >
         <CalendarStrip
           ref={ref}
-          updateWeek={false}
           daySelectionAnimation={{
             type: "border",
             duration: 100,
@@ -29,9 +28,8 @@ export const CalendarStripComponent: FC<Props> = ({ onWeekChanged, onToday }) =>
           calendarHeaderStyle={{ paddingBottom: 15 }}
           highlightDateNumberStyle={{ textDecorationLine: "underline" }}
           iconContainer={{ width: 40 }}
-          styleWeekend={false}
           onWeekChanged={onWeekChanged}
-          onToday={() => onToday?.()}
+          onToday={onToday}
         />
       </GestureRecognizer>
     </View>
