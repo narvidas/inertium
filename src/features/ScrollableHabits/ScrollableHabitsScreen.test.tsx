@@ -1,3 +1,4 @@
+import format from "date-fns/format";
 import React from "react";
 import { fireEvent, render, waitFor, within } from "../../testing/customRender";
 import spyOnAlert from "../../testing/spyOnAlert";
@@ -21,13 +22,11 @@ describe("ScrollableHabitsScreen", () => {
       await findByTestId("scrollable-root");
     });
 
-    test("Renders the calendar strip", async () => {
+    test("Renders the calendar strip with current month and year", async () => {
       const { findByText } = render(<ScrollableHabitsScreen />);
-      // Should show current month/year
-      const monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"];
-      const currentMonth = monthNames[new Date().getMonth()];
-      await findByText(new RegExp(currentMonth));
+      // Should show current month and year (e.g., "December 2025")
+      const expectedHeader = format(new Date(), "MMMM yyyy");
+      await findByText(expectedHeader);
     });
 
     test("Renders the Today button", async () => {
@@ -40,6 +39,60 @@ describe("ScrollableHabitsScreen", () => {
       store.dispatch(createNewHabit({ title: "meditation", goal: 0 }));
 
       await findByText("meditation (0/0)");
+    });
+
+    test("Renders today's day name in the calendar strip", async () => {
+      const { findAllByText } = render(<ScrollableHabitsScreen />);
+      // Today's day should appear multiple times (e.g., "MON" for all Mondays in buffer)
+      const todayDayName = format(new Date(), "EEE").toUpperCase();
+      const dayElements = await findAllByText(todayDayName);
+      // Should find multiple instances (buffer has many weeks)
+      expect(dayElements.length).toBeGreaterThan(0);
+    });
+
+    test("Renders today's date number in the calendar strip", async () => {
+      const { findAllByText } = render(<ScrollableHabitsScreen />);
+      // Today's date number should appear
+      const todayDateNumber = format(new Date(), "d");
+      const dateElements = await findAllByText(todayDateNumber);
+      // Should find at least one (in calendar strip)
+      expect(dateElements.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Calendar Navigation", () => {
+    test("Today button is pressable and keeps current month visible", async () => {
+      const { findByText, getByText } = render(<ScrollableHabitsScreen />);
+
+      // Verify initial month header
+      const expectedHeader = format(new Date(), "MMMM yyyy");
+      await findByText(expectedHeader);
+
+      // Press Today button
+      const todayButton = getByText("Today");
+      fireEvent.press(todayButton);
+
+      // Month header should still show current month
+      await findByText(expectedHeader);
+    });
+
+    test("Multiple habits show synchronized day items", async () => {
+      const { findAllByTestId, store } = render(<ScrollableHabitsScreen />);
+
+      // Create two habits
+      store.dispatch(createNewHabit({ title: "habit one", goal: 3 }));
+      store.dispatch(createNewHabit({ title: "habit two", goal: 5 }));
+
+      // Both should have rendered habit containers
+      const habitContainers = await findAllByTestId("scrollable-habit-container");
+      expect(habitContainers.length).toBe(2);
+
+      // Each habit should have day items
+      for (const container of habitContainers) {
+        const dayItems = await within(container).findAllByTestId("scrollable-item-container");
+        // Should have multiple day items visible
+        expect(dayItems.length).toBeGreaterThan(0);
+      }
     });
   });
 

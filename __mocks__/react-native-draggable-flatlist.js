@@ -1,7 +1,15 @@
 import React from "react";
 import { View, FlatList } from "react-native";
 
-const DraggableFlatList = ({ data, renderItem, keyExtractor, refreshControl, ListHeaderComponent, ListFooterComponent, onDragEnd }) => {
+const DraggableFlatList = ({
+  data,
+  renderItem,
+  keyExtractor,
+  refreshControl,
+  ListHeaderComponent,
+  ListFooterComponent,
+  onDragEnd,
+}) => {
   return (
     <View testID="draggable-list" onDragEnd={onDragEnd}>
       <FlatList
