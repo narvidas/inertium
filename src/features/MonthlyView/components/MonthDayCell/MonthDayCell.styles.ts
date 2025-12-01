@@ -6,13 +6,13 @@ export const styles = StyleSheet.create({
   cellContainer: {
     width: "14.28%", // 100% / 7 days
     aspectRatio: 1,
-    padding: 2,
+    padding: 4,
   },
   cell: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 999, // Round cells
+    borderRadius: 10, // Round cells
     backgroundColor: "#f5f5f5",
   },
   cellEmpty: {
@@ -28,8 +28,8 @@ export const styles = StyleSheet.create({
     backgroundColor: "#e58570",
   },
   cellToday: {
-    borderWidth: 1, // Thinner border
-    borderColor: "#333",
+    borderWidth: 1,
+    borderColor: "#666",
   },
   dayNumber: {
     fontSize: 14,
@@ -50,11 +50,12 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
   },
   notesDot: {
-    fontSize: 24, // Bigger dot
+    fontSize: 16,
     fontWeight: "bold",
     color: "#666",
     lineHeight: 14, // Compact line height to position closer to number
-    marginTop: -4,
+    position: "absolute",
+    bottom: -10,
   },
   notesDotDone: {
     color: "#fff",

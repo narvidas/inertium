@@ -12,8 +12,8 @@ export const defaults = {};
 
 const render = (ui, { initialState = defaults, store = getStore(), ...renderOptions } = {}) => {
   const firebaseValues = {
-    auth: firebaseMock.auth,
-    db: firebaseMock.database,
+    auth: firebaseMock.auth(),
+    db: firebaseMock.database(),
     updateStoredCurrentUser: jest.fn(),
   };
 
