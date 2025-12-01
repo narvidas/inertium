@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
   cellContainer: {
     width: "14.28%", // 100% / 7 days
     aspectRatio: 1,
-    padding: 4,
+    padding: 3,
   },
   cell: {
     flex: 1,
@@ -28,8 +28,8 @@ export const styles = StyleSheet.create({
     backgroundColor: "#e58570",
   },
   cellToday: {
-    borderWidth: 1,
-    borderColor: "#666",
+    borderWidth: 1.4,
+    borderColor: "#00000099",
   },
   dayNumber: {
     fontSize: 14,

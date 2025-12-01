@@ -3,25 +3,15 @@ import { Dimensions, StyleSheet } from "react-native";
 const width = Dimensions.get("window").width;
 
 export const styles = StyleSheet.create({
-  button: {
-    borderColor: "#000066",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 10,
-  },
   container: {
     flex: 1,
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
   },
-  innerContainer: {
-    alignItems: "center",
-  },
   buttonIcon: {
-    marginLeft: 15,
-    fontSize: 32,
-    height: 32,
+    fontSize: 22,
+    height: 22,
     color: "white",
   },
   buttonContainer: {
