@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import addDays from "date-fns/addDays";
 import formatISO from "date-fns/formatISO";
 import isSameDay from "date-fns/isSameDay";
@@ -11,11 +13,14 @@ import { Spacer } from "../../../components/Spacer/Spacer";
 import SyncContext from "../../../config/remote/syncContext";
 import { generatePushID } from "../../../utils/generatePushID";
 import { habitSelector, removeHabit, updateHabit } from "../habits.slice";
+import { HabitsStackParamList } from "../HabitsStackNavigation";
 import { Habit, Item } from "../types";
 import { ConfigureHabitModal } from "./ConfigureHabitModal";
 import { styles } from "./HabitComponent.styles";
 import { HeaderComponent } from "./HeaderComponent";
 import { ItemComponent } from "./ItemComponent";
+
+type NavigationProp = NativeStackNavigationProp<HabitsStackParamList, "HabitsList">;
 
 const DAYS_IN_WEEK = 7;
 
@@ -57,12 +62,13 @@ type Props = Habit & OwnProps;
 
 export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOfWeek }) => {
   const dispatch = useDispatch();
+  const navigation = useNavigation<NavigationProp>();
   const habit = useSelector(habitSelector(habitId));
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const { syncHabit } = useContext(SyncContext);
 
   useEffect(() => {
-    habit && syncHabit(habitId);
+    if (habit && syncHabit) syncHabit(habitId);
   }, [habit]);
 
   const weekItems = useMemo(() => {
@@ -103,6 +109,7 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
           goalProgress={`${completedGoalCount}/${totalGoalCount}`}
           accessibilityLabel={`Configure habit ${title}`}
           onCogPress={() => setConfigModalVisible(true)}
+          onCalendarPress={() => navigation.navigate("MonthlyView", { habitId, habitTitle: title })}
         />
         <List
           dataArray={weekItems}

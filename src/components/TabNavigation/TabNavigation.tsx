@@ -1,19 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React, { FC } from "react";
-import { useSelector } from "react-redux";
-import { useScrollableViewSelector } from "../../config/rtk/settings.slice";
-import { HabitsScreen } from "../../features/Habits";
-import { ScrollableHabitsScreen } from "../../features/ScrollableHabits";
+import { HabitsStackNavigation } from "../../features/Habits/HabitsStackNavigation";
 import { ProfileStackNavigation } from "../../features/Profile/ProfileStackNavigation";
 
 const Tab = createBottomTabNavigator();
-
-// Wrapper component that conditionally renders the appropriate habits view
-const HabitsViewSwitch: FC = () => {
-  const useScrollableView = useSelector(useScrollableViewSelector);
-  return useScrollableView ? <ScrollableHabitsScreen /> : <HabitsScreen />;
-};
 
 export const TabNavigation: FC = () => (
   <Tab.Navigator
@@ -25,7 +16,7 @@ export const TabNavigation: FC = () => (
   >
     <Tab.Screen
       name="Habits"
-      component={HabitsViewSwitch}
+      component={HabitsStackNavigation}
       options={{
         tabBarIcon: ({ color, size }) => <Ionicons name="checkmark-done" size={size} color={color} />,
       }}
