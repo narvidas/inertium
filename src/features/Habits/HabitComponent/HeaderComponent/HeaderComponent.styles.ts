@@ -6,6 +6,10 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     flex: 1,
   },
+  buttonsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   button: {
     borderRadius: 4,
   },

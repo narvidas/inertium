@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import addDays from "date-fns/addDays";
 import formatISO from "date-fns/formatISO";
 import isMonday from "date-fns/isMonday";
@@ -11,6 +13,7 @@ import { Spacer } from "../../../../components/Spacer/Spacer";
 import SyncContext from "../../../../config/remote/syncContext";
 import { generatePushID } from "../../../../utils/generatePushID";
 import { habitSelector, removeHabit, updateHabit } from "../../../Habits/habits.slice";
+import { HabitsStackParamList } from "../../../Habits/HabitsStackNavigation";
 import { ConfigureHabitModal } from "../../../Habits/HabitComponent/ConfigureHabitModal";
 import { HeaderComponent } from "../../../Habits/HabitComponent/HeaderComponent";
 import { Habit, Item } from "../../../Habits/types";
@@ -18,6 +21,8 @@ import { useScrollViewSync } from "../../context";
 import { HabitDayItemData } from "../../types";
 import { ScrollableDayItem } from "../ScrollableDayItem";
 import { styles } from "./ScrollableHabitRow.styles";
+
+type NavigationProp = NativeStackNavigationProp<HabitsStackParamList, "HabitsList">;
 
 // Create an unrecorded item for a date (same as original HabitComponent)
 const createUnrecordedItem = (date: Date): Item => {
@@ -55,6 +60,7 @@ interface Props {
 
 export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollEnabled = false }) => {
   const dispatch = useDispatch();
+  const navigation = useNavigation<NavigationProp>();
   const flatListRef = useRef<FlatList<HabitDayItemData>>(null);
   const { syncHabit } = useContext(SyncContext);
   const [configModalVisible, setConfigModalVisible] = useState(false);
@@ -168,6 +174,7 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
           title={habit.title}
           goalProgress={goalProgress ? `${goalProgress.completed}/${goalProgress.total}` : null}
           onCogPress={() => setConfigModalVisible(true)}
+          onCalendarPress={() => navigation.navigate("MonthlyView", { habitId: habit.id, habitTitle: habit.title })}
           accessibilityLabel={`Configure habit ${habit.title}`}
         />
       </View>
