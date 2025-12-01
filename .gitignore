@@ -13,5 +13,3 @@ coverage/
 testReport/
 .DS_Store
 yarn-error.log
-firebaseConfig.js
-src/config/remote/firebaseConfig.ts
