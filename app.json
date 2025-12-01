@@ -22,7 +22,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.monad.inertium"
+      "bundleIdentifier": "com.monad.inertium",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "description": "",
     "scheme": "inertium",
@@ -30,6 +33,11 @@
       "expo-asset",
       "expo-font",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4381df78-a551-4a9f-8f3e-3d7316c5a9ad"
+      }
+    }
   }
 }
