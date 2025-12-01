@@ -163,19 +163,23 @@ export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) =>
     scrollToDate(thisWeekMonday);
   }, [scrollToDate]);
 
+  // Derive isScrolling from activeScrollViewId
+  const isScrolling = activeScrollViewId !== null;
+
   const value: ScrollSyncContextValue = useMemo(() => ({
     scrollX,
     setScrollX,
     onScrollBegin,
     onScrollEnd,
     activeScrollViewId,
+    isScrolling,
     dayWidth: DAY_WIDTH,
     bufferDays,
     centerDate,
     visibleMonth,
     scrollToDate,
     scrollToThisWeek,
-  }), [scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, bufferDays, centerDate, visibleMonth, scrollToDate, scrollToThisWeek]);
+  }), [scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, isScrolling, bufferDays, centerDate, visibleMonth, scrollToDate, scrollToThisWeek]);
 
   return (
     <ScrollSyncContext.Provider value={value}>
@@ -207,7 +211,7 @@ export const useScrollViewSync = (
   id: string,
   flatListRef: React.RefObject<FlatList<any> | null>
 ) => {
-  const { scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, dayWidth, bufferDays, centerDate, visibleMonth, scrollToDate, scrollToThisWeek } = useScrollSync();
+  const { scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, isScrolling, dayWidth, bufferDays, centerDate, visibleMonth, scrollToDate, scrollToThisWeek } = useScrollSync();
   const registry = useContext(ScrollSyncRegistryContext);
 
   // Register this scroll view on mount
@@ -252,6 +256,7 @@ export const useScrollViewSync = (
     handleScrollBegin,
     handleScrollEnd,
     isActiveScrollView: activeScrollViewId === id,
+    isScrolling,
   };
 };
 

@@ -1,7 +1,7 @@
 import format from "date-fns/format";
 import parseISO from "date-fns/parseISO";
-import React, { FC, useCallback, useState } from "react";
-import { Text, TouchableHighlight, View } from "react-native";
+import React, { FC, useCallback, useMemo, useState } from "react";
+import { Animated, TouchableHighlight, View } from "react-native";
 import { useDispatch } from "react-redux";
 import { updateOrCreateItem } from "../../../Habits/habits.slice";
 import { Item, Status } from "../../../Habits/types";
@@ -18,9 +18,11 @@ interface Props {
   habitId: string;
   item: Item;
   dayWidth: number;
+  /** Animated value (0-1) for scroll state - text fades when scrolling */
+  scrollAnimValue?: Animated.Value;
 }
 
-export const ScrollableDayItem: FC<Props> = React.memo(({ habitId, item, dayWidth }) => {
+export const ScrollableDayItem: FC<Props> = React.memo(({ habitId, item, dayWidth, scrollAnimValue }) => {
   const dispatch = useDispatch();
   const [itemModalVisible, setItemModalVisible] = useState(false);
 
@@ -28,6 +30,14 @@ export const ScrollableDayItem: FC<Props> = React.memo(({ habitId, item, dayWidt
   const dayOfWeekWord = format(date, "EEE"); // E.g. 'SUN' for Sunday
   const dayOfMonthNumber = format(date, "d"); // E.g. '14' for 14th December
   const notesExist = item.notes && item.notes !== "";
+
+  // Interpolate: when scrollAnimValue is 1 (scrolling), text fades to 0.15
+  const textOpacity = useMemo(() =>
+    scrollAnimValue?.interpolate({
+      inputRange: [0, 1],
+      outputRange: [1, 0.20],
+    }),
+    [scrollAnimValue]);
 
   const updateStatus = useCallback(() => {
     let newStatus: Status = "default";
@@ -66,11 +76,14 @@ export const ScrollableDayItem: FC<Props> = React.memo(({ habitId, item, dayWidt
         onPress={updateStatus}
         onLongPress={handleLongPress}
       >
-        <View style={styles.dateContainer} testID="scrollable-item-container">
-          <Text style={[styles.dayOfWeekWord, getStyle(item.status)]}>{dayOfWeekWord}</Text>
-          <Text style={[styles.dayOfMonthNumber, getStyle(item.status)]}>{dayOfMonthNumber}</Text>
-          {notesExist ? <Text style={styles.notesDot}>{`.`}</Text> : null}
-        </View>
+        <Animated.View
+          style={[styles.dateContainer, textOpacity && { opacity: textOpacity }]}
+          testID="scrollable-item-container"
+        >
+          <Animated.Text style={[styles.dayOfWeekWord, getStyle(item.status)]}>{dayOfWeekWord}</Animated.Text>
+          <Animated.Text style={[styles.dayOfMonthNumber, getStyle(item.status)]}>{dayOfMonthNumber}</Animated.Text>
+          {notesExist ? <Animated.Text style={styles.notesDot}>{`.`}</Animated.Text> : null}
+        </Animated.View>
       </TouchableHighlight>
     </>
   );
