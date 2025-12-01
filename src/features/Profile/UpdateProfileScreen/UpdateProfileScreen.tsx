@@ -14,7 +14,6 @@ import {
   View,
 } from "../../../ui";
 import React, { FC, useContext, useEffect, useState } from "react";
-import { useObjectVal } from "react-firebase-hooks/database";
 import * as Yup from "yup";
 import { Header } from "../../../components/Header";
 import { Loading } from "../../../components/Loading";
@@ -23,22 +22,45 @@ import FirebaseContext from "../../../config/remote/firebaseContext";
 import { errorToast, successToast } from "../../../utils/toast";
 import { styles } from "./UpdateProfileScreen.styles";
 
+interface UserProfile {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
 export const UpdateProfileScreen: FC = () => {
   const { db, auth } = useContext(FirebaseContext);
-  const uid = (auth.currentUser && auth.currentUser.uid) || "";
-  const currentUserDbRef = db.ref(`users/${uid}`);
-  const [currentUser, loadingUser] = useObjectVal(currentUserDbRef);
+  const uid = auth.currentUser?.uid;
 
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
   const [error, setError] = useState<string>();
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showChangeEmail, setShowChangeEmail] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Fetch user profile when uid is available
+  useEffect(() => {
+    if (!uid) {
+      setLoadingUser(false);
+      return;
+    }
+
+    const userRef = db.ref(`users/${uid}`);
+    const unsubscribe = userRef.on("value", (snapshot) => {
+      setCurrentUser(snapshot.val());
+      setLoadingUser(false);
+    });
+
+    return () => userRef.off("value", unsubscribe);
+  }, [db, uid]);
 
   useEffect(() => {
     if (error) errorToast(error);
   }, [error]);
 
   const updateProfile = async values => {
+    if (!uid) return;
     setError(undefined);
     setLoading(true);
     const { firstName, lastName, email, password, password2 } = values;
@@ -47,9 +69,9 @@ export const UpdateProfileScreen: FC = () => {
       await db.ref(`users/${uid}`).update({ firstName, lastName });
       if (showChangeEmail) {
         await db.ref(`users/${uid}`).update({ email });
-        await auth.currentUser.updateEmail(email);
+        await auth.currentUser?.updateEmail(email);
       }
-      if (showChangePassword) await auth.currentUser.updatePassword(password);
+      if (showChangePassword) await auth.currentUser?.updatePassword(password);
       successToast("Updated successfully");
     } catch (e) {
       setError(e.message);
@@ -93,8 +115,8 @@ export const UpdateProfileScreen: FC = () => {
     }
   };
 
-  if (loadingUser) return <Loading />;
-  const { firstName, lastName, email } = currentUser;
+  if (!uid || loadingUser) return <Loading />;
+  const { firstName = "", lastName = "", email = "" } = currentUser || {};
 
   return (
     <Container>

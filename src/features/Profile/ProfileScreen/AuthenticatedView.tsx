@@ -1,8 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
 import { Body, Left, List, ListItem, Right, Text, View, CheckBox } from "../../../ui";
-import React, { FC, useContext } from "react";
-import { useObjectVal } from "react-firebase-hooks/database";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Header } from "../../../components/Header";
 import { Loading } from "../../../components/Loading";
@@ -13,13 +12,35 @@ interface Props {
   navigation: NavigationProp<any>;
 }
 
+interface UserProfile {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
 export const AuthenticatedView: FC<Props> = ({ navigation }) => {
   const dispatch = useDispatch();
   const { db, auth } = useContext(FirebaseContext);
-  const uid = (auth.currentUser && auth.currentUser.uid) || "";
-  const currentUserDbRef = db.ref(`users/${uid}`);
-  const [currentUser, loadingUser] = useObjectVal(currentUserDbRef);
+  const uid = auth.currentUser?.uid;
   const useScrollableView = useSelector(useScrollableViewSelector);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch user profile when uid is available
+  useEffect(() => {
+    if (!uid) {
+      setLoading(false);
+      return;
+    }
+
+    const userRef = db.ref(`users/${uid}`);
+    const unsubscribe = userRef.on("value", (snapshot) => {
+      setCurrentUser(snapshot.val());
+      setLoading(false);
+    });
+
+    return () => userRef.off("value", unsubscribe);
+  }, [db, uid]);
 
   const logout = () => {
     auth.signOut();
@@ -30,7 +51,8 @@ export const AuthenticatedView: FC<Props> = ({ navigation }) => {
     dispatch(toggleScrollableView());
   };
 
-  if (loadingUser) return <Loading />;
+  // Show loading while fetching user data
+  if (!uid || loading) return <Loading />;
   return (
     <View style={{ flex: 1 }}>
       <Header
