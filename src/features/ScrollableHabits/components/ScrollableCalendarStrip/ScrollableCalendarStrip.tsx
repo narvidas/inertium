@@ -5,6 +5,7 @@ import formatISO from "date-fns/formatISO";
 import getDate from "date-fns/getDate";
 import isMonday from "date-fns/isMonday";
 import isToday from "date-fns/isToday";
+import startOfWeek from "date-fns/startOfWeek";
 import React, { FC, useCallback, useMemo, useRef } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { useScrollViewSync } from "../../context";
@@ -16,54 +17,47 @@ const SCROLL_VIEW_ID = "calendar-strip";
 interface DayItemProps {
   item: DayItemData;
   dayWidth: number;
-  onMondayPress?: (date: Date) => void;
+  onDayPress?: (mondayDate: Date) => void;
 }
 
-const DayItem: FC<DayItemProps> = React.memo(({ item, dayWidth, onMondayPress }) => {
+const DayItem: FC<DayItemProps> = React.memo(({ item, dayWidth, onDayPress }) => {
   const { date, isToday: isTodayDate } = item;
   const isMondayDate = isMonday(date);
 
   const handlePress = useCallback(() => {
-    if (isMondayDate && onMondayPress) {
-      onMondayPress(date);
+    if (onDayPress) {
+      // Find the Monday of this day's week and snap to it
+      const mondayOfWeek = startOfWeek(date, { weekStartsOn: 1 });
+      onDayPress(mondayOfWeek);
     }
-  }, [isMondayDate, onMondayPress, date]);
+  }, [onDayPress, date]);
 
-  const content = (
-    <View style={[
-      styles.dayContainer,
-      { width: dayWidth, height: dayWidth },
-      isTodayDate && styles.dayContainerToday,
-      !isMondayDate && styles.dayContainerFaded,
-    ]}>
-      <Text style={[
-        styles.dateName,
-        !isMondayDate && styles.textFaded,
-        isMondayDate && styles.textMonday,
+  return (
+    <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
+      <View style={[
+        styles.dayContainer,
+        { width: dayWidth, height: dayWidth },
+        isTodayDate && styles.dayContainerToday,
+        !isMondayDate && styles.dayContainerFaded,
       ]}>
-        {format(date, "EEE").toUpperCase()}
-      </Text>
-      <Text style={[
-        styles.dateNumber,
-        isTodayDate && styles.dateNumberToday,
-        !isMondayDate && styles.textFaded,
-        isMondayDate && styles.textMonday,
-      ]}>
-        {getDate(date)}
-      </Text>
-    </View>
+        <Text style={[
+          styles.dateName,
+          !isMondayDate && styles.textFaded,
+          isMondayDate && styles.textMonday,
+        ]}>
+          {format(date, "EEE").toUpperCase()}
+        </Text>
+        <Text style={[
+          styles.dateNumber,
+          isTodayDate && styles.dateNumberToday,
+          !isMondayDate && styles.textFaded,
+          isMondayDate && styles.textMonday,
+        ]}>
+          {getDate(date)}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
-
-  // Only Mondays are clickable
-  if (isMondayDate) {
-    return (
-      <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
-        {content}
-      </TouchableOpacity>
-    );
-  }
-
-  return content;
 });
 
 DayItem.displayName = "DayItem";
@@ -100,8 +94,8 @@ export const ScrollableCalendarStrip: FC<Props> = ({ onScrollToThisWeek }) => {
     return result;
   }, [centerDate, bufferDays]);
 
-  // Handle click on a Monday - scroll all views to that week
-  const handleMondayPress = useCallback((mondayDate: Date) => {
+  // Handle click on any day - scroll all views to that week's Monday
+  const handleDayPress = useCallback((mondayDate: Date) => {
     scrollToDate(mondayDate);
   }, [scrollToDate]);
 
@@ -112,8 +106,8 @@ export const ScrollableCalendarStrip: FC<Props> = ({ onScrollToThisWeek }) => {
   }, [scrollToThisWeek, onScrollToThisWeek]);
 
   const renderItem = useCallback(({ item }: { item: DayItemData }) => (
-    <DayItem item={item} dayWidth={dayWidth} onMondayPress={handleMondayPress} />
-  ), [dayWidth, handleMondayPress]);
+    <DayItem item={item} dayWidth={dayWidth} onDayPress={handleDayPress} />
+  ), [dayWidth, handleDayPress]);
 
   const keyExtractor = useCallback((item: DayItemData) => item.dateKey, []);
 

@@ -12,6 +12,7 @@ export const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 4,
+    paddingVertical: 3,
   },
   icon: {
     fontSize: 24,
