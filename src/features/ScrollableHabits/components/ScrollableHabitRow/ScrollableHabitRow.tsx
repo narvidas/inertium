@@ -1,6 +1,8 @@
 import addDays from "date-fns/addDays";
 import formatISO from "date-fns/formatISO";
+import isMonday from "date-fns/isMonday";
 import isSameDay from "date-fns/isSameDay";
+import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
 import React, { FC, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { FlatList, View } from "react-native";
@@ -61,6 +63,7 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
   const habitFromStore = useSelector(habitSelector(habit.id));
 
   const {
+    scrollX,
     dayWidth,
     bufferDays,
     centerDate,
@@ -93,21 +96,36 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
     return result;
   }, [centerDate, bufferDays, habit]);
 
-  // Calculate goal progress across visible week (approximation using items)
+  // Calculate the leftmost visible date based on scroll position
+  const leftmostVisibleDate = useMemo(() => {
+    const dayIndex = Math.round(scrollX / dayWidth);
+    const daysFromCenter = dayIndex - bufferDays;
+    return addDays(centerDate, daysFromCenter);
+  }, [scrollX, dayWidth, bufferDays, centerDate]);
+
+  // Only show goal progress when viewing starts on a Monday (full week view)
+  const showGoalProgress = useMemo(() => isMonday(leftmostVisibleDate), [leftmostVisibleDate]);
+
+  // Calculate goal progress for the visible week (only when aligned to Monday)
   const goalProgress = useMemo(() => {
-    // Count 'done' items in the last 7 days around today
-    const sevenDaysAgo = addDays(centerDate, -6);
+    if (!showGoalProgress) {
+      return null;
+    }
+
+    const weekStart = leftmostVisibleDate;
+    const weekEnd = addDays(weekStart, 6);
+
     const completedInWeek = habit.items.filter(item => {
       const itemDate = parseISO(item.date);
       return item.status === "done" &&
-        itemDate >= sevenDaysAgo &&
-        itemDate <= centerDate;
+        isWithinInterval(itemDate, { start: weekStart, end: weekEnd });
     }).length;
+
     return {
       completed: completedInWeek,
       total: habit.goal || 0,
     };
-  }, [habit.items, habit.goal, centerDate]);
+  }, [habit.items, habit.goal, leftmostVisibleDate, showGoalProgress]);
 
   const renderItem = useCallback(({ item }: { item: HabitDayItemData }) => (
     <ScrollableDayItem
@@ -147,15 +165,17 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
       <Spacer size={8} />
       <View style={styles.headerContainer}>
         <HeaderComponent
-          title={`${habit.title} (${goalProgress.completed}/${goalProgress.total})`}
-          accessibilityLabel={`Configure habit ${habit.title}`}
+          title={habit.title}
+          goalProgress={goalProgress ? `${goalProgress.completed}/${goalProgress.total}` : null}
           onCogPress={() => setConfigModalVisible(true)}
+          accessibilityLabel={`Configure habit ${habit.title}`}
         />
       </View>
       <View style={styles.itemsContainer}>
         <FlatList
           ref={flatListRef}
           data={items}
+          extraData={habit.items}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           horizontal
