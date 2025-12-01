@@ -31,20 +31,20 @@ const DayItem: FC<DayItemProps> = React.memo(({ item, dayWidth, onMondayPress })
 
   const content = (
     <View style={[
-      styles.dayContainer, 
-      { width: dayWidth, height: dayWidth }, 
+      styles.dayContainer,
+      { width: dayWidth, height: dayWidth },
       isTodayDate && styles.dayContainerToday,
       !isMondayDate && styles.dayContainerFaded,
     ]}>
       <Text style={[
-        styles.dateName, 
+        styles.dateName,
         !isMondayDate && styles.textFaded,
         isMondayDate && styles.textMonday,
       ]}>
         {format(date, "EEE").toUpperCase()}
       </Text>
       <Text style={[
-        styles.dateNumber, 
+        styles.dateNumber,
         isTodayDate && styles.dateNumberToday,
         !isMondayDate && styles.textFaded,
         isMondayDate && styles.textMonday,

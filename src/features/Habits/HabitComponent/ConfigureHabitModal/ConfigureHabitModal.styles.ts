@@ -19,9 +19,10 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonIcon: {
-    marginLeft: 15,
-    fontSize: 32,
-    height: 32,
+    marginLeft: 5,
+    fontSize: 22,
+    marginRight: 10,
+    height: 22,
     color: "white",
   },
   buttonContainer: {
