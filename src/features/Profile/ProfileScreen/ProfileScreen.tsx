@@ -1,6 +1,6 @@
 import { NavigationProp } from "@react-navigation/native";
 import { Container, Content } from "../../../ui";
-import React, { FC, useContext, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import FirebaseContext from "../../../config/remote/firebaseContext";
 import SyncContext from "../../../config/remote/syncContext";
 import { AnonymousView } from "./AnonymousView";
@@ -16,11 +16,14 @@ export const ProfileScreen: FC<Props> = ({ navigation }) => {
   const { syncAll } = useContext(SyncContext);
   const [loggedIn, setLoggedIn] = useState<boolean>(!!auth.currentUser);
 
-  auth.onAuthStateChanged(user => {
-    const loggedIn = !!user;
-    setLoggedIn(loggedIn);
-    if (loggedIn) syncAll();
-  });
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      const isLoggedIn = !!user;
+      setLoggedIn(isLoggedIn);
+      if (isLoggedIn) syncAll();
+    });
+    return unsubscribe;
+  }, [auth, syncAll]);
 
   return (
     <Container>

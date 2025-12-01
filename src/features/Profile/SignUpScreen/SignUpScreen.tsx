@@ -28,8 +28,9 @@ export const SignUpScreen: FC<Props> = ({ navigation }) => {
     setLoading(true);
     try {
       if (password !== password2) throw Error("Passwords do not match. Please try again.");
-      await auth.createUserWithEmailAndPassword(email, password);
-      await db.ref(`users/${auth.currentUser.uid}`).set({
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      const uid = userCredential.user.uid;
+      await db.ref(`users/${uid}`).set({
         firstName,
         lastName,
         email,
