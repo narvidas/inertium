@@ -1,4 +1,4 @@
-<img src="./doc/inertium.png" alt="Inertium Habit Tracker"/>
+<img src="./docs/inertium.png" alt="Inertium Habit Tracker"/>
 
 # Inertium Habit Tracker
 
@@ -42,13 +42,11 @@ Inertium is written in [TypeScript](https://www.typescriptlang.org/) and built o
 
 ### Create and Reorder Habits
 
-![createnewhabit](./doc/createnewhabit.gif)
-![reorderhabits](./doc/reorderhabits.gif)
+![create-reorder](./docs/create-reorder.gif)
 
-### Track Items Across Weeks
+### Track Items Across Weeks and Months
 
-![checkitemsoff](./doc/checkitemsoff.gif)
-![browseweeks](./doc/browseweeks.gif)
+![views](./docs/views.gif)
 
 ---
 
