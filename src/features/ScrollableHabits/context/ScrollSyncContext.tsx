@@ -1,35 +1,38 @@
+import addDays from "date-fns/addDays";
+import format from "date-fns/format";
 import startOfDay from "date-fns/startOfDay";
 import React, { createContext, FC, ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import { Animated, Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { ScrollSyncContextValue } from "../types";
 
-const DAYS_VISIBLE = 7;
-const BUFFER_DAYS = 60; // Buffer 60 days on each side for smooth scrolling
-
-// Calculate day width based on screen width (7 days visible)
+// Match original sizing: screenWidth / 8 (like original HabitComponent)
 const screenWidth = Dimensions.get("window").width;
-const DAY_WIDTH = Math.floor(screenWidth / DAYS_VISIBLE);
+const HORIZONTAL_PADDING = 20; // Match padding from ScrollableHabitsScreen.styles
+const AVAILABLE_WIDTH = screenWidth - (HORIZONTAL_PADDING * 2);
+const DAY_WIDTH = Math.floor(AVAILABLE_WIDTH / 7); // 7 days visible within the padded area
+
+const INITIAL_BUFFER_DAYS = 90; // Initial buffer: 90 days each side
+const BUFFER_EXTENSION = 30; // Add 30 more days when approaching edges
 
 const ScrollSyncContext = createContext<ScrollSyncContextValue | null>(null);
-
-interface ScrollViewRef {
-  ref: React.RefObject<FlatList<any> | null>;
-  id: string;
-}
 
 interface ScrollSyncProviderProps {
   children: ReactNode;
 }
 
 export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) => {
-  const [scrollX, setScrollXState] = useState(BUFFER_DAYS * DAY_WIDTH);
-  const [activeScrollViewId, setActiveScrollViewId] = useState<string | null>(null);
   const centerDate = useMemo(() => startOfDay(new Date()), []);
+  const [bufferDays, setBufferDays] = useState(INITIAL_BUFFER_DAYS);
+  const [scrollX, setScrollXState] = useState(INITIAL_BUFFER_DAYS * DAY_WIDTH);
+  const [activeScrollViewId, setActiveScrollViewId] = useState<string | null>(null);
+  const [visibleMonth, setVisibleMonth] = useState(() => format(centerDate, "MMMM yyyy"));
 
   // Track all registered scroll views
   const scrollViewRefs = useRef<Map<string, React.RefObject<FlatList<any> | null>>>(new Map());
-  // Prevent scroll sync loops
-  const isSyncing = useRef(false);
+  // Track the final scroll position for debounced sync
+  const pendingScrollX = useRef<number>(INITIAL_BUFFER_DAYS * DAY_WIDTH);
+  // Debounce timer for scroll end
+  const scrollEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Register a scroll view for synchronization
   const registerScrollView = useCallback((id: string, ref: React.RefObject<FlatList<any> | null>) => {
@@ -39,34 +42,99 @@ export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) =>
     };
   }, []);
 
-  const setScrollX = useCallback((x: number, sourceId?: string) => {
-    if (isSyncing.current) return;
+  // Calculate visible date from scroll offset
+  const getVisibleDateFromOffset = useCallback((offset: number): Date => {
+    // Calculate which day index is at the center of the screen
+    const centerDayIndex = Math.round(offset / DAY_WIDTH) + 3; // +3 to get center of 7 visible days
+    const daysFromCenter = centerDayIndex - bufferDays;
+    return addDays(centerDate, daysFromCenter);
+  }, [centerDate, bufferDays]);
 
-    isSyncing.current = true;
-    setScrollXState(x);
+  // Update month header based on visible date
+  const updateMonthHeader = useCallback((offset: number) => {
+    const visibleDate = getVisibleDateFromOffset(offset);
+    const newMonth = format(visibleDate, "MMMM yyyy");
+    setVisibleMonth(newMonth);
+  }, [getVisibleDateFromOffset]);
 
-    // Sync all other scroll views
+  // Check if we need to extend the buffer
+  const checkAndExtendBuffer = useCallback((offset: number) => {
+    const totalWidth = bufferDays * 2 * DAY_WIDTH;
+    const leftThreshold = DAY_WIDTH * 14; // 2 weeks from left edge
+    const rightThreshold = totalWidth - (DAY_WIDTH * 14); // 2 weeks from right edge
+
+    if (offset < leftThreshold || offset > rightThreshold) {
+      setBufferDays(prev => prev + BUFFER_EXTENSION);
+    }
+  }, [bufferDays]);
+
+  // Sync all other scroll views (called at scroll end with animation)
+  const syncOtherScrollViews = useCallback((offset: number, sourceId: string | null, animated: boolean = true) => {
     scrollViewRefs.current.forEach((ref, id) => {
       if (id !== sourceId && ref.current) {
-        ref.current.scrollToOffset({ offset: x, animated: false });
+        ref.current.scrollToOffset({ offset, animated });
+      }
+    });
+  }, []);
+
+  // Called during scroll - only updates state, doesn't sync others
+  const setScrollX = useCallback((x: number, sourceId?: string) => {
+    pendingScrollX.current = x;
+    setScrollXState(x);
+
+    // Clear any pending scroll end timer
+    if (scrollEndTimer.current) {
+      clearTimeout(scrollEndTimer.current);
+    }
+  }, []);
+
+  // Called when scroll begins
+  const onScrollBegin = useCallback((viewId: string) => {
+    setActiveScrollViewId(viewId);
+    // Clear any pending scroll end actions
+    if (scrollEndTimer.current) {
+      clearTimeout(scrollEndTimer.current);
+      scrollEndTimer.current = null;
+    }
+  }, []);
+
+  // Called when scroll ends - this is where we sync other views
+  const onScrollEnd = useCallback((viewId: string) => {
+    const finalOffset = pendingScrollX.current;
+
+    // Debounce: wait a short moment to ensure scroll has truly ended
+    scrollEndTimer.current = setTimeout(() => {
+      // Sync all other scroll views with springy animation
+      syncOtherScrollViews(finalOffset, viewId, true);
+
+      // Update month header
+      updateMonthHeader(finalOffset);
+
+      // Check if we need to extend buffer
+      checkAndExtendBuffer(finalOffset);
+
+      // Clear active scroll view
+      setActiveScrollViewId(null);
+      scrollEndTimer.current = null;
+    }, 50); // Small debounce to catch momentum scroll end
+  }, [syncOtherScrollViews, updateMonthHeader, checkAndExtendBuffer]);
+
+  // Scroll to today (used by Today button)
+  const scrollToToday = useCallback(() => {
+    const todayOffset = bufferDays * DAY_WIDTH;
+    pendingScrollX.current = todayOffset;
+    setScrollXState(todayOffset);
+
+    // Sync all scroll views to today
+    scrollViewRefs.current.forEach((ref) => {
+      if (ref.current) {
+        ref.current.scrollToOffset({ offset: todayOffset, animated: true });
       }
     });
 
-    // Reset sync flag after a short delay to allow scroll events to settle
-    requestAnimationFrame(() => {
-      isSyncing.current = false;
-    });
-  }, []);
-
-  const onScrollBegin = useCallback((viewId: string) => {
-    setActiveScrollViewId(viewId);
-  }, []);
-
-  const onScrollEnd = useCallback((viewId: string) => {
-    if (activeScrollViewId === viewId) {
-      setActiveScrollViewId(null);
-    }
-  }, [activeScrollViewId]);
+    // Update month header
+    setVisibleMonth(format(centerDate, "MMMM yyyy"));
+  }, [bufferDays, centerDate]);
 
   const value: ScrollSyncContextValue = useMemo(() => ({
     scrollX,
@@ -75,9 +143,11 @@ export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) =>
     onScrollEnd,
     activeScrollViewId,
     dayWidth: DAY_WIDTH,
-    bufferDays: BUFFER_DAYS,
+    bufferDays,
     centerDate,
-  }), [scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, centerDate]);
+    visibleMonth,
+    scrollToToday,
+  }), [scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, bufferDays, centerDate, visibleMonth, scrollToToday]);
 
   return (
     <ScrollSyncContext.Provider value={value}>
@@ -108,7 +178,7 @@ export const useScrollViewSync = (
   id: string,
   flatListRef: React.RefObject<FlatList<any> | null>
 ) => {
-  const { scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, dayWidth, bufferDays, centerDate } = useScrollSync();
+  const { scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, dayWidth, bufferDays, centerDate, visibleMonth, scrollToToday } = useScrollSync();
   const registry = useContext(ScrollSyncRegistryContext);
 
   // Register this scroll view on mount
@@ -123,8 +193,8 @@ export const useScrollViewSync = (
 
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = event.nativeEvent.contentOffset.x;
-    // Only update if this is the active scroll view or no one is actively scrolling
-    if (activeScrollViewId === id || activeScrollViewId === null) {
+    // Only update if this is the active scroll view
+    if (activeScrollViewId === id) {
       setScrollX(x, id);
     }
   }, [id, activeScrollViewId, setScrollX]);
@@ -143,6 +213,8 @@ export const useScrollViewSync = (
     dayWidth,
     bufferDays,
     centerDate,
+    visibleMonth,
+    scrollToToday,
     handleScroll,
     handleScrollBegin,
     handleScrollEnd,

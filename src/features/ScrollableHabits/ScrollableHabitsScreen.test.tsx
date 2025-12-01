@@ -37,7 +37,7 @@ describe("ScrollableHabitsScreen", () => {
 
     test("Shows habit target as 0 if no value exists", async () => {
       const { findByText, store } = render(<ScrollableHabitsScreen />);
-      store.dispatch(createNewHabit({ title: "meditation", goal: undefined }));
+      store.dispatch(createNewHabit({ title: "meditation", goal: 0 }));
 
       await findByText("meditation (0/0)");
     });

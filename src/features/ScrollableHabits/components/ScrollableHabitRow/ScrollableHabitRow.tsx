@@ -43,9 +43,15 @@ const getItemForDate = (habit: Habit, date: Date): Item => {
 interface Props {
   habit: Habit;
   scrollViewId: string;
+  /** 
+   * Whether user can scroll this row directly. 
+   * When false, row only syncs via calendar strip scroll.
+   * @default false 
+   */
+  userScrollEnabled?: boolean;
 }
 
-export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId }) => {
+export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollEnabled = false }) => {
   const dispatch = useDispatch();
   const flatListRef = useRef<FlatList<HabitDayItemData>>(null);
   const { syncHabit } = useContext(SyncContext);
@@ -65,10 +71,10 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId }) => {
 
   // Sync habit when it changes
   React.useEffect(() => {
-    if (habitFromStore) {
+    if (habitFromStore && syncHabit) {
       syncHabit(habit.id);
     }
-  }, [habitFromStore]);
+  }, [habitFromStore, syncHabit, habit.id]);
 
   // Generate items for the virtualized list - each item pairs a date with the habit's item for that date
   const items = useMemo((): HabitDayItemData[] => {
@@ -153,13 +159,17 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId }) => {
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           horizontal
+          scrollEnabled={userScrollEnabled}
           showsHorizontalScrollIndicator={false}
           getItemLayout={getItemLayout}
           initialScrollIndex={bufferDays}
-          onScroll={handleScroll}
-          onScrollBeginDrag={handleScrollBegin}
-          onScrollEndDrag={handleScrollEnd}
-          onMomentumScrollEnd={handleScrollEnd}
+          // Only attach scroll handlers if user scrolling is enabled
+          {...(userScrollEnabled && {
+            onScroll: handleScroll,
+            onScrollBeginDrag: handleScrollBegin,
+            onScrollEndDrag: handleScrollEnd,
+            onMomentumScrollEnd: handleScrollEnd,
+          })}
           scrollEventThrottle={16}
           removeClippedSubviews={true}
           maxToRenderPerBatch={14}
