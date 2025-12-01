@@ -25,7 +25,7 @@ export const HeaderComponent: FC<Props> = ({ title, goalProgress, onCogPress, ac
         onPress={onCogPress}
         accessibilityLabel={accessibilityLabel}
       >
-        <Ionicons name="settings-outline" size={24} color="#555" style={{ marginLeft: 5, marginRight: 5 }} />
+        <Ionicons name="settings-sharp" size={20} color="#666" style={{ marginLeft: 5, marginRight: 5 }} />
       </TouchableHighlight>
     </View>
   </View>

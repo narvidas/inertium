@@ -69,10 +69,12 @@ export const styles = StyleSheet.create({
   },
   textFaded: {
     color: "#555555",
+    fontWeight: "500",
   },
   textMonday: {
     color: "#333",
-    fontWeight: "600",
+    fontWeight: "700",
+    textDecorationLine: "underline",
   },
 });
 
