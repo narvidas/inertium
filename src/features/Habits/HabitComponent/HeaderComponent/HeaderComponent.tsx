@@ -1,19 +1,21 @@
 import { Ionicons } from "@expo/vector-icons";
-import { H3, View } from "../../../../ui";
+import { H3, Text, View } from "../../../../ui";
 import React, { FC } from "react";
 import { TouchableHighlight } from "react-native";
 import { styles } from "./HeaderComponent.styles";
 
 interface Props {
   title: string;
+  goalProgress: string | null;
   onCogPress: () => void;
   accessibilityLabel?: string;
 }
 
-export const HeaderComponent: FC<Props> = ({ title, onCogPress, accessibilityLabel }) => (
+// goal progress should be opacity 0.5 if it is not null
+export const HeaderComponent: FC<Props> = ({ title, goalProgress, onCogPress, accessibilityLabel }) => (
   <View style={styles.container}>
     <View>
-      <H3>{title}</H3>
+      <H3>{title}{` `}{goalProgress ? <H3 style={{ opacity: 0.25, fontWeight: "light" }}>({goalProgress})</H3> : null}</H3>
     </View>
     <View>
       <TouchableHighlight

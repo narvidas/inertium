@@ -7,10 +7,11 @@ const DAY_WIDTH = Math.floor(AVAILABLE_WIDTH / 7);
 
 export const styles = StyleSheet.create({
   container: {
-    marginBottom: 8,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   headerContainer: {
-    marginBottom: 4,
+    paddingBottom: 4,
   },
   itemsContainer: {
     height: DAY_WIDTH,

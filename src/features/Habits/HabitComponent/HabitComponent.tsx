@@ -99,7 +99,8 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
       <Spacer size={15} />
       <View style={styles.container} testID="habit-container">
         <HeaderComponent
-          title={`${title} (${completedGoalCount}/${totalGoalCount})`}
+          title={title}
+          goalProgress={`${completedGoalCount}/${totalGoalCount}`}
           accessibilityLabel={`Configure habit ${title}`}
           onCogPress={() => setConfigModalVisible(true)}
         />
