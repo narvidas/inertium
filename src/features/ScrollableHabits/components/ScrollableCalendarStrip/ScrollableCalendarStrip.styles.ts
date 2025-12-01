@@ -8,7 +8,6 @@ const DAY_WIDTH = Math.floor(AVAILABLE_WIDTH / 7);
 export const styles = StyleSheet.create({
   container: {
     paddingTop: 15,
-    paddingBottom: 10,
   },
   header: {
     flexDirection: "row",

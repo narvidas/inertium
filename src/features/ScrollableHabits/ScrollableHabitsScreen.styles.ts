@@ -5,8 +5,9 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   stickyCalendar: {
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#f2f2f2",
     paddingHorizontal: 20,
+    marginBottom: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#e0e0e0",
   },
