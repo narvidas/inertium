@@ -1,15 +1,22 @@
-import React, { FC, useCallback, useState } from "react";
+import formatISO from "date-fns/formatISO";
+import isSameDay from "date-fns/isSameDay";
+import parseISO from "date-fns/parseISO";
+import React, { FC, useCallback, useMemo, useState } from "react";
 import { Text, TouchableHighlight, View } from "react-native";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../../../config/rtk/rootReducer";
 import { updateOrCreateItem } from "../../../Habits/habits.slice";
 import { Item, Status } from "../../../Habits/types";
 import { ItemModal } from "../../../Habits/HabitComponent/ItemComponent/ItemModal";
-import { MonthDayData } from "../../types";
+import { generatePushID } from "../../../../utils/generatePushID";
 import { styles } from "./MonthDayCell.styles";
 
 interface Props {
   habitId: string;
-  dayData: MonthDayData;
+  date: Date;
+  dayOfMonth: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
 }
 
 const getStatusStyle = (status: Status | undefined) => {
@@ -30,44 +37,85 @@ const getNotesStyle = (status: Status | undefined) => {
   return null;
 };
 
-export const MonthDayCell: FC<Props> = ({ habitId, dayData }) => {
+// Selector to get just the item for this specific date - memoized per cell
+const makeSelectItemForDate = () => (state: RootState, habitId: string, date: Date): Item | undefined => {
+  const habit = state.habitsState.habits[habitId];
+  if (!habit) return undefined;
+  return habit.items.find((item) => isSameDay(parseISO(item.date), date));
+};
+
+// Empty placeholder for days outside current month - extracted to avoid re-renders
+const EmptyDayCellComponent: FC<{ dayOfMonth: number }> = ({ dayOfMonth }) => (
+  <View style={styles.cellContainer}>
+    <View style={[styles.cell, styles.cellEmpty]}>
+      <Text style={[styles.dayNumber, styles.dayNumberOutside]}>{dayOfMonth}</Text>
+    </View>
+  </View>
+);
+
+const EmptyDayCell = React.memo(EmptyDayCellComponent);
+EmptyDayCell.displayName = "EmptyDayCell";
+
+const MonthDayCellComponent: FC<Props> = ({ habitId, date, dayOfMonth, isCurrentMonth, isToday }) => {
   const dispatch = useDispatch();
   const [itemModalVisible, setItemModalVisible] = useState(false);
 
-  const { dayOfMonth, isCurrentMonth, isToday, item } = dayData;
+  // Create selector once per component instance
+  const selectItemForDate = useMemo(makeSelectItemForDate, []);
+
+  // Subscribe to just this cell's item - only re-renders when THIS item changes
+  const item = useSelector((state: RootState) => selectItemForDate(state, habitId, date));
 
   // For days outside current month, render empty placeholder
   if (!isCurrentMonth) {
-    return (
-      <View style={styles.cellContainer}>
-        <View style={[styles.cell, styles.cellEmpty]}>
-          <Text style={[styles.dayNumber, styles.dayNumberOutside]}>{dayOfMonth}</Text>
-        </View>
-      </View>
-    );
+    return <EmptyDayCell dayOfMonth={dayOfMonth} />;
   }
 
-  const status = item?.status;
+  const status = item?.status ?? "default";
   const notesExist = item?.notes && item.notes !== "";
 
   const updateStatus = useCallback(() => {
-    if (!item) return;
-
     let newStatus: Status = "default";
-    if (item.status === "default") newStatus = "done";
-    if (item.status === "done") newStatus = "fail";
-    if (item.status === "fail") newStatus = "default";
+    const currentStatus = item?.status ?? "default";
+    if (currentStatus === "default") newStatus = "done";
+    if (currentStatus === "done") newStatus = "fail";
+    if (currentStatus === "fail") newStatus = "default";
 
-    const newItem = { ...item, status: newStatus };
+    // Create item only when needed (not on every render)
+    const newItem: Item = item
+      ? { ...item, status: newStatus }
+      : {
+        id: generatePushID(),
+        date: formatISO(date),
+        notes: "",
+        status: newStatus,
+        meta: {
+          isDeleted: false,
+          lastUpdatedOn: formatISO(new Date()),
+          createdOn: formatISO(new Date()),
+        },
+      };
     dispatch(updateOrCreateItem({ habitId, item: newItem }));
-  }, [item, habitId, dispatch]);
+  }, [item, habitId, dispatch, date]);
 
   const handleSaveNotes = useCallback(
     (notes: string) => {
-      if (!item) return;
-      dispatch(updateOrCreateItem({ habitId, item: { ...item, notes } }));
+      const newItem: Item = item
+        ? { ...item, notes }
+        : {
+          id: generatePushID(),
+          date: formatISO(date),
+          notes,
+          status: "default",
+          meta: {
+            isDeleted: false,
+            lastUpdatedOn: formatISO(new Date()),
+            createdOn: formatISO(new Date()),
+          },
+        };
+      dispatch(updateOrCreateItem({ habitId, item: newItem }));
     },
-    [item, habitId, dispatch]
+    [item, habitId, dispatch, date]
   );
 
   const handleLongPress = useCallback(() => {
@@ -111,5 +159,6 @@ export const MonthDayCell: FC<Props> = ({ habitId, dayData }) => {
   );
 };
 
+export const MonthDayCell = React.memo(MonthDayCellComponent);
 MonthDayCell.displayName = "MonthDayCell";
 

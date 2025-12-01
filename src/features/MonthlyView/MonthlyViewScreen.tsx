@@ -3,7 +3,7 @@ import subMonths from "date-fns/subMonths";
 import React, { FC, useCallback, useContext, useMemo, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Container, Root } from "../../ui";
 import SyncContext from "../../config/remote/syncContext";
 import { successToast } from "../../utils/toast";
@@ -27,8 +27,8 @@ const LOAD_MORE_MONTHS = 3;
 export const MonthlyViewScreen: FC = () => {
   const route = useRoute<MonthlyViewRouteProp>();
   const { habitId } = route.params;
-  const dispatch = useDispatch();
-  const habit = useSelector(habitSelector(habitId));
+  // Only check if habit exists - don't subscribe to item changes
+  const habitExists = useSelector((state) => !!habitSelector(habitId)(state));
   const { syncHabit } = useContext(SyncContext);
   const [syncing, setSyncing] = useState(false);
   const [monthsToShow, setMonthsToShow] = useState(INITIAL_MONTHS);
@@ -61,23 +61,21 @@ export const MonthlyViewScreen: FC = () => {
     setMonthsToShow((prev) => prev + LOAD_MORE_MONTHS);
   }, []);
 
+  // Stable renderMonth - only depends on habitId which doesn't change
   const renderMonth = useCallback(
-    ({ item }: { item: MonthItem }) => {
-      if (!habit) return null;
-      return (
-        <MonthCalendarGrid
-          habit={habit}
-          year={item.year}
-          month={item.month}
-        />
-      );
-    },
-    [habit]
+    ({ item }: { item: MonthItem }) => (
+      <MonthCalendarGrid
+        habitId={habitId}
+        year={item.year}
+        month={item.month}
+      />
+    ),
+    [habitId]
   );
 
   const keyExtractor = useCallback((item: MonthItem) => item.id, []);
 
-  if (!habit) {
+  if (!habitExists) {
     return null;
   }
 
