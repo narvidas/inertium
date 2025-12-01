@@ -31,7 +31,7 @@ export const ScrollableDayItem: FC<Props> = React.memo(({ habitId, item, dayWidt
   const dayOfMonthNumber = format(date, "d"); // E.g. '14' for 14th December
   const notesExist = item.notes && item.notes !== "";
 
-  // Interpolate: when scrollAnimValue is 1 (scrolling), text fades to 0.15
+  // Interpolate: when scrollAnimValue is 1 (scrolling), text fades to 20% opacity
   const textOpacity = useMemo(() =>
     scrollAnimValue?.interpolate({
       inputRange: [0, 1],
