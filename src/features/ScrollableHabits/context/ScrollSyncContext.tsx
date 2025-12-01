@@ -34,6 +34,8 @@ export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) =>
   const pendingScrollX = useRef<number>(INITIAL_BUFFER_DAYS * DAY_WIDTH);
   // Debounce timer for scroll end
   const scrollEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Debounce timer for real-time month header updates
+  const monthHeaderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Register a scroll view for synchronization
   const registerScrollView = useCallback((id: string, ref: React.RefObject<FlatList<any> | null>) => {
@@ -92,7 +94,16 @@ export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) =>
     if (scrollEndTimer.current) {
       clearTimeout(scrollEndTimer.current);
     }
-  }, []);
+
+    // Update month header in real-time with light debounce (50ms)
+    if (monthHeaderTimer.current) {
+      clearTimeout(monthHeaderTimer.current);
+    }
+    monthHeaderTimer.current = setTimeout(() => {
+      updateMonthHeader(x);
+      monthHeaderTimer.current = null;
+    }, 50);
+  }, [updateMonthHeader]);
 
   /* istanbul ignore next -- @preserve Called by scroll events, requires native scroll simulation */
   // Called when scroll begins
