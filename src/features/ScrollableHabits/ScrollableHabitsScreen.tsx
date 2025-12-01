@@ -51,10 +51,6 @@ export const ScrollableHabitsScreen: FC = () => {
     dispatch(updateHabitOrder({ newOrder }));
   };
 
-  const ListHeader = () => (
-    <ScrollableCalendarStrip />
-  );
-
   const ListFooter = () => (
     <>
       {habitsExist && <Spacer size={50} />}
@@ -82,6 +78,9 @@ export const ScrollableHabitsScreen: FC = () => {
               onClose={() => setNewHabitModalVisible(false)}
             />
             <ScrollSyncProvider>
+              <View style={styles.stickyCalendar}>
+                <ScrollableCalendarStrip />
+              </View>
               <View style={styles.list} testID="scrollable-habit-list">
                 <DraggableFlatList
                   testID="scrollable-sortable-habit-list"
@@ -90,7 +89,6 @@ export const ScrollableHabitsScreen: FC = () => {
                   keyExtractor={(item) => item.id}
                   onDragEnd={onDragEnd}
                   refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
-                  ListHeaderComponent={ListHeader}
                   ListFooterComponent={ListFooter}
                 />
               </View>
