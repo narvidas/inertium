@@ -14,7 +14,7 @@ firebase.database = jest.fn().mockReturnValue({
 });
 
 firebase.auth = jest.fn().mockReturnValue({
-  currentUser: true,
+  currentUser: null, // Anonymous by default for tests
   signOut() {
     return Promise.resolve();
   },
@@ -33,6 +33,12 @@ firebase.auth = jest.fn().mockReturnValue({
       }
       reject(Error("create user error "));
     });
+  },
+  onAuthStateChanged(callback) {
+    // Call callback immediately with current user (null = anonymous)
+    callback(null);
+    // Return unsubscribe function
+    return jest.fn();
   },
 });
 

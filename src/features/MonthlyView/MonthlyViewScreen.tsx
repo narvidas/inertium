@@ -90,6 +90,7 @@ export const MonthlyViewScreen: FC = () => {
               data={months}
               renderItem={renderMonth}
               keyExtractor={keyExtractor}
+              inverted={true}
               refreshControl={
                 <RefreshControl refreshing={syncing} onRefresh={onRefresh} />
               }
