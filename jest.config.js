@@ -1,3 +1,6 @@
+// Set Expo env vars early to avoid warnings during module loading
+process.env.EXPO_OS = "ios";
+
 module.exports = {
   coverageThreshold: {
     global: {
