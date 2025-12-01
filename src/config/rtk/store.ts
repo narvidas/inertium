@@ -4,8 +4,9 @@ import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, R
 import rootReducer from "./rootReducer";
 
 const persistConfig = {
-  key: "habitsState",
+  key: "habitsState", // Keep original key to preserve existing user data
   storage: AsyncStorage,
+  whitelist: ["habitsState", "settings"], // Explicitly persist both slices
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
