@@ -175,11 +175,11 @@ src/features/ScrollableHabits/
 4. Test extensively before enabling by default ✅
 5. Consider A/B testing if analytics available
 
-## Open Questions
+## Open Questions (Resolved)
 
-1. Should dragging to reorder habits work in scrollable view? (Probably yes)
-2. What happens at scroll boundaries? (Infinite in both directions)
-3. How to handle "today" indicator? (Highlight current day, button to scroll back)
+1. **Dragging to reorder habits?** → Yes, works via DraggableFlatList
+2. **Scroll boundaries?** → Dynamic buffer extension (±90 days, extends +30 when approaching edges)
+3. **"Today" indicator?** → "This week" button scrolls to current Monday; today's date is highlighted in calendar strip
 
 ---
 
@@ -189,7 +189,7 @@ src/features/ScrollableHabits/
 
 #### Settings
 - `src/config/rtk/settings.slice.ts` - Redux slice for app settings including scrollable view toggle
-- `src/config/rtk/settings.slice.test.ts` - Tests for settings slice
+- Settings are persisted via `redux-persist` (whitelist in `store.ts`)
 
 #### ScrollableHabits Feature
 - `src/features/ScrollableHabits/index.ts` - Public exports
@@ -210,6 +210,7 @@ src/features/ScrollableHabits/
 ### Files Modified
 
 - `src/config/rtk/rootReducer.ts` - Added settings reducer
+- `src/config/rtk/store.ts` - Added settings to redux-persist whitelist
 - `src/components/TabNavigation/TabNavigation.tsx` - Conditional rendering based on setting
 - `src/features/Profile/ProfileScreen/AuthenticatedView.tsx` - Added toggle switch
 - `src/features/Profile/ProfileScreen/AnonymousView.tsx` - Added toggle switch
@@ -218,7 +219,7 @@ src/features/ScrollableHabits/
 
 1. **Scroll Sync via Context**: Used a `ScrollSyncContext` that tracks scroll position and synchronizes all registered FlatLists. Each scrollable component registers itself and receives scroll events.
 
-2. **Virtualization**: Used `FlatList` with `getItemLayout` for O(1) scroll-to-index performance. Each list shows 60 days buffer on each side of today.
+2. **Virtualization**: Used `FlatList` with `getItemLayout` for O(1) scroll-to-index performance. Each list shows 90 days buffer on each side of today (dynamically extends when approaching edges).
 
 3. **Reuse of Existing Components**: Reused `ConfigureHabitModal`, `ItemModal`, `HeaderComponent`, `NewHabitModal` from the original Habits feature to maintain consistency.
 
@@ -228,17 +229,23 @@ src/features/ScrollableHabits/
 
 ### Testing
 
-- 7 tests for settings slice
 - 11 tests for ScrollableHabitsScreen
-- All 39 tests pass (including 14 original HabitsScreen tests + 7 CalendarStrip tests)
+- Settings toggle behavior covered by ProfileScreen integration tests
+- All 49 tests pass across the test suite
+
+### UX Enhancements
+
+1. **Real-time Month Header**: Month/year header updates during scroll with 50ms debounce, giving immediate feedback about temporal position while swiping.
+
+2. **Text Fade During Scroll**: Habit item text fades to 20% opacity when scrolling (100ms fade out, 300ms fade in), providing clear "data in flux" feedback while keeping grid structure visible.
+
+3. **Click-to-Snap Navigation**: Tapping any day in the calendar strip snaps the view to that day's week (Monday), making navigation more intuitive.
+
+4. **Animated Scroll Sync**: When calendar strip scroll ends, habit rows animate smoothly to the new position rather than jumping.
 
 ### Known Limitations
 
-1. **Goal Progress**: Currently shows goal progress for the last 7 days around today, regardless of scroll position. A future enhancement could compute this based on visible week.
+1. **Goal Progress**: Currently shows goal progress for the visible week only when aligned to a Monday. When scrolled to mid-week, goal progress is hidden.
 
-2. **Month Header**: The month/year header is static (shows current month). Could be enhanced to update based on scroll position.
-
-3. **Snap-to-day**: Scrolling is completely free. Could add snap-to-week or snap-to-day behavior.
-
-4. **Infinite Scroll**: Currently limited to ±60 days from today. Could implement true infinite scroll with dynamic data loading.
+2. **Infinite Scroll**: Buffer dynamically extends (±90 days initially, +30 days when approaching edges) but has practical limits. True infinite scroll could be implemented with more sophisticated data loading.
 
