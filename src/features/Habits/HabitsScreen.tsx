@@ -1,5 +1,5 @@
 import dateFnsStartOfWeek from "date-fns/startOfWeek";
-import { Container, Content, Root, View } from "../../ui";
+import { Container, Root, View } from "../../ui";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { RefreshControl } from "react-native";
 import DraggableFlatList, { RenderItemParams, DragEndParams } from "react-native-draggable-flatlist";
@@ -51,6 +51,10 @@ export const HabitsScreen: FC = () => {
     dispatch(updateHabitOrder({ newOrder }));
   };
 
+  const ListHeader = () => (
+    <CalendarStripComponent onWeekChanged={setStartOfWeek} />
+  );
+
   const ListFooter = () => (
     <>
       {habitsExist && <Spacer size={50} />}
@@ -77,20 +81,18 @@ export const HabitsScreen: FC = () => {
               }}
               onClose={() => setNewHabitModalVisible(false)}
             />
-            <Content contentContainerStyle={styles.list} scrollEnabled={false}>
-              <CalendarStripComponent onWeekChanged={setStartOfWeek} />
-              <View testID="habit-list">
-                <DraggableFlatList
-                  testID="sortable-habit-list"
-                  data={habits}
-                  renderItem={renderItem}
-                  keyExtractor={(item) => item.id}
-                  onDragEnd={onDragEnd}
-                  refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
-                  ListFooterComponent={ListFooter}
-                />
-              </View>
-            </Content>
+            <View style={styles.list} testID="habit-list">
+              <DraggableFlatList
+                testID="sortable-habit-list"
+                data={habits}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                onDragEnd={onDragEnd}
+                refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
+                ListHeaderComponent={ListHeader}
+                ListFooterComponent={ListFooter}
+              />
+            </View>
           </Container>
         </SafeAreaView>
       </GestureHandlerRootView>

@@ -1,4 +1,4 @@
-import { Container, Content, Root, View } from "../../ui";
+import { Container, Root, View } from "../../ui";
 import React, { FC, useContext, useState } from "react";
 import { RefreshControl } from "react-native";
 import DraggableFlatList, { RenderItemParams, DragEndParams } from "react-native-draggable-flatlist";
@@ -51,6 +51,10 @@ export const ScrollableHabitsScreen: FC = () => {
     dispatch(updateHabitOrder({ newOrder }));
   };
 
+  const ListHeader = () => (
+    <ScrollableCalendarStrip />
+  );
+
   const ListFooter = () => (
     <>
       {habitsExist && <Spacer size={50} />}
@@ -78,20 +82,18 @@ export const ScrollableHabitsScreen: FC = () => {
               onClose={() => setNewHabitModalVisible(false)}
             />
             <ScrollSyncProvider>
-              <Content contentContainerStyle={styles.list} scrollEnabled={false}>
-                <ScrollableCalendarStrip />
-                <View testID="scrollable-habit-list">
-                  <DraggableFlatList
-                    testID="scrollable-sortable-habit-list"
-                    data={habits}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                    onDragEnd={onDragEnd}
-                    refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
-                    ListFooterComponent={ListFooter}
-                  />
-                </View>
-              </Content>
+              <View style={styles.list} testID="scrollable-habit-list">
+                <DraggableFlatList
+                  testID="scrollable-sortable-habit-list"
+                  data={habits}
+                  renderItem={renderItem}
+                  keyExtractor={(item) => item.id}
+                  onDragEnd={onDragEnd}
+                  refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
+                  ListHeaderComponent={ListHeader}
+                  ListFooterComponent={ListFooter}
+                />
+              </View>
             </ScrollSyncProvider>
           </Container>
         </SafeAreaView>
