@@ -44,6 +44,8 @@ export const ScrollableCalendarStrip: FC<Props> = ({ onScrollToToday }) => {
     dayWidth,
     bufferDays,
     centerDate,
+    visibleMonth,
+    scrollToToday,
     handleScroll,
     handleScrollBegin,
     handleScrollEnd,
@@ -63,12 +65,6 @@ export const ScrollableCalendarStrip: FC<Props> = ({ onScrollToToday }) => {
     return result;
   }, [centerDate, bufferDays]);
 
-  // Calculate the month/year from current scroll position
-  // For now, show the center date's month
-  const headerText = useMemo(() => {
-    return format(centerDate, "MMMM yyyy");
-  }, [centerDate]);
-
   const renderItem = useCallback(({ item }: { item: DayItemData }) => (
     <DayItem item={item} dayWidth={dayWidth} />
   ), [dayWidth]);
@@ -82,14 +78,14 @@ export const ScrollableCalendarStrip: FC<Props> = ({ onScrollToToday }) => {
   }), [dayWidth]);
 
   const handleScrollToToday = useCallback(() => {
-    flatListRef.current?.scrollToOffset({ offset: initialOffset, animated: true });
+    scrollToToday();
     onScrollToToday?.();
-  }, [initialOffset, onScrollToToday]);
+  }, [scrollToToday, onScrollToToday]);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>{headerText}</Text>
+        <Text style={styles.headerText}>{visibleMonth}</Text>
         <TouchableOpacity style={styles.todayButton} onPress={handleScrollToToday}>
           <Text style={styles.todayButtonText}>Today</Text>
         </TouchableOpacity>
@@ -120,4 +116,3 @@ export const ScrollableCalendarStrip: FC<Props> = ({ onScrollToToday }) => {
 };
 
 ScrollableCalendarStrip.displayName = "ScrollableCalendarStrip";
-

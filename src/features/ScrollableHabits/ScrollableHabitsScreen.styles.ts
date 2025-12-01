@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   footerContainer: {
-    paddingBottom: 100,
+    paddingBottom: 200,
     alignItems: "center",
   },
 });
