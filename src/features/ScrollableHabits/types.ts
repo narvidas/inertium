@@ -27,8 +27,10 @@ export interface ScrollSyncContextValue {
   centerDate: Date;
   /** The currently visible month (e.g., "January 2024") - updates on scroll end */
   visibleMonth: string;
-  /** Scroll all views to today with animation */
-  scrollToToday: () => void;
+  /** Scroll all views to a specific date with animation */
+  scrollToDate: (date: Date) => void;
+  /** Scroll all views to this week's Monday with animation */
+  scrollToThisWeek: () => void;
 }
 
 export interface ScrollableListRef {

@@ -29,9 +29,9 @@ describe("ScrollableHabitsScreen", () => {
       await findByText(expectedHeader);
     });
 
-    test("Renders the Today button", async () => {
+    test("Renders the This week button", async () => {
       const { findByText } = render(<ScrollableHabitsScreen />);
-      await findByText("Today");
+      await findByText("This week");
     });
 
     test("Shows habit with goal progress only when view starts on Monday", async () => {
@@ -71,16 +71,16 @@ describe("ScrollableHabitsScreen", () => {
   });
 
   describe("Calendar Navigation", () => {
-    test("Today button is pressable and keeps current month visible", async () => {
+    test("This week button is pressable and shows current month", async () => {
       const { findByText, getByText } = render(<ScrollableHabitsScreen />);
 
       // Verify initial month header
       const expectedHeader = format(new Date(), "MMMM yyyy");
       await findByText(expectedHeader);
 
-      // Press Today button
-      const todayButton = getByText("Today");
-      fireEvent.press(todayButton);
+      // Press This week button
+      const thisWeekButton = getByText("This week");
+      fireEvent.press(thisWeekButton);
 
       // Month header should still show current month
       await findByText(expectedHeader);

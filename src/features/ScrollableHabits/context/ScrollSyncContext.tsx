@@ -1,6 +1,7 @@
 import addDays from "date-fns/addDays";
 import format from "date-fns/format";
 import startOfDay from "date-fns/startOfDay";
+import startOfISOWeek from "date-fns/startOfISOWeek";
 import React, { createContext, FC, ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { ScrollSyncContextValue } from "../types";
@@ -126,22 +127,30 @@ export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) =>
     }, 50); // Small debounce to catch momentum scroll end
   }, [syncOtherScrollViews, updateMonthHeader, checkAndExtendBuffer]);
 
-  // Scroll to today (used by Today button)
-  const scrollToToday = useCallback(() => {
-    const todayOffset = bufferDays * DAY_WIDTH;
-    pendingScrollX.current = todayOffset;
-    setScrollXState(todayOffset);
+  // Scroll all views to a specific date
+  const scrollToDate = useCallback((targetDate: Date) => {
+    const daysFromCenter = Math.round((targetDate.getTime() - centerDate.getTime()) / (1000 * 60 * 60 * 24));
+    const targetOffset = (bufferDays + daysFromCenter) * DAY_WIDTH;
 
-    // Sync all scroll views to today
+    pendingScrollX.current = targetOffset;
+    setScrollXState(targetOffset);
+
+    // Sync all scroll views
     scrollViewRefs.current.forEach((ref) => {
       if (ref.current) {
-        ref.current.scrollToOffset({ offset: todayOffset, animated: true });
+        ref.current.scrollToOffset({ offset: targetOffset, animated: true });
       }
     });
 
     // Update month header
-    setVisibleMonth(format(centerDate, "MMMM yyyy"));
+    setVisibleMonth(format(targetDate, "MMMM yyyy"));
   }, [bufferDays, centerDate]);
+
+  // Scroll to this week's Monday
+  const scrollToThisWeek = useCallback(() => {
+    const thisWeekMonday = startOfISOWeek(new Date());
+    scrollToDate(thisWeekMonday);
+  }, [scrollToDate]);
 
   const value: ScrollSyncContextValue = useMemo(() => ({
     scrollX,
@@ -153,8 +162,9 @@ export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) =>
     bufferDays,
     centerDate,
     visibleMonth,
-    scrollToToday,
-  }), [scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, bufferDays, centerDate, visibleMonth, scrollToToday]);
+    scrollToDate,
+    scrollToThisWeek,
+  }), [scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, bufferDays, centerDate, visibleMonth, scrollToDate, scrollToThisWeek]);
 
   return (
     <ScrollSyncContext.Provider value={value}>
@@ -186,7 +196,7 @@ export const useScrollViewSync = (
   id: string,
   flatListRef: React.RefObject<FlatList<any> | null>
 ) => {
-  const { scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, dayWidth, bufferDays, centerDate, visibleMonth, scrollToToday } = useScrollSync();
+  const { scrollX, setScrollX, onScrollBegin, onScrollEnd, activeScrollViewId, dayWidth, bufferDays, centerDate, visibleMonth, scrollToDate, scrollToThisWeek } = useScrollSync();
   const registry = useContext(ScrollSyncRegistryContext);
 
   // Register this scroll view on mount
@@ -225,7 +235,8 @@ export const useScrollViewSync = (
     bufferDays,
     centerDate,
     visibleMonth,
-    scrollToToday,
+    scrollToDate,
+    scrollToThisWeek,
     handleScroll,
     handleScrollBegin,
     handleScrollEnd,
