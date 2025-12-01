@@ -16,8 +16,10 @@ User-facing features:
 
 - Habit customisation (create/rename/remove)
 - Item-tracking (pass/fail/skip)
-- Weekly-view
-- Note-taking
+- Weekly view with week-by-week navigation
+- Scrollable habits view with infinite horizontal scrolling (toggle in settings)
+- Monthly calendar view per habit
+- Note-taking on any day
 - Seamless Cloud Sync for registered users
 
 ## ☑️ Specifics
@@ -30,8 +32,8 @@ Inertium is written in [TypeScript](https://www.typescriptlang.org/) and built o
 - **Async Actions**: [Redux Thunk](https://github.com/gaearon/redux-thunk)
 - **Data Caching**: [Redux Persist](https://github.com/rt2zz/redux-persist)
 - **Cloud Sync and Authentication**: [Firebase](https://firebase.google.com/)
-- **UI Toolkit**: [Native Base](https://nativebase.io/)
-- **Preview and Simulation**: [Expo](https://expo.io/)
+- **UI Toolkit**: [Gluestack UI](https://gluestack.io/) (migrated from NativeBase)
+- **Preview and Simulation**: [Expo](https://expo.io/) (SDK 54)
 - **Testing**: [Jest](https://jestjs.io/) and [React Native Testing Library](https://github.com/callstack/react-native-testing-library)
 
 ---
