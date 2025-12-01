@@ -43,6 +43,7 @@ export const styles = StyleSheet.create({
     color: "rgba(0,0,0,0.25)",
     fontWeight: "bold",
     fontSize: DAY_WIDTH / 3,
+    textAlign: "center",
     marginTop: -4,
   },
 });

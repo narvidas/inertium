@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   itemsContainer: {
-    height: DAY_WIDTH,
+    height: DAY_WIDTH + 6,
   },
 });
 
