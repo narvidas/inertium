@@ -21,14 +21,17 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
-  todayButton: {
+  thisWeekButton: {
     marginLeft: 10,
     paddingHorizontal: 10,
     paddingVertical: 4,
     backgroundColor: "#5A9C5E",
     borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
-  todayButtonText: {
+  thisWeekButtonText: {
     color: "#fff",
     fontSize: 12,
     fontWeight: "600",
@@ -47,6 +50,9 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.8)",
   },
+  dayContainerFaded: {
+    opacity: 0.8,
+  },
   dateName: {
     fontSize: DAY_WIDTH / 5,
     color: "#666",
@@ -60,6 +66,13 @@ export const styles = StyleSheet.create({
   },
   dateNumberToday: {
     textDecorationLine: "underline",
+  },
+  textFaded: {
+    color: "#555555",
+  },
+  textMonday: {
+    color: "#333",
+    fontWeight: "600",
   },
 });
 
