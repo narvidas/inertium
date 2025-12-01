@@ -6,8 +6,8 @@ import isMonday from "date-fns/isMonday";
 import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
-import React, { FC, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { FlatList, View } from "react-native";
+import React, { FC, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Animated, FlatList, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Spacer } from "../../../../components/Spacer/Spacer";
 import SyncContext from "../../../../config/remote/syncContext";
@@ -76,7 +76,20 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
     handleScroll,
     handleScrollBegin,
     handleScrollEnd,
+    isScrolling,
   } = useScrollViewSync(scrollViewId, flatListRef);
+
+  // Animated value for scroll state (0 = not scrolling, 1 = scrolling)
+  const scrollAnimValue = useRef(new Animated.Value(0)).current;
+
+  // Animate when scrolling state changes
+  useEffect(() => {
+    Animated.timing(scrollAnimValue, {
+      toValue: isScrolling ? 1 : 0,
+      duration: isScrolling ? 100 : 300, // Faster fade out, slower fade in
+      useNativeDriver: true,
+    }).start();
+  }, [isScrolling, scrollAnimValue]);
 
   // Sync habit when it changes
   React.useEffect(() => {
@@ -138,8 +151,9 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
       habitId={item.habitId}
       item={item.item}
       dayWidth={dayWidth}
+      scrollAnimValue={scrollAnimValue}
     />
-  ), [dayWidth]);
+  ), [dayWidth, scrollAnimValue]);
 
   const keyExtractor = useCallback((item: HabitDayItemData) => `${item.habitId}-${item.dateKey}`, []);
 

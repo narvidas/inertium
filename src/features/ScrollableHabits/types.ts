@@ -19,6 +19,8 @@ export interface ScrollSyncContextValue {
   onScrollEnd: (viewId: string) => void;
   /** The ID of the currently active (scrolling) view */
   activeScrollViewId: string | null;
+  /** Whether any scroll view is currently being scrolled (for blur effect) */
+  isScrolling: boolean;
   /** The size of each day cell */
   dayWidth: number;
   /** Number of days to buffer on each side for smooth scrolling */
