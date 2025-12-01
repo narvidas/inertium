@@ -27,7 +27,7 @@ export const HeaderComponent: FC<Props> = ({ title, goalProgress, onCogPress, on
           onPress={onCalendarPress}
           accessibilityLabel={`Monthly view for ${title}`}
         >
-          <Ionicons name="calendar-outline" size={20} color="#666" style={{ marginLeft: 5, marginRight: 5 }} />
+          <Ionicons name="calendar-outline" size={18} color="#666" style={{ marginLeft: 5, marginRight: 5 }} />
         </TouchableHighlight>
       )}
       <TouchableHighlight
