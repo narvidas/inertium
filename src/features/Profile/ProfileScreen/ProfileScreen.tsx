@@ -20,7 +20,7 @@ export const ProfileScreen: FC<Props> = ({ navigation }) => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       const isLoggedIn = !!user;
       setLoggedIn(isLoggedIn);
-      if (isLoggedIn) syncAll();
+      if (isLoggedIn) syncAll?.();
     });
     return unsubscribe;
   }, [auth, syncAll]);

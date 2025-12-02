@@ -44,8 +44,3 @@ export interface DayItemData {
   isToday: boolean;
   dateKey: string; // ISO string for stable keys
 }
-
-export interface HabitDayItemData extends DayItemData {
-  habitId: string;
-  item: import("../Habits/types").Item;
-}

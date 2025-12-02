@@ -1,5 +1,5 @@
 import { Container, Root, View } from "../../ui";
-import React, { FC, useContext, useState } from "react";
+import React, { FC, useCallback, useContext, useState } from "react";
 import { RefreshControl } from "react-native";
 import DraggableFlatList, { RenderItemParams, DragEndParams } from "react-native-draggable-flatlist";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -24,45 +24,62 @@ export const ScrollableHabitsScreen: FC = () => {
   const order = useSelector(orderSelector);
   const { syncAll, syncHabitOrder } = useContext(SyncContext);
 
-  const habits = Object.values(useSelector(habitsSelector));
-  const habitsExist = !!Object.values(habits).length;
+  const habits = useSelector(habitsSelector);
+  const habitsExist = !!habits.length;
   const newHabitButtonDirection = habitsExist ? "up" : "down";
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setSyncing(true);
-    await syncAll();
+    await syncAll?.();
     setSyncing(false);
     successToast("Sync complete.");
-  };
+  }, [syncAll]);
 
   React.useEffect(() => {
-    order && syncHabitOrder();
-  }, [order]);
+    order && syncHabitOrder?.();
+  }, [order, syncHabitOrder]);
 
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<Habit>) => (
+  const renderItem = useCallback(({ item, drag, isActive }: RenderItemParams<Habit>) => (
     <ScrollableHabitRow
-      habit={item}
+      habitId={item.id}
       scrollViewId={`habit-row-${item.id}`}
+      isActive={isActive}
+      onDrag={drag}
     />
-  );
+  ), []);
 
-  const onDragEnd = ({ data }: DragEndParams<Habit>) => {
+  const onDragEnd = useCallback(({ data }: DragEndParams<Habit>) => {
     const newOrder = data.map(habit => habit.id);
     dispatch(updateHabitOrder({ newOrder }));
-  };
+  }, [dispatch]);
 
-  const ListFooter = () => (
+  const keyExtractor = useCallback((item: Habit) => item.id, []);
+
+  const handleSaveNewHabit = useCallback(async (title: string, goal: number) => {
+    dispatch(createNewHabit({ title, goal }));
+    await syncAll?.();
+  }, [dispatch, syncAll]);
+
+  const handleCloseNewHabitModal = useCallback(() => {
+    setNewHabitModalVisible(false);
+  }, []);
+
+  const handleOpenNewHabitModal = useCallback(() => {
+    setNewHabitModalVisible(true);
+  }, []);
+
+  const ListFooter = useCallback(() => (
     <>
       {habitsExist && <Spacer size={50} />}
       <View style={styles.footerContainer}>
         <RoundButton
           title="New habit"
-          onPress={() => setNewHabitModalVisible(true)}
+          onPress={handleOpenNewHabitModal}
           direction={newHabitButtonDirection}
         />
       </View>
     </>
-  );
+  ), [habitsExist, newHabitButtonDirection, handleOpenNewHabitModal]);
 
   return (
     <Root testID="scrollable-root">
@@ -71,11 +88,8 @@ export const ScrollableHabitsScreen: FC = () => {
           <Container>
             <NewHabitModal
               visible={newHabitModalVisible}
-              onSave={async (title, goal) => {
-                dispatch(createNewHabit({ title, goal }));
-                await syncAll();
-              }}
-              onClose={() => setNewHabitModalVisible(false)}
+              onSave={handleSaveNewHabit}
+              onClose={handleCloseNewHabitModal}
             />
             <ScrollSyncProvider>
               <View style={styles.stickyCalendar}>
@@ -86,7 +100,7 @@ export const ScrollableHabitsScreen: FC = () => {
                   testID="scrollable-sortable-habit-list"
                   data={habits}
                   renderItem={renderItem}
-                  keyExtractor={(item) => item.id}
+                  keyExtractor={keyExtractor}
                   onDragEnd={onDragEnd}
                   refreshControl={<RefreshControl refreshing={syncing} onRefresh={onRefresh} />}
                   ListFooterComponent={ListFooter}
@@ -101,4 +115,3 @@ export const ScrollableHabitsScreen: FC = () => {
 };
 
 export default ScrollableHabitsScreen;
-

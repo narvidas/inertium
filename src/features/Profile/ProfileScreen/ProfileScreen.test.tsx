@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "../../../testing/customRender";
+import { fireEvent, render } from "../../../testing/customRender";
 import { AnonymousView } from "./AnonymousView";
 
 // Suppress console warnings/errors in tests
@@ -16,84 +16,62 @@ describe("ProfileScreen - AnonymousView", () => {
     jest.clearAllMocks();
   });
 
-  describe("Scrollable View Toggle", () => {
-    test("Shows Scrollable Habits View toggle option", async () => {
+  describe("Navigation", () => {
+    test("Shows Login option", async () => {
       const { findByText } = render(
         <AnonymousView navigation={mockNavigation as any} />
       );
 
-      await findByText("Scrollable Habits View");
+      await findByText("Login");
     });
 
-    test("Can toggle the scrollable habits view setting on", async () => {
-      const { findByText, store } = render(
+    test("Shows Register option", async () => {
+      const { findByText } = render(
         <AnonymousView navigation={mockNavigation as any} />
       );
 
-      // Initially should be false
-      expect(store.getState().settings.useScrollableView).toBe(false);
-
-      // Find and press the toggle
-      const toggleText = await findByText("Scrollable Habits View");
-      fireEvent.press(toggleText);
-
-      // Should now be true
-      await waitFor(() => {
-        expect(store.getState().settings.useScrollableView).toBe(true);
-      });
+      await findByText("Register");
     });
 
-    test("Can toggle the scrollable habits view setting off after being on", async () => {
-      const { findByText, store } = render(
+    test("Shows Forgot Password option", async () => {
+      const { findByText } = render(
         <AnonymousView navigation={mockNavigation as any} />
       );
 
-      // Initially false
-      expect(store.getState().settings.useScrollableView).toBe(false);
-
-      // Toggle on
-      const toggleText = await findByText("Scrollable Habits View");
-      fireEvent.press(toggleText);
-
-      await waitFor(() => {
-        expect(store.getState().settings.useScrollableView).toBe(true);
-      });
-
-      // Toggle off
-      fireEvent.press(toggleText);
-
-      await waitFor(() => {
-        expect(store.getState().settings.useScrollableView).toBe(false);
-      });
+      await findByText("Forgot Password");
     });
 
-    test("Toggle cycles correctly: false -> true -> false -> true", async () => {
-      const { findByText, store } = render(
+    test("Navigates to Login screen when Login is pressed", async () => {
+      const { findByText } = render(
         <AnonymousView navigation={mockNavigation as any} />
       );
 
-      const toggleText = await findByText("Scrollable Habits View");
+      const loginOption = await findByText("Login");
+      fireEvent.press(loginOption);
 
-      // Initial state
-      expect(store.getState().settings.useScrollableView).toBe(false);
+      expect(mockNavigation.navigate).toHaveBeenCalledWith("Login");
+    });
 
-      // First toggle: false -> true
-      fireEvent.press(toggleText);
-      await waitFor(() => {
-        expect(store.getState().settings.useScrollableView).toBe(true);
-      });
+    test("Navigates to Register screen when Register is pressed", async () => {
+      const { findByText } = render(
+        <AnonymousView navigation={mockNavigation as any} />
+      );
 
-      // Second toggle: true -> false
-      fireEvent.press(toggleText);
-      await waitFor(() => {
-        expect(store.getState().settings.useScrollableView).toBe(false);
-      });
+      const registerOption = await findByText("Register");
+      fireEvent.press(registerOption);
 
-      // Third toggle: false -> true
-      fireEvent.press(toggleText);
-      await waitFor(() => {
-        expect(store.getState().settings.useScrollableView).toBe(true);
-      });
+      expect(mockNavigation.navigate).toHaveBeenCalledWith("Register");
+    });
+
+    test("Navigates to Forgot Password screen when Forgot Password is pressed", async () => {
+      const { findByText } = render(
+        <AnonymousView navigation={mockNavigation as any} />
+      );
+
+      const forgotPasswordOption = await findByText("Forgot Password");
+      fireEvent.press(forgotPasswordOption);
+
+      expect(mockNavigation.navigate).toHaveBeenCalledWith("Forgot Password");
     });
   });
 });

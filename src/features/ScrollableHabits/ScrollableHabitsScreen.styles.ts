@@ -13,7 +13,6 @@ export const styles = StyleSheet.create({
   },
   list: {
     flex: 1,
-    paddingHorizontal: 20,
   },
   footerContainer: {
     paddingBottom: 200,

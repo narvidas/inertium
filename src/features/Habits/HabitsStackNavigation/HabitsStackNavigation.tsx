@@ -1,10 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { FC } from "react";
-import { useSelector } from "react-redux";
-import { useScrollableViewSelector } from "../../../config/rtk/settings.slice";
 import { MonthlyViewScreen } from "../../MonthlyView";
 import { ScrollableHabitsScreen } from "../../ScrollableHabits";
-import { HabitsScreen } from "../HabitsScreen";
 
 export type HabitsStackParamList = {
   HabitsList: undefined;
@@ -22,17 +19,11 @@ const screenOptionStyle = {
   },
 };
 
-// Wrapper component that conditionally renders the appropriate habits view
-const HabitsViewSwitch: FC = () => {
-  const useScrollableView = useSelector(useScrollableViewSelector);
-  return useScrollableView ? <ScrollableHabitsScreen /> : <HabitsScreen />;
-};
-
 export const HabitsStackNavigation: FC = () => (
   <Stack.Navigator initialRouteName="HabitsList" screenOptions={screenOptionStyle}>
     <Stack.Screen
       name="HabitsList"
-      component={HabitsViewSwitch}
+      component={ScrollableHabitsScreen}
       options={{ headerShown: false }}
     />
     <Stack.Screen
@@ -45,4 +36,3 @@ export const HabitsStackNavigation: FC = () => (
     />
   </Stack.Navigator>
 );
-

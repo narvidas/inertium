@@ -6,6 +6,7 @@ import React, { FC, useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import styles from "../App.styles";
 import { fonts, images } from "../assets";
 import { TabNavigation } from "./components/TabNavigation";
@@ -62,20 +63,22 @@ export const Application: FC = () => {
   }
 
   return (
-    <Root>
-      <View style={styles.container} onLayout={onLayoutRootView}>
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <SyncContext.Provider value={sync}>
-              <FirebaseContext.Provider value={getFirebaseValues()}>
-                <NavigationContainer>
-                  <TabNavigation />
-                </NavigationContainer>
-              </FirebaseContext.Provider>
-            </SyncContext.Provider>
-          </PersistGate>
-        </Provider>
-      </View>
-    </Root>
+    <SafeAreaProvider>
+      <Root>
+        <View style={styles.container} onLayout={onLayoutRootView}>
+          <Provider store={store}>
+            <PersistGate loading={null} persistor={persistor}>
+              <SyncContext.Provider value={sync}>
+                <FirebaseContext.Provider value={getFirebaseValues()}>
+                  <NavigationContainer>
+                    <TabNavigation />
+                  </NavigationContainer>
+                </FirebaseContext.Provider>
+              </SyncContext.Provider>
+            </PersistGate>
+          </Provider>
+        </View>
+      </Root>
+    </SafeAreaProvider>
   );
 };

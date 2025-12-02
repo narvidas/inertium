@@ -3,53 +3,37 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import addDays from "date-fns/addDays";
 import formatISO from "date-fns/formatISO";
 import isMonday from "date-fns/isMonday";
-import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
 import React, { FC, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, FlatList, View } from "react-native";
+import { Animated, Easing, FlatList, Platform, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Spacer } from "../../../../components/Spacer/Spacer";
 import SyncContext from "../../../../config/remote/syncContext";
-import { generatePushID } from "../../../../utils/generatePushID";
-import { habitSelector, removeHabit, updateHabit } from "../../../Habits/habits.slice";
+import { RootState } from "../../../../config/rtk/rootReducer";
+import { removeHabit, updateHabit } from "../../../Habits/habits.slice";
 import { HabitsStackParamList } from "../../../Habits/HabitsStackNavigation";
 import { ConfigureHabitModal } from "../../../Habits/HabitComponent/ConfigureHabitModal";
 import { HeaderComponent } from "../../../Habits/HabitComponent/HeaderComponent";
-import { Habit, Item } from "../../../Habits/types";
 import { useScrollViewSync } from "../../context";
-import { HabitDayItemData } from "../../types";
 import { ScrollableDayItem } from "../ScrollableDayItem";
 import { styles } from "./ScrollableHabitRow.styles";
 
 type NavigationProp = NativeStackNavigationProp<HabitsStackParamList, "HabitsList">;
 
-// Create an unrecorded item for a date (same as original HabitComponent)
-const createUnrecordedItem = (date: Date): Item => {
-  return {
-    id: generatePushID(),
-    date: formatISO(date),
-    notes: "",
-    status: "default",
-    meta: {
-      isDeleted: false,
-      lastUpdatedOn: formatISO(new Date()),
-      createdOn: formatISO(new Date()),
-    },
-  };
-};
-
-// Find existing item or create a new unrecorded one
-const getItemForDate = (habit: Habit, date: Date): Item => {
-  const existing = habit.items.find(item =>
-    isSameDay(parseISO(item.date), date)
-  );
-  return existing || createUnrecordedItem(date);
-};
+// Date item for virtualized list - contains only the date, not the habit item
+interface DateItem {
+  date: Date;
+  dateKey: string;
+}
 
 interface Props {
-  habit: Habit;
+  habitId: string;
   scrollViewId: string;
+  /** Whether this row is currently being dragged */
+  isActive?: boolean;
+  /** Callback to initiate drag */
+  onDrag?: () => void;
   /** 
    * Whether user can scroll this row directly. 
    * When false, row only syncs via calendar strip scroll.
@@ -58,15 +42,44 @@ interface Props {
   userScrollEnabled?: boolean;
 }
 
-export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollEnabled = false }) => {
+// Memoized selector for habit metadata (title, goal) - doesn't include items
+const selectHabitMeta = (habitId: string) => (state: RootState) => {
+  const habit = state.habitsState.habits[habitId];
+  if (!habit) return null;
+  return {
+    id: habit.id,
+    title: habit.title,
+    goal: habit.goal,
+  };
+};
+
+// Separate selector for items - used only for goal progress calculation
+const selectHabitItems = (habitId: string) => (state: RootState) => {
+  const habit = state.habitsState.habits[habitId];
+  return habit?.items ?? [];
+};
+
+const ScrollableHabitRowComponent: FC<Props> = ({
+  habitId,
+  scrollViewId,
+  isActive = false,
+  onDrag,
+  userScrollEnabled = false
+}) => {
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp>();
-  const flatListRef = useRef<FlatList<HabitDayItemData>>(null);
+  const flatListRef = useRef<FlatList<DateItem>>(null);
   const { syncHabit } = useContext(SyncContext);
   const [configModalVisible, setConfigModalVisible] = useState(false);
 
-  // Watch for habit changes to trigger sync
-  const habitFromStore = useSelector(habitSelector(habit.id));
+  // Subscribe to habit metadata only (not items) for header display
+  const habitMeta = useSelector(selectHabitMeta(habitId));
+
+  // Subscribe to items only for goal progress - this is the only place we need them
+  const habitItems = useSelector(selectHabitItems(habitId));
+
+  // Track previous items reference for sync
+  const prevItemsRef = useRef(habitItems);
 
   const {
     scrollX,
@@ -82,6 +95,9 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
   // Animated value for scroll state (0 = not scrolling, 1 = scrolling)
   const scrollAnimValue = useRef(new Animated.Value(0)).current;
 
+  // Animation for drag state
+  const dragAnimation = useRef(new Animated.Value(0)).current;
+
   // Animate when scrolling state changes
   useEffect(() => {
     Animated.timing(scrollAnimValue, {
@@ -91,29 +107,37 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
     }).start();
   }, [isScrolling, scrollAnimValue]);
 
-  // Sync habit when it changes
-  React.useEffect(() => {
-    if (habitFromStore && syncHabit) {
-      syncHabit(habit.id);
-    }
-  }, [habitFromStore, syncHabit, habit.id]);
+  // Animate when drag state changes
+  useEffect(() => {
+    Animated.timing(dragAnimation, {
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.bounce,
+      toValue: isActive ? 1 : 0,
+    }).start();
+  }, [isActive, dragAnimation]);
 
-  // Generate items for the virtualized list - each item pairs a date with the habit's item for that date
-  const items = useMemo((): HabitDayItemData[] => {
-    const result: HabitDayItemData[] = [];
+  // Sync habit when items change
+  useEffect(() => {
+    if (habitItems !== prevItemsRef.current && syncHabit) {
+      syncHabit(habitId);
+      prevItemsRef.current = habitItems;
+    }
+  }, [habitItems, syncHabit, habitId]);
+
+  // Generate date items for the virtualized list - INDEPENDENT of habit items
+  // This only changes when centerDate or bufferDays changes
+  const dateItems = useMemo((): DateItem[] => {
+    const result: DateItem[] = [];
     for (let i = -bufferDays; i <= bufferDays; i++) {
       const date = addDays(centerDate, i);
-      const item = getItemForDate(habit, date);
       result.push({
         date,
-        isToday: i === 0,
         dateKey: formatISO(date, { representation: "date" }),
-        habitId: habit.id,
-        item,
       });
     }
     return result;
-  }, [centerDate, bufferDays, habit]);
+  }, [centerDate, bufferDays]);
 
   // Calculate the leftmost visible date based on scroll position
   const leftmostVisibleDate = useMemo(() => {
@@ -127,14 +151,14 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
 
   // Calculate goal progress for the visible week (only when aligned to Monday)
   const goalProgress = useMemo(() => {
-    if (!showGoalProgress) {
+    if (!showGoalProgress || !habitMeta?.goal) {
       return null;
     }
 
     const weekStart = leftmostVisibleDate;
     const weekEnd = addDays(weekStart, 6);
 
-    const completedInWeek = habit.items.filter(item => {
+    const completedInWeek = habitItems.filter(item => {
       const itemDate = parseISO(item.date);
       return item.status === "done" &&
         isWithinInterval(itemDate, { start: weekStart, end: weekEnd });
@@ -142,20 +166,21 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
 
     return {
       completed: completedInWeek,
-      total: habit.goal || 0,
+      total: habitMeta.goal,
     };
-  }, [habit.items, habit.goal, leftmostVisibleDate, showGoalProgress]);
+  }, [habitItems, habitMeta?.goal, leftmostVisibleDate, showGoalProgress]);
 
-  const renderItem = useCallback(({ item }: { item: HabitDayItemData }) => (
+  // Render item - passes only habitId and date, not the whole item
+  const renderItem = useCallback(({ item }: { item: DateItem }) => (
     <ScrollableDayItem
-      habitId={item.habitId}
-      item={item.item}
+      habitId={habitId}
+      date={item.date}
       dayWidth={dayWidth}
       scrollAnimValue={scrollAnimValue}
     />
-  ), [dayWidth, scrollAnimValue]);
+  ), [habitId, dayWidth, scrollAnimValue]);
 
-  const keyExtractor = useCallback((item: HabitDayItemData) => `${item.habitId}-${item.dateKey}`, []);
+  const keyExtractor = useCallback((item: DateItem) => `${habitId}-${item.dateKey}`, [habitId]);
 
   const getItemLayout = useCallback((_: any, index: number) => ({
     length: dayWidth,
@@ -164,20 +189,62 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
   }), [dayWidth]);
 
   const handleSaveHabit = useCallback((title: string, goal: number) => {
-    dispatch(updateHabit({ id: habit.id, title, goal }));
+    dispatch(updateHabit({ id: habitId, title, goal }));
     setConfigModalVisible(false);
-  }, [habit.id, dispatch]);
+  }, [habitId, dispatch]);
 
   const handleRemoveHabit = useCallback(() => {
-    dispatch(removeHabit({ habitId: habit.id }));
+    dispatch(removeHabit({ habitId }));
     setConfigModalVisible(false);
-  }, [habit.id, dispatch]);
+  }, [habitId, dispatch]);
 
-  return (
-    <View style={styles.container} testID="scrollable-habit-container">
+  // Drag animation style
+  const dragStyle = useMemo(() => ({
+    ...Platform.select({
+      ios: {
+        transform: [
+          {
+            scale: dragAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [1, 1.05],
+            }),
+          },
+        ],
+        shadowRadius: dragAnimation.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 8],
+        }),
+        shadowOpacity: dragAnimation.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 0.3],
+        }),
+      },
+      android: {
+        transform: [
+          {
+            scale: dragAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [1, 1.03],
+            }),
+          },
+        ],
+        elevation: dragAnimation.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 6],
+        }),
+      },
+    }),
+  }), [dragAnimation]);
+
+  if (!habitMeta) {
+    return null;
+  }
+
+  const content = (
+    <Animated.View style={[styles.container, dragStyle]} testID="scrollable-habit-container">
       <ConfigureHabitModal
         visible={configModalVisible}
-        defaultValues={{ title: habit.title, goal: habit.goal }}
+        defaultValues={{ title: habitMeta.title, goal: habitMeta.goal }}
         onSave={handleSaveHabit}
         onClose={() => setConfigModalVisible(false)}
         onRemove={handleRemoveHabit}
@@ -185,18 +252,17 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
       <Spacer size={8} />
       <View style={styles.headerContainer}>
         <HeaderComponent
-          title={habit.title}
+          title={habitMeta.title}
           goalProgress={goalProgress ? `${goalProgress.completed}/${goalProgress.total}` : null}
           onCogPress={() => setConfigModalVisible(true)}
-          onCalendarPress={() => navigation.navigate("MonthlyView", { habitId: habit.id, habitTitle: habit.title })}
-          accessibilityLabel={`Configure habit ${habit.title}`}
+          onCalendarPress={() => navigation.navigate("MonthlyView", { habitId, habitTitle: habitMeta.title })}
+          accessibilityLabel={`Configure habit ${habitMeta.title}`}
         />
       </View>
       <View style={styles.itemsContainer}>
         <FlatList
           ref={flatListRef}
-          data={items}
-          extraData={habit.items}
+          data={dateItems}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           horizontal
@@ -218,9 +284,25 @@ export const ScrollableHabitRow: FC<Props> = ({ habit, scrollViewId, userScrollE
           initialNumToRender={14}
         />
       </View>
-    </View>
+    </Animated.View>
   );
+
+  // Wrap with TouchableOpacity for drag support
+  if (onDrag) {
+    return (
+      <TouchableOpacity
+        onLongPress={onDrag}
+        delayLongPress={200}
+        activeOpacity={1}
+        disabled={isActive}
+      >
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return content;
 };
 
+export const ScrollableHabitRow = React.memo(ScrollableHabitRowComponent);
 ScrollableHabitRow.displayName = "ScrollableHabitRow";
-

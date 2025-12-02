@@ -12,9 +12,12 @@ export const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingBottom: 4,
+    paddingLeft: 20,
+    paddingRight: 16,
   },
   itemsContainer: {
     height: DAY_WIDTH + 6,
+    paddingHorizontal: 20,
   },
 });
 
