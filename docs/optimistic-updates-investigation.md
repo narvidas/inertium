@@ -299,13 +299,13 @@ const completedInWeek = habitMeta?.weeklyCompletions?.[currentWeekKey] ?? 0;
 
 ## 📊 Priority Matrix
 
-| Improvement | Impact | Effort | Priority |
-|-------------|--------|--------|----------|
-| Indexed item lookups | 🔴 High | Medium | **P0** |
-| Memoized selectors (createSelector) | 🟠 Medium | Low | **P1** |
-| Pre-compute date formatting | 🟡 Low | Low | **P2** |
-| Denormalized goal counts | 🟠 Medium | Medium | **P2** |
-| Normalized state shape | 🔴 High | High | **P3** (Future) |
+| Improvement | Impact | Effort | Priority | Status |
+|-------------|--------|--------|----------|--------|
+| Indexed item lookups | 🔴 High | Medium | **P0** | ✅ Done |
+| Memoized selectors (createSelector) | 🟠 Medium | Low | **P1** | ✅ Done |
+| Pre-compute date formatting | 🟡 Low | Low | **P2** | ✅ Done |
+| Denormalized goal counts | 🟠 Medium | Medium | **P2** | Pending |
+| Normalized state shape | 🔴 High | High | **P3** (Future) | Pending |
 
 ---
 
@@ -343,29 +343,39 @@ const updateStatus = useCallback(() => {
 
 ## Implementation Plan
 
-### Phase 1: Quick Wins (1-2 days)
+### Phase 1: Quick Wins ✅ COMPLETED
 1. ✅ Add `createSelector` to `habitsSelector`
 2. ✅ Memoize date formatting in `ScrollableDayItem`
-3. ✅ Add performance measurement hooks
 
-### Phase 2: Indexed Lookups (3-5 days)
-1. Update `Item[]` to indexed structure
-2. Add redux-persist migration
-3. Update all selectors and reducers
-4. Update sync logic
+### Phase 2: Indexed Lookups ✅ COMPLETED
+1. ✅ Added `selectItemsIndexByHabitId` with caching in `habits.slice.ts`
+2. ✅ Updated `ScrollableDayItem` to use O(1) indexed lookups
+3. ✅ Updated `MonthDayCell` to use O(1) indexed lookups
+4. **No migration needed** - index is computed at runtime, not persisted
 
 ### Phase 3: Advanced (Future)
-1. Consider fully normalized state
-2. Evaluate if weeklyCompletions denormalization is needed
+1. Consider fully normalized state if more bottlenecks emerge
+2. Evaluate weeklyCompletions denormalization if goal progress is slow
 3. Profile and optimize further based on real usage data
 
 ---
 
 ## Conclusion
 
-The current implementation has solid foundations with optimistic updates and cell-level subscriptions. The main bottleneck is **O(n) item lookups** which will degrade over time as users accumulate data.
+The implementation now includes:
 
-Priority should be:
-1. **Immediately:** Add `createSelector` for `habitsSelector` (low effort, prevents list re-renders)
-2. **Soon:** Implement indexed item lookups (highest impact for long-term users)
-3. **Later:** Consider full state normalization if other bottlenecks emerge
+1. ✅ **Optimistic updates** - Immediate visual feedback before Redux dispatch
+2. ✅ **Memoized selectors** - `createSelector` prevents unnecessary recomputation
+3. ✅ **O(1) indexed lookups** - Items are indexed by date for instant access
+4. ✅ **Memoized date formatting** - No repeated `format()` calls
+
+### Performance Impact for Large Datasets
+
+**Before (5 years × 30 habits):**
+- ~765,000 iterations per state change (30 habits × 14 cells × 1,825 items)
+
+**After:**
+- ~30 index rebuilds (one per habit when items change)
+- O(1) lookups for all 420 visible cells (30 habits × 14 days)
+
+The indexed selector cache (`itemsIndexCache`) ensures the index is only rebuilt when a habit's items array reference changes, not on every render.

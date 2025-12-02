@@ -1,13 +1,11 @@
 import format from "date-fns/format";
 import formatISO from "date-fns/formatISO";
-import isSameDay from "date-fns/isSameDay";
-import parseISO from "date-fns/parseISO";
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, InteractionManager, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../config/rtk/rootReducer";
 import { generatePushID } from "../../../../utils/generatePushID";
-import { updateOrCreateItem } from "../../habits.slice";
+import { selectItemByDate, updateOrCreateItem } from "../../habits.slice";
 import { Item, Status } from "../../types";
 import { ItemModal } from "../ItemModal";
 import { styles } from "./ScrollableDayItem.styles";
@@ -34,22 +32,24 @@ interface Props {
   scrollAnimValue?: Animated.Value;
 }
 
-// Selector to get just the item for this specific date - memoized per cell
-const makeSelectItemForDate = () => (state: RootState, habitId: string, date: Date): Item | undefined => {
-  const habit = state.habitsState.habits[habitId];
-  if (!habit) return undefined;
-  return habit.items.find((item) => isSameDay(parseISO(item.date), date));
+// Helper to get YYYY-MM-DD from Date object
+const getDateKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 const ScrollableDayItemComponent: FC<Props> = ({ habitId, date, dayWidth, scrollAnimValue }) => {
   const dispatch = useDispatch();
   const [itemModalVisible, setItemModalVisible] = useState(false);
 
-  // Create selector once per component instance
-  const selectItemForDate = useMemo(makeSelectItemForDate, []);
+  // Compute date key once - YYYY-MM-DD format for O(1) indexed lookup
+  const dateKey = useMemo(() => getDateKey(date), [date]);
 
-  // Subscribe to just this cell's item - only re-renders when THIS item changes
-  const item = useSelector((state: RootState) => selectItemForDate(state, habitId, date));
+  // O(1) lookup using indexed selector instead of O(n) find()
+  // This is critical for performance with large datasets (1000+ items per habit)
+  const item = useSelector((state: RootState) => selectItemByDate(state, habitId, dateKey));
 
   // OPTIMISTIC UPDATE: Local state for immediate visual feedback
   // null means "use Redux state", otherwise use the optimistic value

@@ -97,6 +97,52 @@ export const habitsSelector = createSelector([selectHabitsMap, selectOrderArray]
 export const orderSelector = (state: RootState) => state.habitsState.order;
 export const habitSelector = (habitId: string) => (state: RootState) => state.habitsState.habits[habitId];
 
+// ============================================
+// Indexed Item Selectors for O(1) Date Lookups
+// ============================================
+
+// Type for the items-by-date index: { "2024-01-20": Item, ... }
+export type ItemsByDateIndex = { [dateKey: string]: Item };
+
+// Selector to get items array for a habit
+const selectHabitItems = (state: RootState, habitId: string) => state.habitsState.habits[habitId]?.items;
+
+// Creates a memoized selector for a specific habit that indexes items by date
+// This transforms O(n) find() calls into O(1) object property access
+// The index is only rebuilt when the habit's items array actually changes
+const itemsIndexCache = new Map<string, { items: Item[]; index: ItemsByDateIndex }>();
+
+export const selectItemsIndexByHabitId = (state: RootState, habitId: string): ItemsByDateIndex => {
+  const items = selectHabitItems(state, habitId);
+  if (!items) return {};
+
+  // Check cache - if items array reference hasn't changed, return cached index
+  const cached = itemsIndexCache.get(habitId);
+  if (cached && cached.items === items) {
+    return cached.index;
+  }
+
+  // Build new index - O(n) but only when items change
+  const index: ItemsByDateIndex = {};
+  for (const item of items) {
+    if (!item.meta?.isDeleted) {
+      // Extract YYYY-MM-DD from ISO date string for consistent key
+      const dateKey = item.date.slice(0, 10);
+      index[dateKey] = item;
+    }
+  }
+
+  // Cache the result
+  itemsIndexCache.set(habitId, { items, index });
+  return index;
+};
+
+// Helper to get a specific item by date - O(1) lookup
+export const selectItemByDate = (state: RootState, habitId: string, dateKey: string): Item | undefined => {
+  const index = selectItemsIndexByHabitId(state, habitId);
+  return index[dateKey];
+};
+
 export const { updateOrCreateItem } = habitsSlice.actions;
 export const { createNewHabit } = habitsSlice.actions;
 export const { updateHabit } = habitsSlice.actions;
