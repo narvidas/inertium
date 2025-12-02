@@ -14,7 +14,7 @@ const getStoredCurrentUser = async () => {
   }
 };
 
-const setStoredCurrentUser = async auth => {
+const setStoredCurrentUser = async (auth) => {
   try {
     await SecureStore.setItemAsync("storedCurrentUser", JSON.stringify(auth));
   } catch {}

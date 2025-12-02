@@ -13,3 +13,6 @@ coverage/
 testReport/
 .DS_Store
 yarn-error.log
+
+# Local Firebase config (contains secrets)
+firebaseConfig.local.ts
