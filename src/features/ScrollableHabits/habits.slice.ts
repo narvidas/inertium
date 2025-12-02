@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import formatISO from "date-fns/formatISO";
 import { RootState } from "../../config/rtk/rootReducer";
 import { generatePushID } from "../../utils/generatePushID";
@@ -84,21 +84,15 @@ const habitsSlice = createSlice({
   },
 });
 
-const filterDeleted = (habits: Habits): Habits =>
-  Object.keys(habits)
-    .filter((key) => !habits[key].meta?.isDeleted)
-    .reduce((obj, key) => {
-      return {
-        ...obj,
-        [key]: habits[key],
-      };
-    }, {});
+// Base selectors for memoization
+const selectHabitsMap = (state: RootState) => state.habitsState.habits;
+const selectOrderArray = (state: RootState) => state.habitsState.order.order;
 
-export const habitsSelector = (state: RootState) => {
-  const habits = filterDeleted(state.habitsState.habits);
-  const sortedHabits = state.habitsState.order.order.map((key) => habits[key]);
-  return sortedHabits;
-};
+// Memoized selector - only recomputes when habits or order actually change
+// This prevents DraggableFlatList from re-rendering all rows when unrelated state changes
+export const habitsSelector = createSelector([selectHabitsMap, selectOrderArray], (habits, order) => {
+  return order.filter((id) => habits[id] && !habits[id].meta?.isDeleted).map((id) => habits[id]);
+});
 
 export const orderSelector = (state: RootState) => state.habitsState.order;
 export const habitSelector = (habitId: string) => (state: RootState) => state.habitsState.habits[habitId];

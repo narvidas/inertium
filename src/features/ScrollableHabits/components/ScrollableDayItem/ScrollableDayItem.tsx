@@ -66,8 +66,11 @@ const ScrollableDayItemComponent: FC<Props> = ({ habitId, date, dayWidth, scroll
     }
   }, [item?.status, optimisticStatus]);
 
-  const dayOfWeekWord = format(date, "EEE"); // E.g. 'SUN' for Sunday
-  const dayOfMonthNumber = format(date, "d"); // E.g. '14' for 14th December
+  // Memoize date formatting - avoids repeated format() calls on each render
+  const { dayOfWeekWord, dayOfMonthNumber } = useMemo(() => ({
+    dayOfWeekWord: format(date, "EEE"),    // E.g. 'SUN' for Sunday
+    dayOfMonthNumber: format(date, "d"),   // E.g. '14' for 14th December
+  }), [date]);
 
   // Use optimistic status if set, otherwise fall back to Redux state
   const status = optimisticStatus ?? item?.status ?? "default";
