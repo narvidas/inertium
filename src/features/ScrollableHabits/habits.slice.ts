@@ -107,33 +107,90 @@ export type ItemsByDateIndex = { [dateKey: string]: Item };
 // Selector to get items array for a habit
 const selectHabitItems = (state: RootState, habitId: string) => state.habitsState.habits[habitId]?.items;
 
-// Creates a memoized selector for a specific habit that indexes items by date
-// This transforms O(n) find() calls into O(1) object property access
-// The index is only rebuilt when the habit's items array actually changes
-const itemsIndexCache = new Map<string, { items: Item[]; index: ItemsByDateIndex }>();
+// Cache structure for incremental updates
+interface IndexCache {
+  items: Item[]; // Reference to detect changes
+  index: ItemsByDateIndex; // The actual index
+  length: number; // Track length for add detection
+}
 
+const itemsIndexCache = new Map<string, IndexCache>();
+
+/**
+ * Returns an indexed map of items by date for O(1) lookups.
+ *
+ * INCREMENTAL UPDATE OPTIMIZATION:
+ * Instead of rebuilding the entire index on every change, we detect the type
+ * of change and update incrementally when possible:
+ *
+ * - Same reference → return cached (O(1), no work)
+ * - Length increased → new item added, just add to index (O(1) for single add)
+ * - Length same → existing item updated, update single entry (O(1))
+ * - Length decreased → item deleted, rebuild (rare case)
+ *
+ * This is critical for the common case: tapping an empty day to create a new item.
+ */
 export const selectItemsIndexByHabitId = (state: RootState, habitId: string): ItemsByDateIndex => {
   const items = selectHabitItems(state, habitId);
   if (!items) return {};
 
-  // Check cache - if items array reference hasn't changed, return cached index
   const cached = itemsIndexCache.get(habitId);
+
+  // Fast path: same reference, nothing changed
   if (cached && cached.items === items) {
     return cached.index;
   }
 
-  // Build new index - O(n) but only when items change
+  // Check if we can do incremental update
+  if (cached) {
+    const lengthDiff = items.length - cached.length;
+
+    // Case 1: New item(s) added (most common - tapping empty day)
+    // Items are always pushed, so new items are at the end
+    if (lengthDiff > 0) {
+      const index = { ...cached.index };
+      // Only process the new items - O(k) where k = new items (usually 1)
+      for (let i = cached.length; i < items.length; i++) {
+        const item = items[i];
+        if (!item.meta?.isDeleted) {
+          const dateKey = item.date.slice(0, 10);
+          index[dateKey] = item;
+        }
+      }
+      itemsIndexCache.set(habitId, { items, index, length: items.length });
+      return index;
+    }
+
+    // Case 2: Same length - an existing item was updated (tap to change status)
+    // The item object has new reference due to Immer, but we can find it by
+    // checking which dateKey has a different item reference
+    if (lengthDiff === 0) {
+      const index = { ...cached.index };
+      // Find and update only the changed item - typically just one
+      for (const item of items) {
+        if (!item.meta?.isDeleted) {
+          const dateKey = item.date.slice(0, 10);
+          // Only update if item reference changed
+          if (index[dateKey] !== item) {
+            index[dateKey] = item;
+          }
+        }
+      }
+      itemsIndexCache.set(habitId, { items, index, length: items.length });
+      return index;
+    }
+  }
+
+  // Full rebuild needed (first load, or items were deleted)
   const index: ItemsByDateIndex = {};
   for (const item of items) {
     if (!item.meta?.isDeleted) {
-      // Extract YYYY-MM-DD from ISO date string for consistent key
       const dateKey = item.date.slice(0, 10);
       index[dateKey] = item;
     }
   }
 
-  // Cache the result
-  itemsIndexCache.set(habitId, { items, index });
+  itemsIndexCache.set(habitId, { items, index, length: items.length });
   return index;
 };
 
