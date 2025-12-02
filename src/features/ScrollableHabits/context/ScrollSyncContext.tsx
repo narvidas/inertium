@@ -1,6 +1,5 @@
 import addDays from "date-fns/addDays";
 import format from "date-fns/format";
-import startOfDay from "date-fns/startOfDay";
 import startOfISOWeek from "date-fns/startOfISOWeek";
 import React, { createContext, FC, ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
@@ -22,7 +21,8 @@ interface ScrollSyncProviderProps {
 }
 
 export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) => {
-  const centerDate = useMemo(() => startOfDay(new Date()), []);
+  // Always start the week view on Monday (ISO week start)
+  const centerDate = useMemo(() => startOfISOWeek(new Date()), []);
   const [bufferDays, setBufferDays] = useState(INITIAL_BUFFER_DAYS);
   const [scrollX, setScrollXState] = useState(INITIAL_BUFFER_DAYS * DAY_WIDTH);
   const [activeScrollViewId, setActiveScrollViewId] = useState<string | null>(null);

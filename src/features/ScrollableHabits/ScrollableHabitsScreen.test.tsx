@@ -34,21 +34,12 @@ describe("ScrollableHabitsScreen", () => {
       await findByText("This week");
     });
 
-    test("Shows habit with goal progress only when view starts on Monday", async () => {
+    test("Shows habit with goal progress since view always starts on Monday", async () => {
       const { findByText, store } = render(<ScrollableHabitsScreen />);
       store.dispatch(createNewHabit({ title: "meditation", goal: 3 }));
 
-      // Initial view centers on today - goal progress only shows if leftmost day is Monday
-      const today = new Date();
-      const isViewOnMonday = today.getDay() === 1; // 1 = Monday
-
-      if (isViewOnMonday) {
-        // When on Monday, should show goal progress
-        await findByText(/meditation \(\d+\/3\)/);
-      } else {
-        // When not on Monday, should show just the title
-        await findByText("meditation");
-      }
+      // View always starts on Monday of the current week, so goal progress is always shown
+      await findByText(/meditation \(\d+\/3\)/);
     });
 
     test("Renders today's day name in the calendar strip", async () => {
