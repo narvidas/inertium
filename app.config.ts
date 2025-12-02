@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "inertium",
   slug: "inertium-habit-tracker",
   platforms: ["ios"],
-  version: "1.4.3",
+  version: "1.4.4",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   splash: {
