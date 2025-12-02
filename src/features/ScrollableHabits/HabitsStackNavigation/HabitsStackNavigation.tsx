@@ -1,15 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { FC } from "react";
 import { MonthlyViewScreen } from "../../MonthlyView";
-import { ScrollableHabitsScreen } from "../../ScrollableHabits";
-
-export type HabitsStackParamList = {
-  HabitsList: undefined;
-  MonthlyView: {
-    habitId: string;
-    habitTitle: string;
-  };
-};
+import { ScrollableHabitsScreen } from "../ScrollableHabitsScreen";
+import { HabitsStackParamList } from "../types";
 
 const Stack = createNativeStackNavigator<HabitsStackParamList>();
 
@@ -36,3 +29,4 @@ export const HabitsStackNavigation: FC = () => (
     />
   </Stack.Navigator>
 );
+

@@ -1,7 +1,43 @@
 import { FlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
-// Re-export habit types for convenience
-export type { Habit, Item, Status, Meta } from "../Habits/types";
+// ============================================
+// Core Habit Types (migrated from Habits/)
+// ============================================
+
+export interface Habit {
+  id: string;
+  title: string;
+  goal: number;
+  items: Item[];
+  meta: Meta;
+}
+
+export type Habits = { [key: string]: Habit };
+
+export type Status = "default" | "done" | "fail";
+
+export interface Item {
+  id: string;
+  status: Status;
+  date: string;
+  notes: string;
+  meta: Meta;
+}
+
+export interface Meta {
+  isDeleted: boolean;
+  createdOn: string;
+  lastUpdatedOn: string;
+}
+
+export interface HabitOrder {
+  order: Array<string>;
+  meta: Meta;
+}
+
+// ============================================
+// Scrollable Habits Types
+// ============================================
 
 export interface DateRange {
   startDate: Date;
@@ -44,3 +80,15 @@ export interface DayItemData {
   isToday: boolean;
   dateKey: string; // ISO string for stable keys
 }
+
+// ============================================
+// Navigation Types
+// ============================================
+
+export type HabitsStackParamList = {
+  HabitsList: undefined;
+  MonthlyView: {
+    habitId: string;
+    habitTitle: string;
+  };
+};

@@ -2,7 +2,7 @@ import format from "date-fns/format";
 import React from "react";
 import { fireEvent, render, waitFor, within } from "../../testing/customRender";
 import spyOnAlert from "../../testing/spyOnAlert";
-import { createNewHabit } from "../Habits/habits.slice";
+import { createNewHabit } from "./habits.slice";
 import { ScrollableHabitsScreen } from "./ScrollableHabitsScreen";
 
 const { pressAlertButton } = spyOnAlert();

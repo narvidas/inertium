@@ -1,6 +1,6 @@
 import { EnhancedStore } from "@reduxjs/toolkit";
-import { createNewHabit, updateHabit, updateHabitOrder } from "../../features/Habits/habits.slice";
-import { Habit, HabitOrder, Habits } from "../../features/Habits/types";
+import { createNewHabit, updateHabit, updateHabitOrder } from "../../features/ScrollableHabits/habits.slice";
+import { Habit, HabitOrder, Habits } from "../../features/ScrollableHabits/types";
 import { areArraysEqual } from "../../utils/areArraysEqual";
 import { getFirebaseValues } from "./firebase";
 
@@ -110,14 +110,14 @@ export const createSync = (store: EnhancedStore<any>, getValues = getFirebaseVal
     const localHabitIds = Object.keys(localHabits);
 
     // Create new habits in local if remote has more
-    const newHabitIdsForLocal = remoteHabitIds.filter(habitId => !localHabitIds.includes(habitId));
+    const newHabitIdsForLocal = remoteHabitIds.filter((habitId) => !localHabitIds.includes(habitId));
     for (const habitId in newHabitIdsForLocal) {
       const remoteHabit = remoteHabits[habitId];
       store.dispatch(createNewHabit({ ...remoteHabit }));
     }
 
     // Create new habits in remote if local has more
-    const newHabitIdsForRemote = localHabitIds.filter(habitId => !remoteHabitIds.includes(habitId));
+    const newHabitIdsForRemote = localHabitIds.filter((habitId) => !remoteHabitIds.includes(habitId));
     for (const habitId in newHabitIdsForRemote) {
       const localHabit = localHabits[habitId];
       const habitDbRef = db.ref(`habits/${uid}/${habitId}`);
@@ -126,9 +126,9 @@ export const createSync = (store: EnhancedStore<any>, getValues = getFirebaseVal
 
     // Update the intersection of the two sets (habits that exists in both)
     const remainingHabitIds = [...remoteHabitIds, ...localHabitIds].filter(
-      id => remoteHabitIds.includes(id) && localHabitIds.includes(id),
+      (id) => remoteHabitIds.includes(id) && localHabitIds.includes(id),
     );
-    remainingHabitIds.map(habitId => syncHabit(habitId));
+    remainingHabitIds.map((habitId) => syncHabit(habitId));
   };
 
   const sync: Sync = {

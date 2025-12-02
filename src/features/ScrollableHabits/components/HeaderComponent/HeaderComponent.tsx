@@ -42,3 +42,4 @@ export const HeaderComponent: FC<Props> = ({ title, goalProgress, onCogPress, on
     </View>
   </View>
 );
+

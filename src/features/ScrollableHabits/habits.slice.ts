@@ -13,7 +13,7 @@ const now = () => formatISO(new Date());
 
 const initialState: HabitsState = {
   habits: {},
-  order: { order: [] },
+  order: { order: [], meta: { isDeleted: false, createdOn: "", lastUpdatedOn: "" } },
 };
 
 const habitsSlice = createSlice({
@@ -24,7 +24,7 @@ const habitsSlice = createSlice({
       const { habitId, item } = action.payload;
 
       const habit = state.habits[habitId];
-      const itemIndex = habit.items.findIndex(i => i.id === item.id);
+      const itemIndex = habit.items.findIndex((i) => i.id === item.id);
       const recordedItemExists = itemIndex >= 0;
 
       if (recordedItemExists) {
@@ -78,7 +78,7 @@ const habitsSlice = createSlice({
       (habit.meta as Meta).isDeleted = true;
       (habit.meta as Meta).lastUpdatedOn = now();
 
-      state.order.order = state.order.order.filter(id => id !== habit.id);
+      state.order.order = state.order.order.filter((id) => id !== habit.id);
       state.order.meta = { ...state.order.meta, lastUpdatedOn: now() };
     },
   },
@@ -86,7 +86,7 @@ const habitsSlice = createSlice({
 
 const filterDeleted = (habits: Habits): Habits =>
   Object.keys(habits)
-    .filter(key => !habits[key].meta?.isDeleted)
+    .filter((key) => !habits[key].meta?.isDeleted)
     .reduce((obj, key) => {
       return {
         ...obj,
@@ -96,7 +96,7 @@ const filterDeleted = (habits: Habits): Habits =>
 
 export const habitsSelector = (state: RootState) => {
   const habits = filterDeleted(state.habitsState.habits);
-  const sortedHabits = state.habitsState.order.order.map(key => habits[key]);
+  const sortedHabits = state.habitsState.order.order.map((key) => habits[key]);
   return sortedHabits;
 };
 

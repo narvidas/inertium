@@ -9,7 +9,7 @@ import SyncContext from "../../config/remote/syncContext";
 import { getStore } from "../../config/rtk/store";
 import firebaseMock from "../../testing/firebaseMock";
 import { getSyncMock } from "../../testing/syncMock";
-import { createNewHabit } from "../Habits/habits.slice";
+import { createNewHabit } from "../ScrollableHabits/habits.slice";
 import { MonthlyViewScreen } from "./MonthlyViewScreen";
 
 // Suppress console warnings/errors in tests

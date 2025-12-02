@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React, { FC } from "react";
-import { HabitsStackNavigation } from "../../features/Habits/HabitsStackNavigation";
+import { HabitsStackNavigation } from "../../features/ScrollableHabits/HabitsStackNavigation";
 import { ProfileStackNavigation } from "../../features/Profile/ProfileStackNavigation";
 
 const Tab = createBottomTabNavigator();

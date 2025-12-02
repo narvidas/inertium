@@ -7,9 +7,9 @@ import { Animated, InteractionManager, TouchableOpacity, View } from "react-nati
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../config/rtk/rootReducer";
 import { generatePushID } from "../../../../utils/generatePushID";
-import { updateOrCreateItem } from "../../../Habits/habits.slice";
-import { Item, Status } from "../../../Habits/types";
-import { ItemModal } from "../../../Habits/HabitComponent/ItemComponent/ItemModal";
+import { updateOrCreateItem } from "../../habits.slice";
+import { Item, Status } from "../../types";
+import { ItemModal } from "../ItemModal";
 import { styles } from "./ScrollableDayItem.styles";
 
 const getStyle = (status: Status) => {

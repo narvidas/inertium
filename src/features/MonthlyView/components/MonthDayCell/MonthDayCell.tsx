@@ -5,9 +5,9 @@ import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { InteractionManager, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../config/rtk/rootReducer";
-import { updateOrCreateItem } from "../../../Habits/habits.slice";
-import { Item, Status } from "../../../Habits/types";
-import { ItemModal } from "../../../Habits/HabitComponent/ItemComponent/ItemModal";
+import { updateOrCreateItem } from "../../../ScrollableHabits/habits.slice";
+import { Item, Status } from "../../../ScrollableHabits/types";
+import { ItemModal } from "../../../ScrollableHabits/components/ItemModal";
 import { generatePushID } from "../../../../utils/generatePushID";
 import { styles } from "./MonthDayCell.styles";
 

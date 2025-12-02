@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { Container, Root } from "../../ui";
 import SyncContext from "../../config/remote/syncContext";
 import { successToast } from "../../utils/toast";
-import { habitSelector } from "../Habits/habits.slice";
+import { habitSelector } from "../ScrollableHabits/habits.slice";
 import { MonthCalendarGrid } from "./components/MonthCalendarGrid";
 import { styles } from "./MonthlyViewScreen.styles";
 import { MonthlyViewRouteParams } from "./types";

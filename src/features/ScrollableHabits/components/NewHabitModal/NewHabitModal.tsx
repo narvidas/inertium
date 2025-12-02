@@ -2,32 +2,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { Formik, FormikErrors } from "formik";
 import { Button, H3, Input, Item, Label, Root, Text } from "../../../../ui";
 import React, { FC, useEffect, useState } from "react";
-import { Alert, Keyboard, KeyboardAvoidingView, Modal, TouchableWithoutFeedback, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Modal, TouchableWithoutFeedback, View } from "react-native";
 import * as Yup from "yup";
 import { errorToast } from "../../../../utils/toast";
 import { Habit } from "../../types";
-import { styles } from "./ConfigureHabitModal.styles";
-
-const confirmRemoval = (onRemove: () => void) => {
-  Alert.alert(
-    "Remove habit",
-    "Are you sure? \n\nThis operation cannot be undone.",
-    [
-      { text: "Cancel", style: "cancel" },
-      { text: "Yes", onPress: onRemove },
-    ],
-    { cancelable: false },
-  );
-};
+import { styles } from "./NewHabitModal.styles";
 
 type Values = Partial<Habit>;
 
 interface Props {
   visible: boolean;
-  defaultValues?: Values;
   onSave: (title: string, goal: number) => void;
   onClose: () => void;
-  onRemove: () => void;
 }
 
 const validationSchema = Yup.object().shape({
@@ -39,13 +25,7 @@ const validationSchema = Yup.object().shape({
     .typeError("Must be a numeric value!"),
 });
 
-export const ConfigureHabitModal: FC<Props> = ({
-  visible,
-  defaultValues = { title: "", goal: "0" },
-  onSave,
-  onClose,
-  onRemove,
-}) => {
+export const NewHabitModal: FC<Props> = ({ visible, onSave, onClose }) => {
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
@@ -62,6 +42,7 @@ export const ConfigureHabitModal: FC<Props> = ({
 
   const submit = ({ title, goal }: Values) => {
     if (title && goal) onSave(title, goal);
+    onClose();
   };
 
   if (!visible) return null;
@@ -75,36 +56,36 @@ export const ConfigureHabitModal: FC<Props> = ({
               onSubmit={submit}
               validateOnChange={false}
               validateOnBlur={false}
-              initialValues={{ ...defaultValues }}
+              initialValues={{ title: undefined, goal: undefined }}
               render={({ handleChange, handleSubmit, errors }) => (
                 <>
                   {updateError(errors)}
                   <View style={styles.container}>
                     <View>
-                      <H3>Edit Habit</H3>
+                      <H3>Create New Habit</H3>
                     </View>
                     <View style={styles.inputContainer}>
                       <Item>
-                        <Label>Habit name:</Label>
+                        <Label for="habit-name">Habit name:</Label>
                         <Input
+                          id="habit-name"
+                          accessibilityLabel="habit name"
                           style={styles.input}
                           onChangeText={handleChange("title")}
-                          accessibilityLabel="change habit name"
                           name="title"
-                          defaultValue={defaultValues?.title}
                         />
                       </Item>
                     </View>
                     <View style={styles.inputContainer}>
                       <Item>
-                        <Label>Weekly goal:</Label>
+                        <Label for="goal">Weekly goal:</Label>
                         <Input
+                          id="goal"
+                          accessibilityLabel="goal"
                           style={styles.input}
                           onChangeText={handleChange("goal")}
-                          accessibilityLabel="change goal"
                           keyboardType="numeric"
                           name="goal"
-                          defaultValue={String(defaultValues?.goal)}
                         />
                       </Item>
                     </View>
@@ -122,12 +103,6 @@ export const ConfigureHabitModal: FC<Props> = ({
                         </Button>
                       </View>
                     </View>
-                    <View style={styles.buttonContainer}>
-                      <Button onPress={() => confirmRemoval(onRemove)} danger>
-                        <Ionicons name="trash" style={styles.buttonIcon} />
-                        <Text>Remove habit</Text>
-                      </Button>
-                    </View>
                   </View>
                 </>
               )}
@@ -138,3 +113,4 @@ export const ConfigureHabitModal: FC<Props> = ({
     </Modal>
   );
 };
+
