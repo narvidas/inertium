@@ -191,12 +191,14 @@ const ScrollableHabitRowComponent: FC<Props> = ({
   const handleSaveHabit = useCallback((title: string, goal: number) => {
     dispatch(updateHabit({ id: habitId, title, goal }));
     setConfigModalVisible(false);
-  }, [habitId, dispatch]);
+    syncHabit?.(habitId);
+  }, [habitId, dispatch, syncHabit]);
 
   const handleRemoveHabit = useCallback(() => {
     dispatch(removeHabit({ habitId }));
     setConfigModalVisible(false);
-  }, [habitId, dispatch]);
+    syncHabit?.(habitId);
+  }, [habitId, dispatch, syncHabit]);
 
   // Drag animation style
   const dragStyle = useMemo(() => ({

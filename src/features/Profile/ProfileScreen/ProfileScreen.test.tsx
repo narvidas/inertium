@@ -26,11 +26,13 @@ describe("ProfileScreen - AnonymousView", () => {
     });
 
     test("Shows Register option", async () => {
-      const { findByText } = render(
+      const { findAllByText } = render(
         <AnonymousView navigation={mockNavigation as any} />
       );
 
-      await findByText("Register");
+      const registerElements = await findAllByText("Register");
+      // First is header title, second is the button
+      expect(registerElements.length).toBeGreaterThanOrEqual(2);
     });
 
     test("Shows Forgot Password option", async () => {
@@ -53,11 +55,13 @@ describe("ProfileScreen - AnonymousView", () => {
     });
 
     test("Navigates to Register screen when Register is pressed", async () => {
-      const { findByText } = render(
+      const { findAllByText } = render(
         <AnonymousView navigation={mockNavigation as any} />
       );
 
-      const registerOption = await findByText("Register");
+      const registerElements = await findAllByText("Register");
+      // Second element is the button in the list
+      const registerOption = registerElements[1];
       fireEvent.press(registerOption);
 
       expect(mockNavigation.navigate).toHaveBeenCalledWith("Register");
