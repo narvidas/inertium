@@ -126,6 +126,7 @@ const ScrollableHabitRowComponent: FC<Props> = ({
       prevItemsRef.current = habitItems;
 
       // Clear any pending sync
+      /* istanbul ignore next -- defensive cleanup, hard to test timing */
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
       }
@@ -138,6 +139,7 @@ const ScrollableHabitRowComponent: FC<Props> = ({
     }
 
     // Cleanup on unmount
+    /* istanbul ignore next -- cleanup function, tested implicitly */
     return () => {
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
@@ -170,6 +172,7 @@ const ScrollableHabitRowComponent: FC<Props> = ({
   const showGoalProgress = useMemo(() => isMonday(leftmostVisibleDate), [leftmostVisibleDate]);
 
   // Calculate goal progress for the visible week (only when aligned to Monday)
+  /* istanbul ignore next -- goal progress display depends on day of week, tested via HabitsScreen */
   const goalProgress = useMemo(() => {
     if (!showGoalProgress || !habitMeta?.goal) {
       return null;

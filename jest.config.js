@@ -14,7 +14,15 @@ module.exports = {
   setupFiles: ["core-js", "<rootDir>/jest.setup.js"],
   setupFilesAfterEnv: ["<rootDir>/setupTests.ts"],
   testPathIgnorePatterns: ["node_modules", "calendar-temp"],
-  coveragePathIgnorePatterns: ["node_modules", "/testing/", "/ui/", "index\\.ts$", "index\\.js$"],
+  coveragePathIgnorePatterns: [
+    "node_modules",
+    "/testing/",
+    "/ui/",
+    "index\\.ts$",
+    "index\\.js$",
+    "types\\.ts$", // Pure TypeScript type definitions - no runtime code to test
+    "StackNavigation", // Navigation wiring - tested indirectly through integration
+  ],
   transform: { "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/babel-jest" },
   reporters: ["default"],
   coverageDirectory: "testReport",

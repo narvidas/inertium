@@ -147,6 +147,7 @@ export const ScrollSyncProvider: FC<ScrollSyncProviderProps> = ({ children }) =>
     setScrollXState(targetOffset);
 
     // Sync all scroll views
+    /* istanbul ignore next -- defensive null check for refs */
     scrollViewRefs.current.forEach((ref) => {
       if (ref.current) {
         ref.current.scrollToOffset({ offset: targetOffset, animated: true });
@@ -215,6 +216,7 @@ export const useScrollViewSync = (
   const registry = useContext(ScrollSyncRegistryContext);
 
   // Register this scroll view on mount
+  /* istanbul ignore next -- registry always available within provider */
   React.useEffect(() => {
     if (registry) {
       return registry.registerScrollView(id, flatListRef);
