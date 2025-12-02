@@ -117,12 +117,32 @@ const ScrollableHabitRowComponent: FC<Props> = ({
     }).start();
   }, [isActive, dragAnimation]);
 
-  // Sync habit when items change
+  // Debounced sync timer ref
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync habit when items change - DEBOUNCED to avoid network spam on rapid taps
   useEffect(() => {
     if (habitItems !== prevItemsRef.current && syncHabit) {
-      syncHabit(habitId);
       prevItemsRef.current = habitItems;
+
+      // Clear any pending sync
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+
+      // Debounce sync by 500ms - allows rapid taps without multiple network calls
+      syncTimeoutRef.current = setTimeout(() => {
+        syncHabit(habitId);
+        syncTimeoutRef.current = null;
+      }, 500);
     }
+
+    // Cleanup on unmount
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
   }, [habitItems, syncHabit, habitId]);
 
   // Generate date items for the virtualized list - INDEPENDENT of habit items

@@ -288,9 +288,8 @@ describe("Habits", () => {
 
       await waitFor(() => {
         expect(sync.syncHabit).toHaveBeenCalledWith(habitBefore.id);
-        // 6 presses total (1 + 2 + 3), each triggers a sync
-        // Plus potential initial render sync - verify at least 6 calls
-        expect(sync.syncHabit.mock.calls.length).toBeGreaterThanOrEqual(6);
+        // With debouncing, rapid taps are batched - expect at least 1 sync call
+        expect(sync.syncHabit.mock.calls.length).toBeGreaterThanOrEqual(1);
       });
       const [habitAfter] = Object.values(store.getState().habitsState.habits);
       expect(habitAfter.items.length).toBe(3);

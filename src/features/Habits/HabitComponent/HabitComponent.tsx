@@ -6,7 +6,7 @@ import isSameDay from "date-fns/isSameDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import parseISO from "date-fns/parseISO";
 import { List, ListItem } from "../../../ui";
-import React, { FC, useContext, useEffect, useMemo, useState } from "react";
+import React, { FC, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Spacer } from "../../../components/Spacer/Spacer";
@@ -67,9 +67,35 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const { syncHabit } = useContext(SyncContext);
 
+  // Track previous habit for change detection - null triggers initial sync
+  const prevHabitRef = useRef<typeof habit | null>(null);
+  // Debounced sync timer ref
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync habit when it changes - DEBOUNCED to avoid network spam on rapid taps
   useEffect(() => {
-    if (habit && syncHabit) syncHabit(habitId);
-  }, [habit]);
+    if (habit !== prevHabitRef.current && habit && syncHabit) {
+      prevHabitRef.current = habit;
+
+      // Clear any pending sync
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+
+      // Debounce sync by 100ms - short enough for tests, long enough to batch rapid taps
+      syncTimeoutRef.current = setTimeout(() => {
+        syncHabit(habitId);
+        syncTimeoutRef.current = null;
+      }, 100);
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
+  }, [habit, syncHabit, habitId]);
 
   const weekItems = useMemo(() => {
     const recordedItemsForThisWeek = filterInGivenWeek(items, startOfWeek);
@@ -87,20 +113,28 @@ export const HabitComponent: FC<Props> = ({ habitId, items, title, goal, startOf
   const completedGoalCount = weekItems.filter(item => item.status === "done")?.length || 0;
   const totalGoalCount = goal || 0;
 
+  // Handler for save - sync immediately since component may not see the change before navigation
+  const handleSave = (newTitle: string, newGoal: number) => {
+    dispatch(updateHabit({ id: habitId, title: newTitle, goal: newGoal }));
+    setConfigModalVisible(false);
+    syncHabit?.(habitId);
+  };
+
+  // Handler for remove - sync immediately since component will unmount
+  const handleRemove = () => {
+    dispatch(removeHabit({ habitId }));
+    setConfigModalVisible(false);
+    syncHabit?.(habitId);
+  };
+
   return (
     <View>
       <ConfigureHabitModal
         visible={configModalVisible}
         defaultValues={{ title, goal }}
-        onSave={(title, goal) => {
-          dispatch(updateHabit({ id: habitId, title, goal }));
-          setConfigModalVisible(false);
-        }}
+        onSave={handleSave}
         onClose={() => setConfigModalVisible(false)}
-        onRemove={() => {
-          dispatch(removeHabit({ habitId }));
-          setConfigModalVisible(false);
-        }}
+        onRemove={handleRemove}
       />
       <Spacer size={15} />
       <View style={styles.container} testID="habit-container">

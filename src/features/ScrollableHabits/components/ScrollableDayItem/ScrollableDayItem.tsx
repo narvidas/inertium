@@ -2,8 +2,8 @@ import format from "date-fns/format";
 import formatISO from "date-fns/formatISO";
 import isSameDay from "date-fns/isSameDay";
 import parseISO from "date-fns/parseISO";
-import React, { FC, useCallback, useMemo, useState } from "react";
-import { Animated, TouchableHighlight, View } from "react-native";
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Animated, InteractionManager, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../config/rtk/rootReducer";
 import { generatePushID } from "../../../../utils/generatePushID";
@@ -16,6 +16,13 @@ const getStyle = (status: Status) => {
   if (status === "done") return styles.done;
   if (status === "fail") return styles.fail;
   return null;
+};
+
+// Helper to cycle through statuses
+const getNextStatus = (current: Status): Status => {
+  if (current === "default") return "done";
+  if (current === "done") return "fail";
+  return "default";
 };
 
 interface Props {
@@ -43,10 +50,26 @@ const ScrollableDayItemComponent: FC<Props> = ({ habitId, date, dayWidth, scroll
   // Subscribe to just this cell's item - only re-renders when THIS item changes
   const item = useSelector((state: RootState) => selectItemForDate(state, habitId, date));
 
+  // OPTIMISTIC UPDATE: Local state for immediate visual feedback
+  // null means "use Redux state", otherwise use the optimistic value
+  const [optimisticStatus, setOptimisticStatus] = useState<Status | null>(null);
+
+  // Track pending dispatch to avoid double-dispatches
+  const pendingDispatchRef = useRef<ReturnType<typeof InteractionManager.runAfterInteractions> | null>(null);
+
+  // Sync optimistic state with Redux when Redux catches up
+  useEffect(() => {
+    if (optimisticStatus !== null && item?.status === optimisticStatus) {
+      // Redux has caught up, clear optimistic state
+      setOptimisticStatus(null);
+    }
+  }, [item?.status, optimisticStatus]);
+
   const dayOfWeekWord = format(date, "EEE"); // E.g. 'SUN' for Sunday
   const dayOfMonthNumber = format(date, "d"); // E.g. '14' for 14th December
 
-  const status = item?.status ?? "default";
+  // Use optimistic status if set, otherwise fall back to Redux state
+  const status = optimisticStatus ?? item?.status ?? "default";
   const notesExist = item?.notes && item.notes !== "";
 
   // Interpolate: when scrollAnimValue is 1 (scrolling), text fades to 20% opacity
@@ -58,28 +81,38 @@ const ScrollableDayItemComponent: FC<Props> = ({ habitId, date, dayWidth, scroll
     [scrollAnimValue]);
 
   const updateStatus = useCallback(() => {
-    let newStatus: Status = "default";
-    const currentStatus = item?.status ?? "default";
-    if (currentStatus === "default") newStatus = "done";
-    if (currentStatus === "done") newStatus = "fail";
-    if (currentStatus === "fail") newStatus = "default";
+    // Cancel any pending dispatch from rapid taps
+    if (pendingDispatchRef.current) {
+      pendingDispatchRef.current.cancel();
+    }
 
-    // Create item only when needed (not on every render)
-    const newItem: Item = item
-      ? { ...item, status: newStatus }
-      : {
-        id: generatePushID(),
-        date: formatISO(date),
-        notes: "",
-        status: newStatus,
-        meta: {
-          isDeleted: false,
-          lastUpdatedOn: formatISO(new Date()),
-          createdOn: formatISO(new Date()),
-        },
-      };
-    dispatch(updateOrCreateItem({ habitId, item: newItem }));
-  }, [item, habitId, dispatch, date]);
+    // Calculate next status from current displayed status (optimistic or Redux)
+    const currentStatus = optimisticStatus ?? item?.status ?? "default";
+    const newStatus = getNextStatus(currentStatus);
+
+    // IMMEDIATE: Update UI optimistically
+    setOptimisticStatus(newStatus);
+
+    // DEFERRED: Dispatch to Redux after interactions complete
+    // This allows the UI to update before the heavier Redux operation
+    pendingDispatchRef.current = InteractionManager.runAfterInteractions(() => {
+      const newItem: Item = item
+        ? { ...item, status: newStatus }
+        : {
+          id: generatePushID(),
+          date: formatISO(date),
+          notes: "",
+          status: newStatus,
+          meta: {
+            isDeleted: false,
+            lastUpdatedOn: formatISO(new Date()),
+            createdOn: formatISO(new Date()),
+          },
+        };
+      dispatch(updateOrCreateItem({ habitId, item: newItem }));
+      pendingDispatchRef.current = null;
+    });
+  }, [item, habitId, dispatch, date, optimisticStatus]);
 
   const handleSaveNotes = useCallback((notes: string) => {
     const newItem: Item = item
@@ -114,22 +147,19 @@ const ScrollableDayItemComponent: FC<Props> = ({ habitId, date, dayWidth, scroll
         onSave={handleSaveNotes}
         onClose={handleCloseModal}
       />
-      <TouchableHighlight
-        activeOpacity={1}
-        underlayColor="rgba(0,0,0,0.25)"
+      <TouchableOpacity
+        activeOpacity={0.6}
         style={[styles.box, { width: dayWidth, height: dayWidth }, getStyle(status)]}
         onPress={updateStatus}
         onLongPress={handleLongPress}
+        testID="scrollable-item-container"
       >
-        <Animated.View
-          style={[styles.dateContainer, textOpacity && { opacity: textOpacity }]}
-          testID="scrollable-item-container"
-        >
+        <Animated.View style={[styles.dateContainer, textOpacity && { opacity: textOpacity }]}>
           <Animated.Text style={[styles.dayOfWeekWord, getStyle(status)]}>{dayOfWeekWord}</Animated.Text>
           <Animated.Text style={[styles.dayOfMonthNumber, getStyle(status)]}>{dayOfMonthNumber}</Animated.Text>
           {notesExist ? <Animated.Text style={styles.notesDot}>{`.`}</Animated.Text> : null}
         </Animated.View>
-      </TouchableHighlight>
+      </TouchableOpacity>
     </>
   );
 };

@@ -1,8 +1,8 @@
 import formatISO from "date-fns/formatISO";
 import isSameDay from "date-fns/isSameDay";
 import parseISO from "date-fns/parseISO";
-import React, { FC, useCallback, useMemo, useState } from "react";
-import { Text, TouchableHighlight, View } from "react-native";
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { InteractionManager, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../config/rtk/rootReducer";
 import { updateOrCreateItem } from "../../../Habits/habits.slice";
@@ -10,6 +10,13 @@ import { Item, Status } from "../../../Habits/types";
 import { ItemModal } from "../../../Habits/HabitComponent/ItemComponent/ItemModal";
 import { generatePushID } from "../../../../utils/generatePushID";
 import { styles } from "./MonthDayCell.styles";
+
+// Helper to cycle through statuses
+const getNextStatus = (current: Status): Status => {
+  if (current === "default") return "done";
+  if (current === "done") return "fail";
+  return "default";
+};
 
 interface Props {
   habitId: string;
@@ -66,37 +73,62 @@ const MonthDayCellComponent: FC<Props> = ({ habitId, date, dayOfMonth, isCurrent
   // Subscribe to just this cell's item - only re-renders when THIS item changes
   const item = useSelector((state: RootState) => selectItemForDate(state, habitId, date));
 
+  // OPTIMISTIC UPDATE: Local state for immediate visual feedback
+  // null means "use Redux state", otherwise use the optimistic value
+  const [optimisticStatus, setOptimisticStatus] = useState<Status | null>(null);
+
+  // Track pending dispatch to avoid double-dispatches
+  const pendingDispatchRef = useRef<ReturnType<typeof InteractionManager.runAfterInteractions> | null>(null);
+
+  // Sync optimistic state with Redux when Redux catches up
+  useEffect(() => {
+    if (optimisticStatus !== null && item?.status === optimisticStatus) {
+      // Redux has caught up, clear optimistic state
+      setOptimisticStatus(null);
+    }
+  }, [item?.status, optimisticStatus]);
+
   // For days outside current month, render empty placeholder
   if (!isCurrentMonth) {
     return <EmptyDayCell dayOfMonth={dayOfMonth} />;
   }
 
-  const status = item?.status ?? "default";
+  // Use optimistic status if set, otherwise fall back to Redux state
+  const status = optimisticStatus ?? item?.status ?? "default";
   const notesExist = item?.notes && item.notes !== "";
 
   const updateStatus = useCallback(() => {
-    let newStatus: Status = "default";
-    const currentStatus = item?.status ?? "default";
-    if (currentStatus === "default") newStatus = "done";
-    if (currentStatus === "done") newStatus = "fail";
-    if (currentStatus === "fail") newStatus = "default";
+    // Cancel any pending dispatch from rapid taps
+    if (pendingDispatchRef.current) {
+      pendingDispatchRef.current.cancel();
+    }
 
-    // Create item only when needed (not on every render)
-    const newItem: Item = item
-      ? { ...item, status: newStatus }
-      : {
-        id: generatePushID(),
-        date: formatISO(date),
-        notes: "",
-        status: newStatus,
-        meta: {
-          isDeleted: false,
-          lastUpdatedOn: formatISO(new Date()),
-          createdOn: formatISO(new Date()),
-        },
-      };
-    dispatch(updateOrCreateItem({ habitId, item: newItem }));
-  }, [item, habitId, dispatch, date]);
+    // Calculate next status from current displayed status (optimistic or Redux)
+    const currentStatus = optimisticStatus ?? item?.status ?? "default";
+    const newStatus = getNextStatus(currentStatus);
+
+    // IMMEDIATE: Update UI optimistically
+    setOptimisticStatus(newStatus);
+
+    // DEFERRED: Dispatch to Redux after interactions complete
+    pendingDispatchRef.current = InteractionManager.runAfterInteractions(() => {
+      const newItem: Item = item
+        ? { ...item, status: newStatus }
+        : {
+          id: generatePushID(),
+          date: formatISO(date),
+          notes: "",
+          status: newStatus,
+          meta: {
+            isDeleted: false,
+            lastUpdatedOn: formatISO(new Date()),
+            createdOn: formatISO(new Date()),
+          },
+        };
+      dispatch(updateOrCreateItem({ habitId, item: newItem }));
+      pendingDispatchRef.current = null;
+    });
+  }, [item, habitId, dispatch, date, optimisticStatus]);
 
   const handleSaveNotes = useCallback(
     (notes: string) => {
@@ -135,9 +167,8 @@ const MonthDayCellComponent: FC<Props> = ({ habitId, date, dayOfMonth, isCurrent
         onClose={handleCloseModal}
       />
       <View style={styles.cellContainer}>
-        <TouchableHighlight
-          activeOpacity={1}
-          underlayColor="rgba(0,0,0,0.25)"
+        <TouchableOpacity
+          activeOpacity={0.6}
           style={[
             styles.cell,
             getStatusStyle(status),
@@ -153,7 +184,7 @@ const MonthDayCellComponent: FC<Props> = ({ habitId, date, dayOfMonth, isCurrent
               <Text style={[styles.notesDot, getNotesStyle(status)]}>.</Text>
             )}
           </View>
-        </TouchableHighlight>
+        </TouchableOpacity>
       </View>
     </>
   );
