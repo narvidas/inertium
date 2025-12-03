@@ -182,23 +182,54 @@ db.ref(`habits/${uid}/${habitId}/items`) // Items are embedded
 
 **Trade-off**: Large habits with many historical items could grow large. In practice, habits accumulate ~365 items/year maximum.
 
-## Sync: "Last Updated Wins"
+## Sync Strategy
 
-The sync mechanism uses timestamp-based conflict resolution:
+The sync mechanism uses a **two-level reconciliation strategy**:
+
+### 1. Habit Metadata: "Last Updated Wins"
+
+For habit properties (title, goal, meta), the newer timestamp wins:
 
 ```typescript
 // From sync.ts
-const remoteIsNewer = remoteHabit.meta.lastUpdatedOn > localHabit.meta.lastUpdatedOn;
-remoteIsNewer ? updateLocal() : await updateRemote();
+const remoteMetaIsNewer = remoteHabit.meta.lastUpdatedOn > localHabit.meta.lastUpdatedOn;
+const baseHabit = remoteMetaIsNewer ? remoteHabit : localHabit;
 ```
 
-**⚠️ Gotcha**: This means if two devices edit the same habit simultaneously, the one syncing last will overwrite. There's no merge for individual items.
+### 2. Items: Per-Date Merge
 
-**Commented-out item-level merge** exists in `sync.ts` (lines 67-81) but is not implemented:
+Items are merged at the **date level** to prevent data loss:
+
 ```typescript
-// Covers cases where local is outdated but still has some items remote does not
-// const allItems = [...localHabitItemIds, ...remoteHabitItemIds]...
+// From sync.ts - mergeHabitItems()
+// For each date:
+// - If only one side has an item → keep it
+// - If both have an item → newer timestamp wins
+const mergedItems = mergeHabitItems(localItems, remoteItems);
 ```
+
+**Example scenario:**
+- Device A: Records Monday ✅, Tuesday ❌
+- Device B: Records Wednesday ✅, Thursday ✅
+- After sync: **All four days preserved** on both devices
+
+This prevents the common issue where syncing from a new device would overwrite offline progress.
+
+### 3. Habit Order
+
+Habit display order syncs separately via `syncHabitOrder()`, also using "last updated wins".
+
+### 4. State Clearing on Logout
+
+To prevent data leakage between accounts, logging out clears all local habit state:
+
+```typescript
+// AuthenticatedView.tsx
+dispatch(clearHabitsState());
+auth.signOut();
+```
+
+**⚠️ Important**: Users are warned that local data will be cleared, but their cloud data is preserved.
 
 ## Week Starts on Monday
 
@@ -478,13 +509,35 @@ pressAlertButton("Yes");  // Simulates pressing "Yes" button
 
 ## Testing Sync Calls
 
-The sync mock tracks all calls:
+The sync mock tracks all calls in component tests:
 
 ```typescript
 expect(sync.syncAll).toHaveBeenCalled();
 expect(sync.syncHabit).toHaveBeenCalledWith(habitId);
 expect(sync.syncHabitOrder).not.toHaveBeenCalled();
 ```
+
+## Sync Unit Tests
+
+The sync logic itself is tested in `sync.test.ts` with a custom Firebase mock:
+
+```typescript
+// Creates a mock Firebase that stores data in memory
+const firebaseMock = createFirebaseMock({
+  habits: { [habitId]: remoteHabit },
+  habitOrder: remoteOrder,
+});
+
+const sync = createSync(store, () => firebaseMock as any);
+await sync.syncAll();
+```
+
+Key test scenarios covered:
+- Item-level merge (preserves items from both sources)
+- Bi-directional habit sync (local ↔ remote)
+- Null handling for new users
+- Habit order sync
+- Auth guards (no sync when logged out)
 
 ---
 
@@ -609,8 +662,7 @@ startOfWeek(date, { weekStartsOn: 1 });
 # Incomplete Features
 
 1. **Delete Account** - TODO in UpdateProfileScreen.tsx
-2. **Item-level sync merge** - Commented out in sync.ts
-3. **Offline-first behavior** - Sync requires network, no queuing
+2. **Offline-first behavior** - Sync requires network, no queuing (changes made offline sync on next pull-to-refresh)
 
 ---
 
