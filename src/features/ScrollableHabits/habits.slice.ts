@@ -2,7 +2,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import formatISO from "date-fns/formatISO";
 import { RootState } from "../../config/rtk/rootReducer";
 import { generatePushID } from "../../utils/generatePushID";
-import { HabitOrder, Habits, Item, Meta } from "./types";
+import { Habit, HabitOrder, Habits, Item, Meta } from "./types";
 
 interface HabitsState {
   habits: Habits;
@@ -80,6 +80,26 @@ const habitsSlice = createSlice({
 
       state.order.order = state.order.order.filter((id) => id !== habit.id);
       state.order.meta = { ...state.order.meta, lastUpdatedOn: now() };
+    },
+    /**
+     * Sets a habit entirely - used by sync to update a habit with merged items.
+     * Unlike updateHabit, this replaces the entire habit object.
+     */
+    setHabit(state, action: PayloadAction<{ habit: Habit }>) {
+      const { habit } = action.payload;
+      state.habits[habit.id] = habit;
+      // Ensure habit is in order array (in case it was synced from remote)
+      if (!state.order.order.includes(habit.id)) {
+        state.order.order.push(habit.id);
+        state.order.meta.lastUpdatedOn = now();
+      }
+    },
+    /**
+     * Clears all habits state - used on logout to prevent data leakage between accounts.
+     */
+    clearHabitsState(state) {
+      state.habits = {};
+      state.order = { order: [], meta: { isDeleted: false, createdOn: "", lastUpdatedOn: "" } };
     },
   },
 });
@@ -205,5 +225,7 @@ export const { createNewHabit } = habitsSlice.actions;
 export const { updateHabit } = habitsSlice.actions;
 export const { removeHabit } = habitsSlice.actions;
 export const { updateHabitOrder } = habitsSlice.actions;
+export const { setHabit } = habitsSlice.actions;
+export const { clearHabitsState } = habitsSlice.actions;
 
 export default habitsSlice.reducer;

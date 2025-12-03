@@ -5,11 +5,12 @@ import * as Sharing from "expo-sharing";
 import { Body, Left, List, ListItem, Text, View } from "../../../ui";
 import React, { FC, useCallback, useContext, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Header } from "../../../components/Header";
 import { Loading } from "../../../components/Loading";
 import FirebaseContext from "../../../config/remote/firebaseContext";
 import { RootState } from "../../../config/rtk/rootReducer";
+import { clearHabitsState } from "../../ScrollableHabits/habits.slice";
 import { generateHabitsCSV, generateExportFilename } from "../utils";
 
 interface Props {
@@ -23,6 +24,7 @@ interface UserProfile {
 }
 
 export const AuthenticatedView: FC<Props> = ({ navigation }) => {
+  const dispatch = useDispatch();
   const { db, auth } = useContext(FirebaseContext);
   const uid = auth.currentUser?.uid;
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -49,10 +51,25 @@ export const AuthenticatedView: FC<Props> = ({ navigation }) => {
     return () => userRef.off("value", unsubscribe);
   }, [db, uid]);
 
-  const logout = () => {
-    auth.signOut();
-    navigation.navigate("Profile");
-  };
+  const logout = useCallback(() => {
+    Alert.alert(
+      "Logout",
+      "Logging out will clear all local habit data from this device. Your data is will be restored if you log back in.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: () => {
+            // Clear local state to prevent data leakage to other accounts
+            dispatch(clearHabitsState());
+            auth.signOut();
+            navigation.navigate("Profile");
+          },
+        },
+      ],
+    );
+  }, [auth, dispatch, navigation]);
 
   const exportData = useCallback(async () => {
     try {
