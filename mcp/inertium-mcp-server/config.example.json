@@ -1,0 +1,5 @@
+{
+  "userId": "YOUR_FIREBASE_USER_ID_HERE",
+  "serviceAccountPath": "service-account.json",
+  "databaseURL": "https://YOUR_PROJECT_ID.firebaseio.com"
+}
