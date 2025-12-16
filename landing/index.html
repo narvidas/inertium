@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Inertium App</title>
+    <link rel="shortcut icon" type="image/png" href="assets/img/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Inertium - Minimalist Habit Tracker" />
+    <!-- Begin loading animation -->
+    <link href="assets/css/loaders/loader-pulse.css" rel="stylesheet" type="text/css" media="all" />
+    <!-- End loading animation -->
+    <link href="assets/css/theme.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="https://fonts.googleapis.com/css?family=Nunito:400,400i,600,700&display=swap" rel="stylesheet" />
+    <style>
+      /* MCP Section Custom Styles */
+      .badge-light {
+        background-color: #f0f4f8;
+        color: #555a64;
+        font-weight: 600;
+      }
+
+      /* Modal Markdown Styles */
+      .markdown-body {
+        font-size: 1rem;
+        line-height: 1.7;
+        color: #333;
+      }
+      .markdown-body h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #009b72;
+        color: #192d35;
+      }
+      .markdown-body h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: #192d35;
+      }
+      .markdown-body h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        color: #192d35;
+      }
+      .markdown-body h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: #555a64;
+      }
+      .markdown-body p {
+        margin-bottom: 1rem;
+      }
+      .markdown-body ul,
+      .markdown-body ol {
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+      }
+      .markdown-body li {
+        margin-bottom: 0.5rem;
+      }
+      .markdown-body code {
+        background-color: #f4f6f9;
+        padding: 0.2em 0.4em;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: #d63384;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      }
+      .markdown-body pre {
+        background-color: #1e2937;
+        color: #e5e7eb;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+      }
+      .markdown-body pre code {
+        background-color: transparent;
+        color: inherit;
+        padding: 0;
+        font-size: 0.85rem;
+      }
+      .markdown-body blockquote {
+        border-left: 4px solid #009b72;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        color: #555a64;
+        background-color: #f8fafb;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+      }
+      .markdown-body blockquote p {
+        margin-bottom: 0;
+      }
+      .markdown-body hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 2rem 0;
+      }
+      .markdown-body table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+      }
+      .markdown-body table th,
+      .markdown-body table td {
+        padding: 0.75rem;
+        border: 1px solid #dee2e6;
+        text-align: left;
+      }
+      .markdown-body table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+      }
+      .markdown-body table tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+      .markdown-body a {
+        color: #009b72;
+        text-decoration: none;
+      }
+      .markdown-body a:hover {
+        text-decoration: underline;
+      }
+      .markdown-body strong {
+        font-weight: 700;
+        color: #192d35;
+      }
+
+      /* Tutorial Step Styling */
+      .markdown-body h2:before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #009b72;
+        border-radius: 50%;
+        margin-right: 0.75rem;
+        vertical-align: middle;
+      }
+
+      /* Modal customizations */
+      #setupTutorialModal .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+      #setupTutorialModal .modal-header .close {
+        opacity: 0.8;
+        text-shadow: none;
+        font-size: 1.5rem;
+      }
+      #setupTutorialModal .modal-header .close:hover {
+        opacity: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="loader">
+      <div class="loading-animation"></div>
+    </div>
+    <section class="o-hidden pt-4 mt-6 bg-light pb-0">
+      <br />
+      <br />
+      <div class="container">
+        <div class="row align-items-center justify-content-around text-center text-lg-left">
+          <div class="col-md-9 col-lg-6 col-xl-5 mb-4 mb-lg-0 pr-lg-5 pr-xl-0 order-lg-2">
+            <div>
+              <h2 class="display-4 mb-2">Inertium</h2>
+              <h2 class="mb-4">Your Daily Habit Log</h2>
+              <p class="lead">
+                The
+                <mark data-aos="highlight-text" data-aos-delay="450">zero-bullshit</mark>
+                habit tracker. <br />
+                No ads. No freemiums. Privacy-first.
+              </p>
+              <p>Simple and minimalistic at it's core. <br />Does one thing and does it well.</p>
+              <div class="d-flex flex-column flex-sm-row mt-4 mt-md-5 justify-content-center justify-content-lg-start">
+                <a href="https://apps.apple.com/gb/app/inertium-habit-tracker/id1544611742" class="mr-2">
+                  <img alt="App Store" src="assets/img/mobile-app/apple.svg" />
+                </a>
+                <a href="https://github.com/narvidas/inertium" class="mr-2">
+                  <img alt="GitHub" src="assets/img/mobile-app/github.svg" />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg order-lg-1">
+            <div class="row justify-content-center" data-jarallax-element="-50">
+              <div class="col-10 col-sm-8 col-md-6 col-lg-8 col-xl-6">
+                <img class="img-fluid position-relative" src="assets/img/mobile-app/inertium.png" alt="Screenshot" />
+                <div class="h-50 w-50 position-absolute bottom left d-none d-lg-block" data-jarallax-element="-50">
+                  <div class="blob blob-2 w-100 h-100 bg-primary opacity-90 top right"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="divider divider-bottom bg-white"></div>
+    </section>
+
+    <!-- MCP AI Coaching Section -->
+    <section class="bg-white o-hidden pt-6 pb-6" id="mcp-section">
+      <div class="container">
+        <div class="row align-items-center justify-content-between px-3">
+          <div class="col-lg-6 d-flex flex-column text-center text-lg-left mb-5 mb-lg-0" data-aos="fade-right">
+            <div class="pr-xl-5">
+              <div class="d-inline-block px-3 py-1 mb-3 rounded-pill" style="background-color: rgba(0, 155, 114, 0.1)">
+                <span class="text-primary font-weight-bold" style="font-size: 0.875rem">✨ NEW</span>
+              </div>
+              <h2 class="h1"><mark data-aos="highlight-text" data-aos-delay="250">AI-Powered</mark> Coaching</h2>
+              <h5 class="h5 mt-0 text-muted font-weight-normal">Self-host your AI fitness coach using Inertium MCP</h4>
+              <p class="lead mt-4">
+                Inertium MCP server is <a href="https://github.com/narvidas/inertium/tree/master/mcp" target="_blank">open-source</a> and meant to be run locally. It allows you to connect your Inertium App account to Claude Desktop via MCP and quickly build an AI fitness coach that actually
+                <strong>understands your history</strong>.
+              </p>
+
+              <div class="mt-4">
+                <div class="d-flex align-items-start mb-3" style="font-size: 1rem">
+                  <div class="mr-3 text-primary">✓</div>
+                  <div>Weekly check-ins that pull your real data automatically</div>
+                </div>
+                <div class="d-flex align-items-start mb-3" style="font-size: 1rem">
+                  <div class="mr-3 text-primary">✓</div>
+                  <div>Progress analysis against personalized projections</div>
+                </div>
+                <div class="d-flex align-items-start mb-3" style="font-size: 1rem">
+                  <div class="mr-3 text-primary">✓</div>
+                  <div>Pattern detection across weeks of entries</div>
+                </div>
+                <div class="d-flex align-items-start mb-3" style="font-size: 1rem">
+                  <div class="mr-3 text-primary">✓</div>
+                  <div>Recommendations grounded in what you actually did</div>
+                </div>
+              </div>
+
+              <div class="mt-5">
+                <a href="#" class="btn btn-primary btn-md mr-2 mb-3" data-toggle="modal" data-target="#setupTutorialModal">
+                  View Setup Guide →
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 mt-2 d-none d-lg-block" data-aos="fade-left" data-aos-delay="150" style="opacity: 0.9">
+            <!-- Example Session Card -->
+            <div class="card border-0 shadow-lg overflow-hidden">
+              <div class="card-header bg-primary-3 text-white py-3">
+                <div class="d-flex align-items-center">
+                  <div class="bg-white mr-2" style="width: 12px; height: 12px; opacity: 0.5"></div>
+                  <div class="bg-white mr-2" style="width: 12px; height: 12px; opacity: 0.5"></div>
+                  <div class="bg-white mr-3" style="width: 12px; height: 12px; opacity: 0.5"></div>
+                  <span class="font-weight-bold" style="font-size: 0.875rem">AI Fitness Coach (Example Claude Desktop Session)</span>
+                </div>
+              </div>
+              <div class="card-body bg-light p-4">
+                <div class="mb-4">
+                  
+                  <div class="d-flex justify-content-start">
+                    <div class="bg-white px-3 py-3 shadow-sm" style="max-width: 90%">
+                      <p class="mb-2 font-weight-bold">📊 Week 4 Summary — Dec 13, 2025</p>
+                      <p class="mb-2">
+                        <strong>Weight:</strong> 87.0 kg (target: 87.4 kg) →
+                        <span class="text-success">0.4kg ahead</span>
+                      </p>
+                      <p class="mb-2">
+                        <strong>Rate:</strong> 0.93 kg/week <span class="text-warning">⚠️ slightly fast</span>
+                      </p>
+                      <p class="mb-2 font-weight-bold mt-3">Lifts vs Projection:</p>
+                      <table class="table table-sm table-borderless mb-2" style="font-size: 0.85rem">
+                        <tr>
+                          <td>Squat</td>
+                          <td>120 kg</td>
+                          <td class="text-success">✓ +10kg</td>
+                        </tr>
+                        <tr>
+                          <td>Bench</td>
+                          <td>87.5 kg</td>
+                          <td class="text-success">✓ +5kg</td>
+                        </tr>
+                      </table>
+                      <p class="mb-2 font-weight-bold mt-3">Recommendations:</p>
+                      <table class="table table-sm table-borderless mb-2" style="font-size: 0.85rem">
+                        <tr>
+                          <td>Increase protein intake to 1.8g/kg/day</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-muted text-center mb-0" style="font-size: 0.8rem">No manual data entry.</p>
+                <p class="text-muted text-center mb-0" style="font-size: 0.7rem">
+                  All data is pulled from Inertium into Claude Desktop client automatically.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-25 h-25 bottom left position-absolute d-none d-lg-block" data-aos="zoom-in" data-aos-delay="300">
+        <div class="blob blob-3 h-100 w-100 bg-primary opacity-30"></div>
+      </div>
+    </section>
+    <!-- End MCP AI Coaching Section -->
+
+    <!-- Setup Tutorial Modal -->
+    <div
+      class="modal fade"
+      id="setupTutorialModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="setupTutorialModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-primary-3 text-white">
+            <h5 class="modal-title" id="setupTutorialModalLabel">🤖 Setting Up Your AI Coach</h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body p-4" id="tutorial-content">
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+              <p class="mt-3 text-muted">Loading tutorial...</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a
+              href="https://github.com/narvidas/inertium/tree/master/mcp"
+              class="btn btn-outline-primary"
+              target="_blank"
+            >
+              View on GitHub
+            </a>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Setup Tutorial Modal -->
+    <section class="bg-white o-hidden pt-8 pb-0">
+      <div class="container">
+        <div class="row align-items-center justify-content-between">
+          <div class="col-lg-7 d-flex flex-column text-center text-lg-left mb-5 mb-lg-0" data-aos="fade-right">
+            <div class="pr-xl-7">
+              <h2 class="h2">Need help building AI-powered products?</h2>
+              <h4 class="h4 mt-4">
+                <mark data-aos="highlight-text" data-aos-delay="1250">Hire the man who built Inertium</mark>.
+              </h4>
+              <p class="lead mt-4 pt-3">
+                Master's degree in engineering from a top UK university. Writing software professionally since the early
+                2010s. I consult at staff/principal level. My clients are usually enterprises and mature (Series A+)
+                startups in EU/UK. Reach out if you're looking for help building your next SaaS or AI-powered product.
+              </p>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="row justify-content-center" data-jarallax-element="-50">
+              <div class="col-10 col-sm-8 col-md-7 col-lg-7 col-xl-7" data-aos="zoom-in" data-aos-delay="250">
+                <img
+                  style="border-radius: 50%"
+                  class="img-fluid"
+                  src="https://d33wubrfki0l68.cloudfront.net/ebed98cb03f7c6b586b3c9fc8b117eb0db1f3c7d/000dd/images/my_photo.jpg"
+                  alt="Screenshot"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 mt-lg-5">
+          <div class="alert rounded-lg bg-primary-3 d-inline-flex align-items-center">
+            <div class="mx-3 text-white">
+              My personal and company sites, to get in touch:
+              <br />
+              <a alt="personal site" href="https://www.narvidas.com">www.narvidas.com</a>
+              <br />
+              <a alt="company site" href="https://www.monadengineering.com">www.monadengineering.com</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-50 h-50 bottom right position-absolute" data-aos="zoom-in" data-aos-delay="500">
+        <div class="blob h-100 w-100 bottom right bg-warning opacity-90"></div>
+      </div>
+      <div class="divider divider-bottom bg-primary-3 mt-5"></div>
+    </section>
+
+    <footer class="bg-primary-3 text-white links-white pb-4 footer-1">
+      <div class="container">
+        <hr class="mt-0 pt-0" />
+        <div
+          class="row flex-column flex-lg-row align-items-center justify-content-center justify-content-lg-between text-center text-lg-left"
+        >
+          <div class="col-auto">
+            <div class="d-flex flex-column flex-sm-row align-items-center text-small">
+              <div class="text-muted">
+                &copy;
+                <script>
+                  document.write(new Date().getFullYear());
+                </script>
+                Monad Engineering
+                <a href="https://www.inertium.app/privacy.html" target="_blank">Privacy Policy</a>
+                and
+                <a href="https://www.inertium.app/tos.html" target="_blank">Terms of Service</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <a
+      href="index.html#top"
+      class="btn btn-primary rounded-circle btn-back-to-top"
+      data-smooth-scroll
+      data-aos="fade-up"
+      data-aos-offset="2000"
+      data-aos-mirror="true"
+      data-aos-once="false"
+    >
+      <img src="assets/img/icons/interface/icon-arrow-up.svg" alt="Icon" class="icon bg-white" data-inject-svg />
+    </a>
+    <!-- Required vendor scripts (Do not remove) -->
+    <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="assets/js/popper.min.js"></script>
+    <script type="text/javascript" src="assets/js/bootstrap.js"></script>
+
+    <!-- Optional Vendor Scripts (Remove the plugin script here and comment initializer script out of index.js if site does not use that feature) -->
+
+    <!-- AOS (Animate On Scroll - animates elements into view while scrolling down) -->
+    <script type="text/javascript" src="assets/js/aos.js"></script>
+    <!-- Clipboard (copies content from browser into OS clipboard) -->
+    <script type="text/javascript" src="assets/js/clipboard.min.js"></script>
+    <!-- Isotope (masonry layouts and filtering) -->
+    <script type="text/javascript" src="assets/js/isotope.pkgd.min.js"></script>
+    <!-- jarallax (parallax effect and video backgrounds) -->
+    <script type="text/javascript" src="assets/js/jarallax.min.js"></script>
+    <script type="text/javascript" src="assets/js/jarallax-video.min.js"></script>
+    <script type="text/javascript" src="assets/js/jarallax-element.min.js"></script>
+    <!-- ScrollMonitor (manages events for elements scrolling in and out of view) -->
+    <script type="text/javascript" src="assets/js/scrollMonitor.js"></script>
+    <!-- Smooth scroll (animation to links in-page)-->
+    <script type="text/javascript" src="assets/js/smooth-scroll.polyfills.min.js"></script>
+    <!-- SVGInjector (replaces img tags with SVG code to allow easy inclusion of SVGs with the benefit of inheriting colors and styles)-->
+    <script type="text/javascript" src="assets/js/svg-injector.umd.production.js"></script>
+    <!-- Required theme scripts (Do not remove) -->
+    <script type="text/javascript" src="assets/js/theme.js"></script>
+    <!-- Removes page load animation when window is finished loading -->
+    <script type="text/javascript">
+      window.addEventListener("load", function () {
+        document.querySelector("body").classList.add("loaded");
+      });
+    </script>
+
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Tutorial Modal Script -->
+    <script type="text/javascript">
+      // Setup tutorial markdown content
+      const tutorialMarkdown = `# Setting Up an AI Fitness Coach with Claude + Inertium
+
+This guide walks you through creating a personalized AI fitness coach that has direct access to your habit tracking data.
+
+## What You'll Get
+
+- An AI coach in Claude that can query your Inertium data directly
+- Weekly check-ins that automatically pull weight, lifts, cardio, and notes
+- Progress tracking against custom projections
+- Pattern detection and actionable recommendations
+
+## Prerequisites
+
+- [Inertium app](https://inertium.app) with habits set up
+- [Claude Pro subscription](https://claude.ai) (required for Projects)
+- Inertium MCP server configured (see [MCP Setup Guide](https://github.com/narvidas/inertium/tree/master/mcp))
+
+---
+
+## Step 1: Create a Claude Project
+
+1. Open [claude.ai](https://claude.ai)
+2. Click **Projects** in the sidebar
+3. Click **New Project**
+4. Name it something like "Fitness Coach" or "Recomp Program"
+
+---
+
+## Step 2: Set Up Project Instructions
+
+In your project's **Instructions** field, paste:
+
+\`\`\`
+# Role
+You are a fitness and nutrition advisor tracking a [PROGRAM LENGTH] [PROGRAM TYPE] program. Reference the attached plan document for protocols, projections, and historical data.
+
+# Subject Summary
+[Your stats: age, height, weight, training history]
+[Your goals and timeline]
+
+# Current Phase
+[Phase name and targets]
+- Target: [start weight] → [end weight]
+- Calories: [daily target]
+- Protein: [daily target] (non-negotiable during cut)
+- Training: [program and frequency]
+- Rate: [target weekly change]
+
+# Key Rules
+- Protein first — every nutrition adjustment must preserve protein target
+- Track actuals vs projections — flag deviations >10%
+- Recovery awareness — watch for fatigue signals; suggest deloads proactively
+- Data-driven — only comment on progress if actual numbers are available
+
+# When User Reports Progress
+- Compare to projection table in attached files
+- Note if ahead/behind on targets
+- Suggest protocol adjustments if off-target for 2+ weeks
+- Keep responses concise; tables/bullets only when data-heavy
+
+# Communication Style
+Direct, data-driven, no fluff. Challenge assumptions if the math doesn't add up. Prioritize actionable recommendations.
+
+If you don't have access to specific data, explicitly state "I don't have that data" rather than speculating.
+\`\`\`
+
+Customize the bracketed sections for your specific program.
+
+---
+
+## Step 3: Add Your Planning Documents
+
+Upload these files to your project's **Knowledge** section:
+
+### Required: Main Plan Document
+
+Create a markdown file with:
+- Your baseline stats and training history
+- Program phases with dates
+- Nutrition protocols (calories, macros, meal structure)
+- Training protocols
+- Projection tables (weight and strength targets by week)
+- Progress log table
+
+### Recommended: Weekly Check-in Template
+
+A structured format for consistent check-ins:
+
+\`\`\`markdown
+# Weekly Check-in Template
+
+## Session Flow
+1. Data pull (weight, lifts, cardio, notes from Inertium)
+2. Subjective questions (energy, sleep, pain, hunger)
+3. Analysis (weight trend, strength progression, adherence)
+4. Flags and recommendations
+
+## Output Format
+- Weight vs target
+- Lifts vs projection
+- Adherence rates
+- Flags (concerns or notable patterns)
+- Recommendations
+- Next check-in date and targets
+\`\`\`
+
+---
+
+## Step 4: Set Up Inertium Habits
+
+Create habits in Inertium that match your program:
+
+**For strength training:**
+- "Powerlifting" or "Lifting" — log working weights in notes
+- Format notes consistently: \`S/B/D/O/R = 80/62.5/90/45/50\`
+
+**For weight tracking:**
+- "Weight" — daily entries with kg/lbs in notes
+- Morning weigh-ins for consistency
+
+**For cardio:**
+- "Cardio" or "Running" — duration, distance, HR in notes
+
+**Tip:** Consistent note formatting helps Claude parse your data accurately.
+
+---
+
+## Step 5: Connect MCP
+
+See the [MCP Setup Guide](https://github.com/narvidas/inertium/tree/master/mcp) for technical integration steps.
+
+Once connected, Claude can call:
+- \`list_habits\` — see all your tracked habits
+- \`get_habit_entries\` — pull entries for a date range
+- \`get_weekly_summary\` — completion stats grouped by week
+- \`search_notes\` — find specific mentions (injuries, PRs, issues)
+- \`get_habit_stats\` — streaks and overall completion rates
+
+---
+
+## Using Your AI Coach
+
+### Weekly Check-ins
+
+Start a conversation in your project:
+> "Weekly check-in"
+
+Claude will pull your data from Inertium and generate a structured analysis.
+
+### Ad-hoc Questions
+
+> "How are my lifts tracking vs projection?"
+
+> "Search my notes for knee pain mentions"
+
+> "What was my weight trend last 2 weeks?"
+
+### Program Adjustments
+
+> "I've been losing weight too fast—should I adjust calories?"
+
+> "My OHP has stalled for 3 sessions, what should I do?"
+
+---
+
+## Example Check-in Output
+
+\`\`\`
+## Week 4 Summary — Dec 13, 2025
+
+**Weight:** 87.0 kg (target: 87.4 kg) → 0.4kg ahead
+**Rate:** 0.93 kg/week (target: 0.5-0.7) ⚠️ slightly fast
+
+**Lifts vs Projection:**
+| Lift | Actual | Projected | Status |
+|------|--------|-----------|--------|
+| Squat | 80 kg | 70 kg | ✓ +10kg ahead |
+| Bench | 62.5 kg | 57.5 kg | ✓ +5kg ahead |
+
+**Flags:**
+- ⚠️ Knee clicks persistent but stable
+- ℹ️ Weight loss rate elevated—monitor next week
+
+**Recommendations:**
+1. Continue current protocol—no changes needed
+2. Resume daily weigh-ins post-vacation
+3. If >0.8 kg/week continues, bump to 2400 kcal
+\`\`\`
+
+---
+
+## Tips for Best Results
+
+1. **Log consistently** — More data = better analysis
+2. **Use structured notes** — Consistent formatting helps parsing
+3. **Include context** — Note sleep, stress, diet deviations
+4. **Update projections** — Refresh your plan doc as you progress
+5. **Be specific in questions** — "How's my squat progressing?" > "How am I doing?"
+
+---
+
+## Troubleshooting
+
+**Claude says "I don't have that data"**
+- Check MCP connection is active
+- Verify habit names match what you're asking about
+- Ensure entries exist for the date range
+
+**Analysis seems off**
+- Review note formatting—inconsistent formats confuse parsing
+- Check if you're in the right project
+- Update plan document if program has changed
+
+**Want to change programs**
+- Update the plan document and instructions
+- Keep old progress log for reference
+- Adjust projection tables for new phase
+`;
+
+      // Render markdown when modal is shown
+      $("#setupTutorialModal").on("show.bs.modal", function () {
+        const tutorialContainer = document.getElementById("tutorial-content");
+        if (tutorialContainer && typeof marked !== "undefined") {
+          tutorialContainer.innerHTML = '<div class="markdown-body">' + marked.parse(tutorialMarkdown) + "</div>";
+        }
+      });
+    </script>
+  </body>
+</html>
