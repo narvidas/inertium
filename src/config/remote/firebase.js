@@ -3,6 +3,8 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/database";
 import "firebase/compat/storage";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { config } from "./firebaseConfig";
 
 const getStoredCurrentUser = async () => {
@@ -24,6 +26,14 @@ let firebaseValues;
 const initFirebase = async () => {
   const firebaseAlreadyInitialised = firebase.apps.length;
   const instance = firebaseAlreadyInitialised ? firebase.apps[0] : firebase.initializeApp(config);
+
+  // Initialize auth with React Native persistence before using compat API
+  // This ensures auth state persists across app restarts
+  if (!firebaseAlreadyInitialised) {
+    initializeAuth(instance, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  }
 
   const auth = instance.auth();
   const db = instance.database();
