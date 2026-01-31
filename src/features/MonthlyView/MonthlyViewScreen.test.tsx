@@ -349,7 +349,7 @@ describe("MonthlyViewScreen", () => {
       fireEvent(dayCell, "onLongPress");
 
       const notesInput = await findByLabelText(/change item notes/i);
-      expect(notesInput.props.defaultValue).toBe("");
+      expect(notesInput.props.value).toBe("");
       fireEvent.changeText(notesInput, "Monthly view note test");
 
       const saveButton = getByText(/save/i);

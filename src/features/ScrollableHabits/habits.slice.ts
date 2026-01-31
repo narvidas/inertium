@@ -62,13 +62,17 @@ const habitsSlice = createSlice({
       state.order.order = newOrder;
       state.order.meta = { ...state.order.meta, lastUpdatedOn: now() };
     },
-    updateHabit(state, action: PayloadAction<{ id: string; title: string; goal: number }>) {
-      const { id, title, goal } = action.payload;
+    updateHabit(
+      state,
+      action: PayloadAction<{ id: string; title: string; goal: number; noteTemplate?: string }>,
+    ) {
+      const { id, title, goal, noteTemplate } = action.payload;
 
       const habit = state.habits[id];
 
       habit.goal = goal;
       habit.title = title;
+      habit.noteTemplate = noteTemplate;
       (habit.meta as Meta).lastUpdatedOn = now();
     },
     removeHabit(state, action: PayloadAction<{ habitId: string }>) {

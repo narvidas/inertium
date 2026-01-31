@@ -10,6 +10,8 @@ export interface Habit {
   goal: number;
   items: Item[];
   meta: Meta;
+  /** Optional markdown template pre-populated for new item notes */
+  noteTemplate?: string;
 }
 
 export type Habits = { [key: string]: Habit };

@@ -50,6 +50,10 @@ const getDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+// Selector for habit's note template
+const selectNoteTemplate = (habitId: string) => (state: RootState) =>
+  state.habitsState.habits[habitId]?.noteTemplate;
+
 // Empty placeholder for days outside current month - extracted to avoid re-renders
 const EmptyDayCellComponent: FC<{ dayOfMonth: number }> = ({ dayOfMonth }) => (
   <View style={styles.cellContainer}>
@@ -72,6 +76,9 @@ const MonthDayCellComponent: FC<Props> = ({ habitId, date, dayOfMonth, isCurrent
   // O(1) lookup using indexed selector instead of O(n) find()
   // This is critical for performance with large datasets (1000+ items per habit)
   const item = useSelector((state: RootState) => selectItemByDate(state, habitId, dateKey));
+
+  // Get the habit's note template for pre-populating new items
+  const noteTemplate = useSelector(selectNoteTemplate(habitId));
 
   // OPTIMISTIC UPDATE: Local state for immediate visual feedback
   // null means "use Redux state", otherwise use the optimistic value
@@ -162,6 +169,7 @@ const MonthDayCellComponent: FC<Props> = ({ habitId, date, dayOfMonth, isCurrent
     <>
       <ItemModal
         defaultValues={{ notes: item?.notes || "" }}
+        noteTemplate={noteTemplate}
         visible={itemModalVisible}
         onSave={handleSaveNotes}
         onClose={handleCloseModal}

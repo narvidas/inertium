@@ -299,7 +299,7 @@ describe("ScrollableHabitsScreen", () => {
       fireEvent(item, "onLongPress");
 
       const notesInput = await findByLabelText(/change item notes/i);
-      expect(notesInput.props.defaultValue).toBe("");
+      expect(notesInput.props.value).toBe("");
       fireEvent.changeText(notesInput, "Wrote for 30 minutes today");
 
       const saveButton = getByText(/save/i);

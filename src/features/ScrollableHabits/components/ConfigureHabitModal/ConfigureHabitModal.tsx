@@ -2,7 +2,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { Formik, FormikErrors } from "formik";
 import { Button, H3, Input, Item, Label, Root, Text } from "../../../../ui";
 import React, { FC, useEffect, useState } from "react";
-import { Alert, Keyboard, KeyboardAvoidingView, Modal, TouchableWithoutFeedback, View } from "react-native";
+import {
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  ScrollView,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import * as Yup from "yup";
 import { errorToast } from "../../../../utils/toast";
 import { Habit } from "../../types";
@@ -25,7 +33,7 @@ type Values = Partial<Habit>;
 interface Props {
   visible: boolean;
   defaultValues?: Values;
-  onSave: (title: string, goal: number) => void;
+  onSave: (title: string, goal: number, noteTemplate?: string) => void;
   onClose: () => void;
   onRemove: () => void;
 }
@@ -37,11 +45,12 @@ const validationSchema = Yup.object().shape({
     .min(0, "Cannot be a negative number!")
     .max(7, "Week has only 7 days!")
     .typeError("Must be a numeric value!"),
+  noteTemplate: Yup.string().max(1000, "Template cannot exceed 1000 characters"),
 });
 
 export const ConfigureHabitModal: FC<Props> = ({
   visible,
-  defaultValues = { title: "", goal: "0" },
+  defaultValues = { title: "", goal: "0", noteTemplate: "" },
   onSave,
   onClose,
   onRemove,
@@ -60,8 +69,8 @@ export const ConfigureHabitModal: FC<Props> = ({
     }
   };
 
-  const submit = ({ title, goal }: Values) => {
-    if (title && goal) onSave(title, goal);
+  const submit = ({ title, goal, noteTemplate }: Values) => {
+    if (title && goal) onSave(title, goal, noteTemplate);
   };
 
   if (!visible) return null;
@@ -105,6 +114,23 @@ export const ConfigureHabitModal: FC<Props> = ({
                           keyboardType="numeric"
                           name="goal"
                           defaultValue={String(defaultValues?.goal)}
+                        />
+                      </Item>
+                    </View>
+                    <View style={styles.inputContainer}>
+                      <Item>
+                        <Label>Note template (markdown):</Label>
+                        <Input
+                          style={styles.input}
+                          onChangeText={handleChange("noteTemplate")}
+                          accessibilityLabel="change note template"
+                          name="noteTemplate"
+                          multiline
+                          lines={4}
+                          defaultValue={defaultValues?.noteTemplate || ""}
+                          placeholder="e.g. ## Workout&#10;- [ ] Squats&#10;- [ ] Bench"
+                          maxHeight={150}
+                          autoGrow
                         />
                       </Item>
                     </View>

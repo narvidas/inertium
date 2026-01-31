@@ -5,10 +5,14 @@ import { Animated, InteractionManager, TouchableOpacity, View } from "react-nati
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../config/rtk/rootReducer";
 import { generatePushID } from "../../../../utils/generatePushID";
-import { selectItemByDate, updateOrCreateItem } from "../../habits.slice";
+import { selectItemByDate, updateOrCreateItem, habitSelector } from "../../habits.slice";
 import { Item, Status } from "../../types";
 import { ItemModal } from "../ItemModal";
 import { styles } from "./ScrollableDayItem.styles";
+
+// Selector for habit's note template
+const selectNoteTemplate = (habitId: string) => (state: RootState) =>
+  state.habitsState.habits[habitId]?.noteTemplate;
 
 const getStyle = (status: Status) => {
   if (status === "done") return styles.done;
@@ -50,6 +54,9 @@ const ScrollableDayItemComponent: FC<Props> = ({ habitId, date, dayWidth, scroll
   // O(1) lookup using indexed selector instead of O(n) find()
   // This is critical for performance with large datasets (1000+ items per habit)
   const item = useSelector((state: RootState) => selectItemByDate(state, habitId, dateKey));
+
+  // Get the habit's note template for pre-populating new items
+  const noteTemplate = useSelector(selectNoteTemplate(habitId));
 
   // OPTIMISTIC UPDATE: Local state for immediate visual feedback
   // null means "use Redux state", otherwise use the optimistic value
@@ -148,6 +155,7 @@ const ScrollableDayItemComponent: FC<Props> = ({ habitId, date, dayWidth, scroll
     <>
       <ItemModal
         defaultValues={{ notes: item?.notes || "" }}
+        noteTemplate={noteTemplate}
         visible={itemModalVisible}
         onSave={handleSaveNotes}
         onClose={handleCloseModal}

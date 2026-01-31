@@ -42,7 +42,7 @@ interface Props {
   userScrollEnabled?: boolean;
 }
 
-// Memoized selector for habit metadata (title, goal) - doesn't include items
+// Memoized selector for habit metadata (title, goal, noteTemplate) - doesn't include items
 const selectHabitMeta = (habitId: string) => (state: RootState) => {
   const habit = state.habitsState.habits[habitId];
   if (!habit) return null;
@@ -50,6 +50,7 @@ const selectHabitMeta = (habitId: string) => (state: RootState) => {
     id: habit.id,
     title: habit.title,
     goal: habit.goal,
+    noteTemplate: habit.noteTemplate,
   };
 };
 
@@ -211,8 +212,8 @@ const ScrollableHabitRowComponent: FC<Props> = ({
     index,
   }), [dayWidth]);
 
-  const handleSaveHabit = useCallback((title: string, goal: number) => {
-    dispatch(updateHabit({ id: habitId, title, goal }));
+  const handleSaveHabit = useCallback((title: string, goal: number, noteTemplate?: string) => {
+    dispatch(updateHabit({ id: habitId, title, goal, noteTemplate }));
     setConfigModalVisible(false);
     syncHabit?.(habitId);
   }, [habitId, dispatch, syncHabit]);
@@ -269,7 +270,7 @@ const ScrollableHabitRowComponent: FC<Props> = ({
     <Animated.View style={[styles.container, dragStyle]} testID="scrollable-habit-container">
       <ConfigureHabitModal
         visible={configModalVisible}
-        defaultValues={{ title: habitMeta.title, goal: habitMeta.goal }}
+        defaultValues={{ title: habitMeta.title, goal: habitMeta.goal, noteTemplate: habitMeta.noteTemplate }}
         onSave={handleSaveHabit}
         onClose={() => setConfigModalVisible(false)}
         onRemove={handleRemoveHabit}
