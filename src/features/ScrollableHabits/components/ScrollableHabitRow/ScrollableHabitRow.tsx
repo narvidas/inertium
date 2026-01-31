@@ -70,7 +70,7 @@ const ScrollableHabitRowComponent: FC<Props> = ({
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp>();
   const flatListRef = useRef<FlatList<DateItem>>(null);
-  const { syncHabit } = useContext(SyncContext);
+  const { syncHabit, pushHabit } = useContext(SyncContext);
   const [configModalVisible, setConfigModalVisible] = useState(false);
 
   // Subscribe to habit metadata only (not items) for header display
@@ -118,35 +118,37 @@ const ScrollableHabitRowComponent: FC<Props> = ({
     }).start();
   }, [isActive, dragAnimation]);
 
-  // Debounced sync timer ref
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Debounced push timer ref
+  const pushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync habit when items change - DEBOUNCED to avoid network spam on rapid taps
+  // Push habit to Firebase when items change - DEBOUNCED to avoid network spam on rapid taps
+  // Uses pushHabit (write-only) instead of syncHabit (read-merge-write) to avoid
+  // unnecessary Firebase reads and Redux dispatches that cause re-renders
   useEffect(() => {
-    if (habitItems !== prevItemsRef.current && syncHabit) {
+    if (habitItems !== prevItemsRef.current && pushHabit) {
       prevItemsRef.current = habitItems;
 
-      // Clear any pending sync
+      // Clear any pending push
       /* istanbul ignore next -- defensive cleanup, hard to test timing */
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
+      if (pushTimeoutRef.current) {
+        clearTimeout(pushTimeoutRef.current);
       }
 
-      // Debounce sync by 500ms - allows rapid taps without multiple network calls
-      syncTimeoutRef.current = setTimeout(() => {
-        syncHabit(habitId);
-        syncTimeoutRef.current = null;
+      // Debounce push by 500ms - allows rapid taps without multiple network calls
+      pushTimeoutRef.current = setTimeout(() => {
+        pushHabit(habitId);
+        pushTimeoutRef.current = null;
       }, 500);
     }
 
     // Cleanup on unmount
     /* istanbul ignore next -- cleanup function, tested implicitly */
     return () => {
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
+      if (pushTimeoutRef.current) {
+        clearTimeout(pushTimeoutRef.current);
       }
     };
-  }, [habitItems, syncHabit, habitId]);
+  }, [habitItems, pushHabit, habitId]);
 
   // Generate date items for the virtualized list - INDEPENDENT of habit items
   // This only changes when centerDate or bufferDays changes

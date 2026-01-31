@@ -248,7 +248,7 @@ describe("ScrollableHabitsScreen", () => {
       jest.clearAllMocks();
 
       expect(sync.syncAll).not.toHaveBeenCalled();
-      expect(sync.syncHabit).not.toHaveBeenCalled();
+      expect(sync.pushHabit).not.toHaveBeenCalled();
 
       const [habitBefore] = Object.values(store.getState().habitsState.habits);
       expect(habitBefore.items.length).toBe(0);
@@ -266,8 +266,10 @@ describe("ScrollableHabitsScreen", () => {
       const item = items[0];
       fireEvent.press(item);
 
+      // Item updates use pushHabit (write-only) instead of syncHabit (read-merge-write)
+      // for better performance - avoids unnecessary Firebase reads and Redux dispatches
       await waitFor(() => {
-        expect(sync.syncHabit).toHaveBeenCalledWith(habitBefore.id);
+        expect(sync.pushHabit).toHaveBeenCalledWith(habitBefore.id);
       });
 
       const [habitAfter] = Object.values(store.getState().habitsState.habits);
@@ -284,7 +286,7 @@ describe("ScrollableHabitsScreen", () => {
       jest.clearAllMocks();
 
       expect(sync.syncAll).not.toHaveBeenCalled();
-      expect(sync.syncHabit).not.toHaveBeenCalled();
+      expect(sync.pushHabit).not.toHaveBeenCalled();
 
       const [habitBefore] = Object.values(store.getState().habitsState.habits);
       expect(habitBefore.items.length).toBe(0);
@@ -305,8 +307,9 @@ describe("ScrollableHabitsScreen", () => {
       const saveButton = getByText(/save/i);
       fireEvent.press(saveButton);
 
+      // Item updates use pushHabit (write-only) for better performance
       await waitFor(() => {
-        expect(sync.syncHabit).toHaveBeenCalledWith(habitBefore.id);
+        expect(sync.pushHabit).toHaveBeenCalledWith(habitBefore.id);
       });
 
       const [habitAfter] = Object.values(store.getState().habitsState.habits);

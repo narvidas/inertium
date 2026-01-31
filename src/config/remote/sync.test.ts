@@ -701,6 +701,206 @@ describe("sync - User journey scenarios", () => {
 });
 
 // ============================================
+// Integration Tests: pushHabit (Performance Optimization)
+// ============================================
+
+describe("sync - pushHabit", () => {
+  let store: ReturnType<typeof getStore>;
+  let firebaseMock: ReturnType<typeof createFirebaseMock>;
+
+  beforeEach(() => {
+    store = getStore();
+    store.dispatch(clearHabitsState());
+  });
+
+  it("writes local habit to Firebase without reading first", async () => {
+    const habitId = generatePushID();
+
+    // Local has a habit with items
+    const localHabit = createTestHabit(habitId, "Workout", [
+      createTestItem("2024-01-15", "done", "2024-01-15T10:00:00.000Z"),
+    ]);
+    store.dispatch(setHabit({ habit: localHabit }));
+
+    // Remote might have different data (we won't read it)
+    firebaseMock = createFirebaseMock({});
+
+    const sync = createSync(store, () => firebaseMock as any);
+    await sync.pushHabit(habitId);
+
+    // Local habit should be written to remote
+    const remoteHabit = firebaseMock.getHabits()[habitId];
+    expect(remoteHabit).toBeDefined();
+    expect(remoteHabit.title).toBe("Workout");
+    expect(remoteHabit.items).toHaveLength(1);
+  });
+
+  it("does not dispatch back to Redux (avoids re-renders)", async () => {
+    const habitId = generatePushID();
+
+    const localHabit = createTestHabit(habitId, "Reading", [
+      createTestItem("2024-01-15", "done", "2024-01-15T10:00:00.000Z"),
+    ]);
+    store.dispatch(setHabit({ habit: localHabit }));
+
+    // Track the initial state reference
+    const stateBefore = store.getState().habitsState.habits[habitId];
+
+    firebaseMock = createFirebaseMock({});
+
+    const sync = createSync(store, () => firebaseMock as any);
+    await sync.pushHabit(habitId);
+
+    // State should be the exact same reference (no dispatch occurred)
+    const stateAfter = store.getState().habitsState.habits[habitId];
+    expect(stateAfter).toBe(stateBefore);
+  });
+
+  it("does nothing when habit does not exist locally", async () => {
+    const nonExistentId = generatePushID();
+
+    firebaseMock = createFirebaseMock({});
+
+    const sync = createSync(store, () => firebaseMock as any);
+    await sync.pushHabit(nonExistentId);
+
+    // Remote should remain empty
+    expect(firebaseMock.getHabits()[nonExistentId]).toBeUndefined();
+  });
+
+  it("does nothing when user is not logged in", async () => {
+    const habitId = generatePushID();
+
+    store.dispatch(setHabit({ habit: createTestHabit(habitId, "Test") }));
+
+    // Mock with no currentUser
+    const noAuthMock = {
+      auth: { currentUser: null },
+      db: { ref: jest.fn() },
+    };
+
+    const sync = createSync(store, () => noAuthMock as any);
+    await sync.pushHabit(habitId);
+
+    // db.ref should not have been called
+    expect(noAuthMock.db.ref).not.toHaveBeenCalled();
+  });
+
+  it("overwrites remote data (does not merge)", async () => {
+    const habitId = generatePushID();
+
+    // Local has Monday item only
+    const localHabit = createTestHabit(habitId, "Exercise", [
+      createTestItem("2024-01-15", "done", "2024-01-15T10:00:00.000Z"),
+    ]);
+    store.dispatch(setHabit({ habit: localHabit }));
+
+    // Remote has Tuesday item (simulating another device's update)
+    const remoteHabit = createTestHabit(habitId, "Exercise", [
+      createTestItem("2024-01-16", "done", "2024-01-16T10:00:00.000Z"),
+    ]);
+    firebaseMock = createFirebaseMock({
+      habits: { [habitId]: remoteHabit },
+    });
+
+    const sync = createSync(store, () => firebaseMock as any);
+    await sync.pushHabit(habitId);
+
+    // Remote should now have ONLY the local data (Tuesday is lost)
+    // This is expected behavior - pushHabit is write-only
+    const result = firebaseMock.getHabits()[habitId];
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].date).toContain("2024-01-15"); // Monday only
+  });
+});
+
+describe("sync - pushHabit vs syncHabit behavior comparison", () => {
+  let store: ReturnType<typeof getStore>;
+  let firebaseMock: ReturnType<typeof createFirebaseMock>;
+
+  beforeEach(() => {
+    store = getStore();
+    store.dispatch(clearHabitsState());
+  });
+
+  it("syncHabit preserves remote items while pushHabit overwrites", async () => {
+    const habitId = generatePushID();
+
+    // Local has Monday
+    const localItem = createTestItem("2024-01-15", "done", "2024-01-15T10:00:00.000Z");
+    const localHabit = createTestHabit(habitId, "Test", [localItem], "2024-01-15T10:00:00.000Z");
+    store.dispatch(setHabit({ habit: localHabit }));
+
+    // Remote has Tuesday
+    const remoteItem = createTestItem("2024-01-16", "done", "2024-01-16T10:00:00.000Z");
+    const remoteHabit = createTestHabit(habitId, "Test", [remoteItem], "2024-01-16T10:00:00.000Z");
+    firebaseMock = createFirebaseMock({
+      habits: { [habitId]: remoteHabit },
+    });
+
+    // syncHabit merges - both days preserved
+    const sync = createSync(store, () => firebaseMock as any);
+    await sync.syncHabit(habitId);
+
+    const afterSync = store.getState().habitsState.habits[habitId];
+    expect(afterSync.items).toHaveLength(2); // Both Monday and Tuesday
+
+    // Reset for pushHabit test
+    store.dispatch(clearHabitsState());
+    store.dispatch(setHabit({ habit: localHabit })); // Only Monday
+
+    // Recreate remote with Tuesday
+    firebaseMock = createFirebaseMock({
+      habits: { [habitId]: remoteHabit },
+    });
+
+    const sync2 = createSync(store, () => firebaseMock as any);
+    await sync2.pushHabit(habitId);
+
+    // pushHabit overwrites - only Monday in remote now
+    const remoteAfterPush = firebaseMock.getHabits()[habitId];
+    expect(remoteAfterPush.items).toHaveLength(1);
+    expect(remoteAfterPush.items[0].date).toContain("2024-01-15");
+
+    // Local state unchanged
+    const localAfterPush = store.getState().habitsState.habits[habitId];
+    expect(localAfterPush.items).toHaveLength(1);
+  });
+
+  it("multi-device scenario: data is reconciled on next syncAll", async () => {
+    const habitId = generatePushID();
+
+    // Simulate: Device A pushed Monday, Device B pushed Tuesday (overwriting Monday)
+    // Remote now only has Tuesday
+    const tuesdayItem = createTestItem("2024-01-16", "done", "2024-01-16T10:00:00.000Z");
+    const remoteHabit = createTestHabit(habitId, "Workout", [tuesdayItem], "2024-01-16T10:00:00.000Z");
+    firebaseMock = createFirebaseMock({
+      habits: { [habitId]: remoteHabit },
+    });
+
+    // Device A comes back online with Monday still in local state
+    const mondayItem = createTestItem("2024-01-15", "done", "2024-01-15T10:00:00.000Z");
+    const localHabit = createTestHabit(habitId, "Workout", [mondayItem], "2024-01-15T10:00:00.000Z");
+    store.dispatch(setHabit({ habit: localHabit }));
+
+    // User does pull-to-refresh (syncAll) which uses syncHabit internally
+    const sync = createSync(store, () => firebaseMock as any);
+    await sync.syncAll();
+
+    // Both days should be reconciled
+    const result = store.getState().habitsState.habits[habitId];
+    expect(result.items).toHaveLength(2);
+
+    const dates = result.items.map((i) => i.date.slice(0, 10)).sort();
+    expect(dates).toEqual(["2024-01-15", "2024-01-16"]);
+
+    // Remote also has both
+    const remoteResult = firebaseMock.getHabits()[habitId];
+    expect(remoteResult.items).toHaveLength(2);
+  });
+});
+
+// ============================================
 // Integration Tests: syncHabitOrder
 // ============================================
 

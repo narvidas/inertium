@@ -6,6 +6,7 @@ export const getSyncMock = () => {
     syncHabitOrder: jest.fn(),
     syncHabit: jest.fn(),
     syncHabits: jest.fn(),
+    pushHabit: jest.fn(),
   };
   return syncMock;
 };

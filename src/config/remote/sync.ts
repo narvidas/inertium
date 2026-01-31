@@ -64,6 +64,13 @@ export interface Sync {
   syncHabitOrder: () => Promise<void>;
   syncHabit: (habitId: string) => Promise<void>;
   syncHabits: () => Promise<void>;
+  /**
+   * Push local habit state to Firebase without reading/merging.
+   * Use this for individual item updates where local state is the source of truth.
+   * Unlike syncHabit, this doesn't read from Firebase or dispatch back to Redux,
+   * avoiding unnecessary re-renders.
+   */
+  pushHabit: (habitId: string) => Promise<void>;
 }
 
 export const createSync = (store: EnhancedStore<any>, getValues = getFirebaseValues) => {
@@ -202,11 +209,31 @@ export const createSync = (store: EnhancedStore<any>, getValues = getFirebaseVal
     await Promise.all(commonHabitIds.map((habitId) => syncHabit(habitId)));
   };
 
+  /**
+   * Push local habit state to Firebase without reading/merging.
+   * This is optimized for individual item updates where we know local state is current.
+   * - No Firebase read (saves latency)
+   * - No merge operation (saves CPU)
+   * - No Redux dispatch (prevents re-renders)
+   */
+  const pushHabit = async (habitId: string) => {
+    const { auth, db } = getValues();
+    if (isNotLoggedIn()) return;
+
+    const localHabit = store.getState().habitsState?.habits?.[habitId] as Habit | undefined;
+    if (!localHabit) return;
+
+    const uid = auth.currentUser.uid;
+    const habitDbRef = db.ref(`habits/${uid}/${habitId}`);
+    await habitDbRef.set(localHabit);
+  };
+
   const sync: Sync = {
     syncAll,
     syncHabitOrder,
     syncHabit,
     syncHabits,
+    pushHabit,
   };
   return sync;
 };
